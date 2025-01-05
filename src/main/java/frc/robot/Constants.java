@@ -13,8 +13,8 @@ import org.lasarobotics.hardware.revrobotics.Spark;
 //import org.lasarobotics.led.LEDStrip;
 import org.lasarobotics.utils.PIDConstants;
 
-import com.revrobotics.CANSparkBase;
-import com.revrobotics.CANSparkBase.IdleMode;
+import com.revrobotics.SparkMax;
+import com.revrobotics.SparkBase.IdleMode;
 
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -23,7 +23,7 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.units.Units;
+import edu.wpi.first.units.measure.Units;
 import frc.robot.subsystems.drive.PurplePathPose;
 import frc.robot.subsystems.vision.AprilTagCamera.Resolution;
 

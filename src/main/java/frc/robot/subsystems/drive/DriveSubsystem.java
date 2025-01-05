@@ -47,13 +47,13 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.units.Angle;
-import edu.wpi.first.units.Current;
-import edu.wpi.first.units.Distance;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.Measure;
-import edu.wpi.first.units.Time;
-import edu.wpi.first.units.Units;
-import edu.wpi.first.units.Velocity;
+import edu.wpi.first.units.measure.Time;
+import edu.wpi.first.units.measure.Units;
+import edu.wpi.first.units.measure.Velocity;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -88,18 +88,18 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   }
 
   // Drive specs
-  public static final Measure<Distance> DRIVE_WHEELBASE = Units.Meters.of(0.5588);
-  public static final Measure<Distance> DRIVE_TRACK_WIDTH = Units.Meters.of(0.5588);
-  public static final Measure<Time> AUTO_LOCK_TIME = Units.Seconds.of(3.0);
-  public static final Measure<Time> MAX_SLIPPING_TIME = Units.Seconds.of(1.2);
-  public static final Measure<Current> DRIVE_CURRENT_LIMIT = Units.Amps.of(60.0);
-  public static final Measure<Velocity<Angle>> NAVX2_YAW_DRIFT_RATE = Units.DegreesPerSecond.of(0.5 / 60);
-  public static final Measure<Velocity<Angle>> DRIVE_ROTATE_VELOCITY = Units.RadiansPerSecond.of(12 * Math.PI);
-  public static final Measure<Velocity<Angle>> AIM_VELOCITY_THRESHOLD = Units.DegreesPerSecond.of(5.0);
-  public static final Measure<Velocity<Velocity<Angle>>> DRIVE_ROTATE_ACCELERATION = Units.RadiansPerSecond.of(4 * Math.PI).per(Units.Second);
+  public static final Distance DRIVE_WHEELBASE = Units.Meters.of(0.5588);
+  public static final Distance DRIVE_TRACK_WIDTH = Units.Meters.of(0.5588);
+  public static final Time AUTO_LOCK_TIME = Units.Seconds.of(3.0);
+  public static final Time MAX_SLIPPING_TIME = Units.Seconds.of(1.2);
+  public static final Current DRIVE_CURRENT_LIMIT = Units.Amps.of(60.0);
+  public static final AngularVelocity NAVX2_YAW_DRIFT_RATE = Units.DegreesPerSecond.of(0.5 / 60);
+  public static final AngularVelocity DRIVE_ROTATE_VELOCITY = Units.RadiansPerSecond.of(12 * Math.PI);
+  public static final AngularVelocity AIM_VELOCITY_THRESHOLD = Units.DegreesPerSecond.of(5.0);
+  public static final AngularAcceleration DRIVE_ROTATE_ACCELERATION = Units.RadiansPerSecond.of(4 * Math.PI).per(Units.Second);
   public static final Translation2d AIM_OFFSET = new Translation2d(0.0, -0.5);
-  public final Measure<Velocity<Distance>> DRIVE_MAX_LINEAR_SPEED;
-  public final Measure<Velocity<Velocity<Distance>>> DRIVE_AUTO_ACCELERATION;
+  public final LinearVelocity DRIVE_MAX_LINEAR_SPEED;
+  public final LinearAcceleration DRIVE_AUTO_ACCELERATION;
 
   // Other settings
   private static final int INERTIAL_VELOCITY_FILTER_TAPS = 100;
@@ -367,7 +367,7 @@ public static Hardware initializeHardware() {
    * @param inertialVelocity Current inertial velocity
    * @param rotateRate Desired robot rotate rate
    */
-  private void setSwerveModules(SwerveModuleState[] moduleStates, Measure<Velocity<Distance>> inertialVelocity, Measure<Velocity<Angle>> rotateRate) {
+  private void setSwerveModules(SwerveModuleState[] moduleStates, LinearVelocity inertialVelocity, AngularVelocity rotateRate) {
     lFrontModule.set(moduleStates, inertialVelocity, rotateRate);
     rFrontModule.set(moduleStates, inertialVelocity, rotateRate);
     lRearModule.set(moduleStates, inertialVelocity, rotateRate);
@@ -384,10 +384,10 @@ public static Hardware initializeHardware() {
    * @param controlCentricity Current robot rotate rate
    */
   private void drive(ControlCentricity controlCentricity,
-                     Measure<Velocity<Distance>> xRequest,
-                     Measure<Velocity<Distance>> yRequest,
-                     Measure<Velocity<Angle>> rotateRequest,
-                     Measure<Velocity<Distance>> inertialVelocity) {
+                     LinearVelocity xRequest,
+                     LinearVelocity yRequest,
+                     AngularVelocity rotateRequest,
+                     LinearVelocity inertialVelocity) {
     // Get requested chassis speeds, correcting for second order kinematics
     desiredChassisSpeeds = AdvancedSwerveKinematics.correctForDynamics(
       new ChassisSpeeds(xRequest, yRequest, rotateRequest)
@@ -414,9 +414,9 @@ public static Hardware initializeHardware() {
    * @param yRequest      Desired Y (sideways) velocity
    * @param rotateRequest Desired rotate rate
    */
-  private void drive(Measure<Velocity<Distance>> xRequest,
-                     Measure<Velocity<Distance>> yRequest,
-                     Measure<Velocity<Angle>> rotateRequest) {
+  private void drive(LinearVelocity xRequest,
+                     LinearVelocity yRequest,
+                     AngularVelocity rotateRequest) {
     // Get requested chassis speeds, correcting for second order kinematics
     desiredChassisSpeeds = AdvancedSwerveKinematics.correctForDynamics(
       new ChassisSpeeds(xRequest, yRequest, rotateRequest)
@@ -1102,7 +1102,7 @@ public static Hardware initializeHardware() {
    * Get inertial velocity of robot
    * @return Inertial velocity of robot in m/s
    */
-  public Measure<Velocity<Distance>> getInertialVelocity() {
+  public LinearVelocity getInertialVelocity() {
     return Units.MetersPerSecond.of(
       Math.hypot(navx.getInputs().xVelocity.in(Units.MetersPerSecond), navx.getInputs().yVelocity.in(Units.MetersPerSecond))
     );
@@ -1112,7 +1112,7 @@ public static Hardware initializeHardware() {
    * Get pitch of robot
    * @return Current pitch angle of robot in degrees
    */
-  public Measure<Angle> getPitch() {
+  public Angle getPitch() {
     // Robot pitch axis is navX pitch axis
     return navx.getInputs().pitchAngle;
   }
@@ -1121,7 +1121,7 @@ public static Hardware initializeHardware() {
    * Get roll of robot
    * @return Current roll angle of robot in degrees
    */
-  public Measure<Angle> getRoll() {
+  public Angle getRoll() {
     // Robot roll axis is navX roll axis
     return navx.getInputs().rollAngle;
   }
@@ -1130,7 +1130,7 @@ public static Hardware initializeHardware() {
    * Return the heading of the robot in degrees
    * @return Current heading of the robot in degrees
    */
-  public Measure<Angle> getAngle() {
+  public Angle getAngle() {
     return navx.getInputs().yawAngle;
   }
 
@@ -1138,7 +1138,7 @@ public static Hardware initializeHardware() {
    * Get rotate rate of robot
    * @return Current rotate rate of robot
    */
-  public Measure<Velocity<Angle>> getRotateRate() {
+  public AngularVelocity getRotateRate() {
     return navx.getInputs().yawRate;
   }
 
