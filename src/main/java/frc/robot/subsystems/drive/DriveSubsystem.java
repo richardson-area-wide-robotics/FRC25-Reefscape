@@ -11,9 +11,9 @@ import java.util.function.Supplier;
 import lombok.Getter;
 import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
-import org.lasarobotics.drive.AdvancedSwerveKinematics;
-import org.lasarobotics.drive.AdvancedSwerveKinematics.ControlCentricity;
-import org.lasarobotics.drive.MAXSwerveModule;
+import org.lasarobotics.drive.swerve.AdvancedSwerveKinematics;
+import org.lasarobotics.drive.swerve.AdvancedSwerveKinematics.ControlCentricity;
+import org.lasarobotics.drive.swerve.child.MAXSwerveModule;
 import org.lasarobotics.drive.RotatePIDController;
 import org.lasarobotics.drive.ThrottleMap;
 import org.lasarobotics.hardware.kauailabs.NavX2;
@@ -52,7 +52,7 @@ import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.measure.Time;
-import edu.wpi.first.units.measure.Units;
+import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Velocity;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -64,7 +64,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-import frc.robot.subsystems.vision.VisionSubsystem;
 
 public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   public static class Hardware {
@@ -270,8 +269,6 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       field.getObject("currentPath").setTrajectory(trajectory);
     });
 
-    // Set VisionSubsystem pose supplier for simulation
-    VisionSubsystem.getInstance().setPoseSupplier(this::getPose);
   }
 
 /**

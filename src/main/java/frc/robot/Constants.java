@@ -6,26 +6,20 @@ package frc.robot;
 
 import org.apache.commons.math3.analysis.interpolation.SplineInterpolator;
 import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
-import org.lasarobotics.drive.AdvancedSwerveKinematics.ControlCentricity;
-import org.lasarobotics.drive.MAXSwerveModule;
+import org.lasarobotics.drive.swerve.AdvancedSwerveKinematics.ControlCentricity;
+import org.lasarobotics.drive.swerve.child.MAXSwerveModule;
 import org.lasarobotics.hardware.kauailabs.NavX2;
 import org.lasarobotics.hardware.revrobotics.Spark;
-//import org.lasarobotics.led.LEDStrip;
 import org.lasarobotics.utils.PIDConstants;
 
-import com.revrobotics.SparkMax;
-import com.revrobotics.SparkBase.IdleMode;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.units.measure.Units;
+import edu.wpi.first.units.Units;
 import frc.robot.subsystems.drive.PurplePathPose;
-import frc.robot.subsystems.vision.AprilTagCamera.Resolution;
 
 
 /**
@@ -76,7 +70,7 @@ public final class Constants {
   }
 
   public static class Drive {
-    public static final PIDConstants DRIVE_ROTATE_PID = new PIDConstants(6.45, 0.0, 0.45, 0.0, 0.0);
+    public static final PIDConstants DRIVE_ROTATE_PID = PIDConstants.of(6.45, 0.0, 0.45, 0.0, 0.0);
     public static final double DRIVE_SLIP_RATIO = 0.05;
     public static final double DRIVE_TURN_SCALAR = 60.0;
     public static final double DRIVE_LOOKAHEAD = 6;
@@ -156,29 +150,6 @@ public final class Constants {
     //public static final LEDStrip.ID LED_STRIP_ID = new LEDStrip.ID("DriveHardware/LEDStrip", 0, 200);
   }
 
-  /** Constants for Vision (Unused 2024)*/
-  public static class VisionHardware {
-    public static final String CAMERA_A_NAME = "Arducam_OV9782_USB_Camera_A";
-    public static final Transform3d CAMERA_A_LOCATION = new Transform3d(
-        new Translation3d(0.381, 0.133, 0.102),
-        new Rotation3d(0.0, Math.toRadians(-20.0), 0.0));
-    public static final Resolution CAMERA_A_RESOLUTION = Resolution.RES_1280_720;
-    public static final Rotation2d CAMERA_A_FOV = Rotation2d.fromDegrees(79.7);
-
-    public static final String CAMERA_B_NAME = "Arducam_OV9782_USB_Camera_B";
-    public static final Transform3d CAMERA_B_LOCATION = new Transform3d(
-        new Translation3d(0.148, 0.2667, 0.47),
-        new Rotation3d(0.0, Math.toRadians(-25.0), Math.toRadians(+180.0)));
-    public static final Resolution CAMERA_B_RESOLUTION = Resolution.RES_1280_720;
-    public static final Rotation2d CAMERA_B_FOV = Rotation2d.fromDegrees(79.7);
-
-    public static final String CAMERA_OBJECT_NAME = "Arducam_OV9782_USB_Camera_C";
-    public static final Transform3d CAMERA_OBJECT_LOCATION = new Transform3d(
-        new Translation3d(0.3, 0.0, 0.5),
-        new Rotation3d(0, Math.toRadians(+15.0), 0));
-    public static final Resolution CAMERA_OBJECT_RESOLUTION = Resolution.RES_1280_720;
-    public static final Rotation2d CAMERA_OBJECT_FOV = Rotation2d.fromDegrees(79.7);
-  }
 
   public static class SmartDashboard {
     public static final String SMARTDASHBOARD_DEFAULT_TAB = "SmartDashboard";
@@ -218,8 +189,8 @@ public final class Constants {
 
     public static final int kKickerMotorCurrentLimit = 60;
     public static final int kShooterMotorCurrentLimit = 60;
-    public static final CANSparkBase.IdleMode kShooterMotorIdleMode = IdleMode.kCoast;
-    public static final CANSparkBase.IdleMode kKickerMotorIdleMode = IdleMode.kCoast;
+    public static final IdleMode kShooterMotorIdleMode = IdleMode.kCoast;
+    public static final IdleMode kKickerMotorIdleMode = IdleMode.kCoast;
 
     public static final boolean kKickerMotorInvert = false;
     public static final boolean kShooterLeftMotorInverted = true;
