@@ -167,8 +167,8 @@ public class PurplePathClient {
       new GoalEndState(
         isClose ? 0.0
                 : Math.min(
-                    Math.sqrt(2 * m_driveSubsystem.getPathConstraints().getMaxAccelerationMpsSq() * finalApproachDistance) * FINAL_APPROACH_SPEED_FUDGE_FACTOR,
-                    Math.sqrt(2 * m_driveSubsystem.getPathConstraints().getMaxAccelerationMpsSq() * distance)
+                    Math.sqrt(2 * m_driveSubsystem.getPathConstraints().maxAccelerationMPSSq() * finalApproachDistance) * FINAL_APPROACH_SPEED_FUDGE_FACTOR,
+                    Math.sqrt(2 * m_driveSubsystem.getPathConstraints().maxAccelerationMPSSq() * distance)
                 ),
         finalApproachPose.getRotation()
       )

@@ -66,6 +66,7 @@ import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Mass;
+import edu.wpi.first.units.measure.MutLinearVelocity;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.LinearAcceleration;
 import org.lasarobotics.drive.swerve.DriveWheel;
@@ -203,7 +204,7 @@ public DriveSubsystem(Hardware drivetrainHardware, PIDConstants pidf, ControlCen
     this.rRearModule = drivetrainHardware.rRearModule;
 
     // Drivetrain constants
-    DRIVE_MAX_LINEAR_SPEED = drivetrainHardware.lFrontModule.getMaxLinearSpeed();
+    DRIVE_MAX_LINEAR_SPEED = drivetrainHardware.lFrontModule.getMaxLinearVelocity();
     DRIVE_AUTO_ACCELERATION = DRIVE_MAX_LINEAR_SPEED
         .per(Units.Second)
         .minus(Units.MetersPerSecondPerSecond.of(1.0));
@@ -220,7 +221,7 @@ public DriveSubsystem(Hardware drivetrainHardware, PIDConstants pidf, ControlCen
     //    DRIVE_MAX_LINEAR_SPEED.in(Units.MetersPerSecond),
     //    lFrontModule.getModuleCoordinate().getNorm(),
     //    new ReplanningConfig(),
-        GlobalConstants.ROBOT_LOOP_PERIOD
+        GlobalConstants.ROBOT_LOOP_PERIOD;
     );
 
     // NavX calibration
@@ -689,11 +690,11 @@ public static Hardware initializeHardware() {
   public void periodic() {
     // This method will be called once per scheduler run
     // Filter inertial velocity
-    navx.getInputs().xVelocity = Units.MetersPerSecond.of(
-      xVelocityFilter.calculate(navx.getInputs().xVelocity.in(Units.MetersPerSecond))
+    navx.getInputs().velocityX = (MutLinearVelocity) Units.MetersPerSecond.of(
+      xVelocityFilter.calculate(navx.getInputs().velocityX.in(Units.MetersPerSecond))
     );
-    navx.getInputs().yVelocity = Units.MetersPerSecond.of(
-      yVelocityFilter.calculate(navx.getInputs().yVelocity.in(Units.MetersPerSecond))
+    navx.getInputs().velocityY = (MutLinearVelocity) Units.MetersPerSecond.of(
+      yVelocityFilter.calculate(navx.getInputs().velocityY.in(Units.MetersPerSecond))
     );
 
     if (RobotBase.isSimulation()) return;
