@@ -118,17 +118,18 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   public static final Translation2d AIM_OFFSET = new Translation2d(0.0, -0.5);
   public final LinearVelocity DRIVE_MAX_LINEAR_SPEED;
   public final LinearAcceleration DRIVE_AUTO_ACCELERATION;
+  private final AdvancedSwerveKinematics advancedKinematics = new AdvancedSwerveKinematics();
+  private final ProfiledPIDController autoAimPIDControllerFront;
+  private final ProfiledPIDController autoAimPIDControllerBack;
+  private final MedianFilter xVelocityFilter;
+  private final MedianFilter yVelocityFilter;
 
   // Other settings
-  private static final int INERTIAL_VELOCITY_FILTER_TAPS = 100;
-  private static final double TOLERANCE = 1.5;
   private static final double TIP_THRESHOLD = 35.0;
   private static final double BALANCED_THRESHOLD = 10.0;
   private static final double AIM_VELOCITY_COMPENSATION_FUDGE_FACTOR = 0.1;
   private static final Matrix<N3, N1> ODOMETRY_STDDEV = VecBuilder.fill(0.03, 0.03, Math.toRadians(1.0));
   private static final Matrix<N3, N1> VISION_STDDEV = VecBuilder.fill(1.0, 1.0, Math.toRadians(3.0));
-  private static final PIDConstants AUTO_AIM_PID = PIDConstants.of(10.0, 0.0, 0.5, 0.0, 0.0);
-  private static final TrapezoidProfile.Constraints AIM_PID_CONSTRAINT = new TrapezoidProfile.Constraints(2160.0, 4320.0);
     // Log
   private static final String POSE_LOG_ENTRY = "/Pose";
   private static final String ACTUAL_SWERVE_STATE_LOG_ENTRY = "/ActualSwerveState";
@@ -137,12 +138,9 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
 
   private final ThrottleMap throttleMap;
   private final RotatePIDController rotatePIDController;
-  private final ProfiledPIDController autoAimPIDControllerFront;
-  private final ProfiledPIDController autoAimPIDControllerBack;
   @Getter
   private final SwerveDriveKinematics kinematics;
   private final SwerveDrivePoseEstimator poseEstimator;
-  private final AdvancedSwerveKinematics advancedKinematics;
 
   public final NavX2 navx;
   private final REVSwerveModule lFrontModule;
@@ -154,13 +152,9 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   private ControlCentricity controlCentricity;
   private ChassisSpeeds desiredChassisSpeeds;
   private boolean isTractionControlEnabled = true;
-  private final Rotation2d allianceCorrection;
   private Pose2d m_previousPose;
   private Rotation2d currentHeading;
-  private final PurplePathClient purplePathClient;
   private final Field2d field;
-  private final MedianFilter xVelocityFilter;
-  private final MedianFilter yVelocityFilter;
 
   private Alliance currentAlliance;
 
@@ -221,7 +215,6 @@ public DriveSubsystem(Hardware drivetrainHardware, PIDConstants pidf, ControlCen
     //    DRIVE_MAX_LINEAR_SPEED.in(Units.MetersPerSecond),
     //    lFrontModule.getModuleCoordinate().getNorm(),
     //    new ReplanningConfig(),
-        GlobalConstants.ROBOT_LOOP_PERIOD;
     );
 
     // NavX calibration
@@ -389,7 +382,7 @@ public static Hardware initializeHardware() {
     // Convert speeds to module states, correcting for 2nd order kinematics
     SwerveModuleState[] moduleStates = advancedKinematics.toSwerveModuleStates(
             desiredChassisSpeeds,
-      getPose().getRotation().plus(allianceCorrection),
+      getPose().getRotation(),
       controlCentricity
     );
 
@@ -418,7 +411,7 @@ public static Hardware initializeHardware() {
     // Convert speeds to module states, correcting for 2nd order kinematics
     SwerveModuleState[] moduleStates = advancedKinematics.toSwerveModuleStates(
             desiredChassisSpeeds,
-      getPose().getRotation().plus(allianceCorrection),
+      getPose().getRotation(),
             ControlCentricity.ROBOT_CENTRIC
     );
 
@@ -483,7 +476,6 @@ public static Hardware initializeHardware() {
   private void smartDashboard() {
     field.setRobotPose(getPose());
     SmartDashboard.putBoolean("TC", isTractionControlEnabled);
-    SmartDashboard.putBoolean("PurplePath", purplePathClient.isConnected());
     SmartDashboard.putBoolean("FC", controlCentricity.equals(ControlCentricity.FIELD_CENTRIC));
   }
 
@@ -496,8 +488,8 @@ public static Hardware initializeHardware() {
 
     // Drive to counter tipping motion
     drive(
-            DRIVE_MAX_LINEAR_SPEED.divide(4).times(Math.cos(direction)),
-      DRIVE_MAX_LINEAR_SPEED.divide(4).times(Math.sin(direction)),
+            DRIVE_MAX_LINEAR_SPEED.div(4).times(Math.cos(direction)),
+      DRIVE_MAX_LINEAR_SPEED.div(4).times(Math.sin(direction)),
       Units.DegreesPerSecond.of(0.0)
     );
   }
@@ -515,16 +507,16 @@ public static Hardware initializeHardware() {
     // Calculate desired robot velocity
     double moveRequest = Math.hypot(xRequest, yRequest);
     double moveDirection = Math.atan2(yRequest, xRequest);
-    double velocityOutput = throttleMap.throttleLookup(moveRequest);
+    LinearVelocity velocityOutput = throttleMap.throttleLookup(moveRequest);
 
     // Drive normally and return if invalid point
     if (point == null) {
-      double rotateOutput = -rotatePIDController.calculate(getAngle(), getRotateRate(), rotateRequest);
+      AngularVelocity rotateOutput = rotatePIDController.calculate(getAngle(), getRotateRate(), rotateRequest).unaryMinus();
       drive(
         controlCentricity,
-        Units.MetersPerSecond.of(-velocityOutput * Math.cos(moveDirection)),
-        Units.MetersPerSecond.of(-velocityOutput * Math.sin(moveDirection)),
-        Units.DegreesPerSecond.of(rotateOutput),
+        velocityOutput.unaryMinus().times(Math.cos(moveDirection)),
+        velocityOutput.unaryMinus().times(Math.sin(moveDirection)),
+        rotateOutput,
         getInertialVelocity()
       );
       return;
@@ -552,7 +544,7 @@ public static Hardware initializeHardware() {
     Rotation2d adjustedAngle = new Rotation2d(adjustedPoint.getX() - currentPose.getX(), adjustedPoint.getY() - currentPose.getY());
     // Calculate necessary rotate rate
     double rotateOutput = reversed
-      ? autoAimPIDControllerBack.calculate(currentPose.getRotation().plus(GlobalConstants.ROTATION_PI).getDegrees(), adjustedAngle.getDegrees())
+      ? autoAimPIDControllerBack.calculate(currentPose.getRotation().plus(Rotation2d.fromRadians(Math.PI)).getDegrees(), adjustedAngle.getDegrees())
       : autoAimPIDControllerFront.calculate(currentPose.getRotation().getDegrees(), adjustedAngle.getDegrees());
 
     // Log aim point
@@ -563,8 +555,8 @@ public static Hardware initializeHardware() {
     // Drive robot accordingly
     drive(
       controlCentricity,
-      Units.MetersPerSecond.of(-velocityOutput * Math.cos(moveDirection)),
-      Units.MetersPerSecond.of(-velocityOutput * Math.sin(moveDirection)),
+      velocityOutput.unaryMinus().times(Math.cos(moveDirection)),
+      velocityOutput.unaryMinus().times(Math.sin(moveDirection)),
       Units.DegreesPerSecond.of(rotateOutput),
       getInertialVelocity()
     );
@@ -585,7 +577,7 @@ public static Hardware initializeHardware() {
 
     // Get throttle and rotate output
     LinearVelocity velocityOutput = throttleMap.throttleLookup(moveRequest);
-    AngularVelocity rotateOutput = rotatePIDController.calculate(getAngle(), getRotateRate(), rotateRequest).negate();
+    AngularVelocity rotateOutput = rotatePIDController.calculate(getAngle(), getRotateRate(), rotateRequest).unaryMinus();
 
     // Update auto-aim controllers
     autoAimPIDControllerFront.calculate(

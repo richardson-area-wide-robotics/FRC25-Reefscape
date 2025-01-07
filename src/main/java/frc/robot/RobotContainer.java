@@ -44,8 +44,6 @@ public class RobotContainer {
     // Register named commands
     registerNamedCommands();
 
-    // Set up AutoBuilder
-    DRIVE_SUBSYSTEM.configureAutoBuilder();
 
     // Bind buttons and triggers
     configureBindings();
