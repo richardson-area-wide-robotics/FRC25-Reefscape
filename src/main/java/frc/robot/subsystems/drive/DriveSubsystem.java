@@ -126,7 +126,6 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   private static final Matrix<N3, N1> VISION_STDDEV = VecBuilder.fill(1.0, 1.0, Math.toRadians(3.0));
   private static final PIDConstants AUTO_AIM_PID = new PIDConstants(10.0, 0.0, 0.5, 0.0, 0.0, GlobalConstants.ROBOT_LOOP_PERIOD);
   private static final TrapezoidProfile.Constraints AIM_PID_CONSTRAINT = new TrapezoidProfile.Constraints(2160.0, 4320.0);
-
     // Log
   private static final String POSE_LOG_ENTRY = "/Pose";
   private static final String ACTUAL_SWERVE_STATE_LOG_ENTRY = "/ActualSwerveState";
@@ -213,12 +212,12 @@ public DriveSubsystem(Hardware drivetrainHardware, PIDConstants pidf, ControlCen
     this.rotatePIDController = new RotatePIDController(turnInputCurve, pidf, turnScalar, deadband, lookAhead);
 
     // Path follower configuration
-    this.pathFollowerConfig = new HolonomicPathFollowerConfig(
-        new com.pathplanner.lib.util.PIDConstants(3.1, 0.0, 0.0),
-        new com.pathplanner.lib.util.PIDConstants(5.0, 0.0, 0.1),
-        DRIVE_MAX_LINEAR_SPEED.in(Units.MetersPerSecond),
-        lFrontModule.getModuleCoordinate().getNorm(),
-        new ReplanningConfig(),
+    //this.pathFollowerConfig = new HolonomicPathFollowerConfig(
+    //    new com.pathplanner.lib.util.PIDConstants(3.1, 0.0, 0.0),
+    //    new com.pathplanner.lib.util.PIDConstants(5.0, 0.0, 0.1),
+    //    DRIVE_MAX_LINEAR_SPEED.in(Units.MetersPerSecond),
+    //    lFrontModule.getModuleCoordinate().getNorm(),
+    //    new ReplanningConfig(),
         GlobalConstants.ROBOT_LOOP_PERIOD
     );
 
@@ -640,26 +639,6 @@ public static Hardware initializeHardware() {
   }
 
   /**
-   * Call method during initialization of disabled mode to set motors to brake mode
-   */
-  public void disabledInit() {
-    lFrontModule.disabledInit();
-    rFrontModule.disabledInit();
-    lRearModule.disabledInit();
-    rRearModule.disabledInit();
-  }
-
-  /**
-   * Call method when exiting disabled mode to set motors to coast mode
-   */
-  public void disabledExit() {
-    lFrontModule.disabledExit();
-    rFrontModule.disabledExit();
-    lRearModule.disabledExit();
-    rRearModule.disabledExit();
-  }
-
-  /**
    * Toggle traction control
    */
   private void toggleTractionControl() {
@@ -723,16 +702,6 @@ public static Hardware initializeHardware() {
 
   @Override
   public void simulationPeriodic() {
-    // This method will be called once per scheduler run in simulation
-    double randomNoise = ThreadLocalRandom.current().nextDouble(0.8, 1.0);
-    navx.getInputs().xVelocity = Units.MetersPerSecond.of(desiredChassisSpeeds.vxMetersPerSecond * randomNoise);
-    navx.getInputs().yVelocity = Units.MetersPerSecond.of(desiredChassisSpeeds.vyMetersPerSecond * randomNoise);
-    navx.getInputs().yawRate = Units.RadiansPerSecond.of(desiredChassisSpeeds.omegaRadiansPerSecond * randomNoise);
-
-    int yawDriftDirection = ThreadLocalRandom.current().nextDouble(1.0) < 0.5 ? -1 : +1;
-    double angle = navx.getSimAngle() - Math.toDegrees(desiredChassisSpeeds.omegaRadiansPerSecond * randomNoise) * GlobalConstants.ROBOT_LOOP_PERIOD
-                   + (NAVX2_YAW_DRIFT_RATE.in(Units.DegreesPerSecond) * GlobalConstants.ROBOT_LOOP_PERIOD * yawDriftDirection);
-    navx.setSimAngle(angle);
 
     updatePose();
     smartDashboard();
