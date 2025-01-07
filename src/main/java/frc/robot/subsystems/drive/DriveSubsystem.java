@@ -509,7 +509,7 @@ public static Hardware initializeHardware() {
     // Angle to target point
     Rotation2d targetAngle = new Rotation2d(point.getX() - currentPose.getX(), point.getY() - currentPose.getY());
     // Movement vector of robot
-    Vector2D robotVector = new Vector2D(velocityOutput * currentHeading.getCos(), velocityOutput * currentHeading.getSin());
+    Vector2D robotVector = new Vector2D(velocityOutput.times(currentHeading.getCos()).magnitude(), velocityOutput.times(currentHeading.getSin()).magnitude());
     // Aim point
     Translation2d aimPoint = point.minus(new Translation2d(robotVector.getX(), robotVector.getY()));
     // Vector from robot to target
