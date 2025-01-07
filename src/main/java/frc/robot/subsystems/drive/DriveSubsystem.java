@@ -215,7 +215,7 @@ public DriveSubsystem(Hardware drivetrainHardware, PIDConstants pidf, ControlCen
     //    DRIVE_MAX_LINEAR_SPEED.in(Units.MetersPerSecond),
     //    lFrontModule.getModuleCoordinate().getNorm(),
     //    new ReplanningConfig(),
-    );
+    //);
 
     // NavX calibration
     while (navx.isCalibrating()) stop();
@@ -689,23 +689,6 @@ public static Hardware initializeHardware() {
     logOutputs();
   }
 
-  /**
-   * Configure the auto builder
-   */
-  public void configureAutoBuilder() {
-    AutoBuilder.configureHolonomic(
-      this::getPose,
-      this::resetPose,
-      this::getChassisSpeeds,
-      this::autoDrive,
-            pathFollowerConfig,
-      () -> {
-        var alliance = DriverStation.getAlliance();
-          return alliance.filter(value -> value == Alliance.Red).isPresent();
-      },
-      this
-    );
-  }
 
   public Alliance getAlliance() {
     return currentAlliance;
