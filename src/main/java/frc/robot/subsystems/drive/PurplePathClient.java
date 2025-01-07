@@ -27,6 +27,7 @@ import com.pathplanner.lib.path.RotationTarget;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -167,8 +168,8 @@ public class PurplePathClient {
       new GoalEndState(
         isClose ? 0.0
                 : Math.min(
-                    Math.sqrt(2 * m_driveSubsystem.getPathConstraints().maxAccelerationMPSSq() * finalApproachDistance) * FINAL_APPROACH_SPEED_FUDGE_FACTOR,
-                    Math.sqrt(2 * m_driveSubsystem.getPathConstraints().maxAccelerationMPSSq() * distance)
+                    Math.sqrt(2 * m_driveSubsystem.getPathConstraints().maxVelocity() * finalApproachDistance) * FINAL_APPROACH_SPEED_FUDGE_FACTOR,
+                    Math.sqrt(2 * m_driveSubsystem.getPathConstraints().maxVelocity() * distance)
                 ),
         finalApproachPose.getRotation()
       )
