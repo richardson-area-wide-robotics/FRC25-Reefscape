@@ -23,9 +23,8 @@ public class Robot extends LoggedRobot {
   private Command autonomousCommand;
 
   private RobotContainer robotContainer;
-
   public Robot() {
-    super(GlobalConstants.ROBOT_LOOP_HZ);
+    super(50);
   }
 
   @Override

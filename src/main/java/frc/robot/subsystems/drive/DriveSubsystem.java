@@ -60,10 +60,12 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.MassUnit;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.units.measure.Mass;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.LinearAcceleration;
 import org.lasarobotics.drive.swerve.DriveWheel;
@@ -124,7 +126,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   private static final double AIM_VELOCITY_COMPENSATION_FUDGE_FACTOR = 0.1;
   private static final Matrix<N3, N1> ODOMETRY_STDDEV = VecBuilder.fill(0.03, 0.03, Math.toRadians(1.0));
   private static final Matrix<N3, N1> VISION_STDDEV = VecBuilder.fill(1.0, 1.0, Math.toRadians(3.0));
-  private static final PIDConstants AUTO_AIM_PID = new PIDConstants(10.0, 0.0, 0.5, 0.0, 0.0, GlobalConstants.ROBOT_LOOP_PERIOD);
+  private static final PIDConstants AUTO_AIM_PID = PIDConstants.of(10.0, 0.0, 0.5, 0.0, 0.0);
   private static final TrapezoidProfile.Constraints AIM_PID_CONSTRAINT = new TrapezoidProfile.Constraints(2160.0, 4320.0);
     // Log
   private static final String POSE_LOG_ENTRY = "/Pose";
@@ -208,7 +210,7 @@ public DriveSubsystem(Hardware drivetrainHardware, PIDConstants pidf, ControlCen
 
     // Input curves and controllers
     this.controlCentricity = controlCentricity;
-    this.throttleMap = new ThrottleMap(throttleInputCurve, DRIVE_MAX_LINEAR_SPEED, deadband);
+    this.throttleMap = new ThrottleMap(throttleInputCurve, DRIVE_MAX_LINEAR_SPEED, Dimensionless.ofBaseUnits(deadband, Units.Watts));
     this.rotatePIDController = new RotatePIDController(turnInputCurve, pidf, turnScalar, deadband, lookAhead);
 
     // Path follower configuration
@@ -297,8 +299,8 @@ public static Hardware initializeHardware() {
     PIDConstants.of(1, 1, 1,1,1), // Replace with actual PID constants
     FFConstants.of(1,1,1,1),  // Replace with actual feed-forward constants
     Dimensionless.in(Constants.Drive.DRIVE_SLIP_RATIO),
-    new Mass(ROBOT_MASS), // Replace with actual mass value
-    new Distance(DRIVE_WHEELBASE),
+    Mass.ofBaseUnits(100, Units.Pounds), // Replace with actual mass value
+    Distance.ofBaseUnits(DRIVE_WHEELBASE, Units.Inch),
     new Distance(DRIVE_TRACK_WIDTH),
     new Time(AUTO_LOCK_TIME),
     new Current(DRIVE_CURRENT_LIMIT)
@@ -1021,7 +1023,7 @@ public static Hardware initializeHardware() {
    */
   public LinearVelocity getInertialVelocity() {
     return Units.MetersPerSecond.of(
-      Math.hypot(navx.getInputs().xVelocity.in(Units.MetersPerSecond), navx.getInputs().yVelocity.in(Units.MetersPerSecond))
+      Math.hypot(navx.getInputs().velocityX.in(Units.MetersPerSecond), navx.getInputs().velocityY.in(Units.MetersPerSecond))
     );
   }
 
