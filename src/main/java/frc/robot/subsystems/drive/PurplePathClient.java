@@ -62,7 +62,7 @@ public class PurplePathClient {
 
     // Start connectivity check thread
     m_periodicNotifier.setName(getClass().getSimpleName());
-    m_periodicNotifier.startPeriodic(GlobalConstants.ROBOT_LOOP_PERIOD);
+    m_periodicNotifier.startPeriodic(50);
   }
 
   /**
