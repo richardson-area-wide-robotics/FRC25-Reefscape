@@ -958,7 +958,7 @@ public static Hardware initializeHardware() {
    * Reset DriveSubsystem turn PID
    */
   public void resetRotatePID() {
-    rotatePIDController.setSetpoint(getAngle().in(Units.Degrees));
+    rotatePIDController.setSetpoint(getAngle());
     rotatePIDController.reset();
   }
 
