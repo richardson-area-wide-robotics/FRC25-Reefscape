@@ -570,21 +570,7 @@ public static Hardware initializeHardware() {
     );
   }
 
-  /**
-   * Aim robot by given angle
-   * @param angle Desired angle in degrees
-   */
-  private void aimAtAngle(double angle) {
-    double rotateOutput = rotatePIDController.calculate(getAngle().in(Units.Degrees), getAngle().in(Units.Degrees) + angle);
 
-    drive(
-            controlCentricity,
-      Units.MetersPerSecond.of(0),
-      Units.MetersPerSecond.of(0),
-      Units.DegreesPerSecond.of(rotateOutput),
-      getInertialVelocity()
-    );
-  }
 
   /**
    * Call this repeatedly to drive using PID during teleoperation
@@ -830,13 +816,6 @@ public static Hardware initializeHardware() {
     return aimAtPointCommand(() -> 0.0, () -> 0.0, () -> 0.0, () -> point, reversed, velocityCorrection);
   }
 
-  /**
-   * Change robot aim by desired angle
-   * @return Command that aims robot
-   */
-  public Command aimAtAngleCommand(DoubleSupplier angleRequestSupplier) {
-    return run(() -> aimAtAngle(angleRequestSupplier.getAsDouble()));
-  }
 
   /**
    * Drive the robot
