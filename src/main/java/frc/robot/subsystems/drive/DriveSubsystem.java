@@ -880,23 +880,6 @@ public static Hardware initializeHardware() {
     return runOnce(() -> resetPose(poseSupplier.get()));
   }
 
-
-  /**
-   * Go to goal pose
-   * @param goal Desired goal pose
-   * @param parallelCommand Command to run in parallel on final approach
-   * @param endCommand Command to run after goal is reached
-   * @return Command that will drive robot to the desired pose
-   */
-  public Command goToPoseCommand(PurplePathPose goal, Command parallelCommand, Command endCommand) {
-    goal.calculateFinalApproach(getPathConstraints());
-    return Commands.sequence(
-      defer(() -> purplePathClient.getTrajectoryCommand(goal, parallelCommand).finallyDo(this::resetRotatePID)),
-      stopCommand(),
-      Commands.parallel(driveCommand(() -> 0.0, () -> 0.0, () -> 0.0), endCommand)
-    );
-  }
-
   /**
    * @return Command to aim a point on the field in robot centric mode
    */
@@ -915,15 +898,6 @@ public static Hardware initializeHardware() {
             this::resetRotatePID
     );
 
-  }
-
-  /**
-   * Go to goal pose
-   * @param goal Desired goal pose
-   * @return Command that will drive robot to the desired pose
-   */
-  public Command goToPoseCommand(PurplePathPose goal) {
-    return goToPoseCommand(goal, Commands.none(), Commands.none());
   }
 
   /**
