@@ -598,8 +598,8 @@ public static Hardware initializeHardware() {
     double moveDirection = Math.atan2(yRequest, xRequest);
 
     // Get throttle and rotate output
-    double velocityOutput = throttleMap.throttleLookup(moveRequest);
-    double rotateOutput = -rotatePIDController.calculate(getAngle(), getRotateRate(), rotateRequest);
+    LinearVelocity velocityOutput = throttleMap.throttleLookup(moveRequest);
+    AngularVelocity rotateOutput = rotatePIDController.calculate(getAngle(), getRotateRate(), rotateRequest).negate();
 
     // Update auto-aim controllers
     autoAimPIDControllerFront.calculate(
@@ -607,16 +607,16 @@ public static Hardware initializeHardware() {
       getPose().getRotation().getDegrees()
     );
     autoAimPIDControllerBack.calculate(
-      getPose().getRotation().plus(GlobalConstants.ROTATION_PI).getDegrees(),
-      getPose().getRotation().plus(GlobalConstants.ROTATION_PI).getDegrees()
+      getPose().getRotation().plus(Rotation2d.fromRadians(Math.PI)).getDegrees(),
+      getPose().getRotation().plus(Rotation2d.fromRadians(Math.PI)).getDegrees()
     );
 
     // Drive robot
     drive(
             controlCentricity,
-      Units.MetersPerSecond.of(-velocityOutput * Math.cos(moveDirection)),
-      Units.MetersPerSecond.of(-velocityOutput * Math.sin(moveDirection)),
-      Units.DegreesPerSecond.of(rotateOutput),
+      velocityOutput.unaryMinus().times(Math.cos(moveDirection)),
+      velocityOutput.unaryMinus().times(Math.sin(moveDirection)),
+      rotateOutput,
       getInertialVelocity()
     );
   }
@@ -763,8 +763,8 @@ public static Hardware initializeHardware() {
       getPose().getRotation().getDegrees()
     );
     autoAimPIDControllerBack.calculate(
-      getPose().getRotation().plus(GlobalConstants.ROTATION_PI).getDegrees(),
-      getPose().getRotation().plus(GlobalConstants.ROTATION_PI).getDegrees()
+      getPose().getRotation().plus(Rotation2d.fromRadians(Math.PI)).getDegrees(),
+      getPose().getRotation().plus(Rotation2d.fromRadians(Math.PI)).getDegrees()
     );
   }
 
