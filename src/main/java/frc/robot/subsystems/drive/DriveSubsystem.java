@@ -94,7 +94,6 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   public static final Time AUTO_LOCK_TIME = Units.Seconds.of(3.0);
   public static final Time MAX_SLIPPING_TIME = Units.Seconds.of(1.2);
   public static final Current DRIVE_CURRENT_LIMIT = Units.Amps.of(60.0);
-  public static final AngularVelocity NAVX2_YAW_DRIFT_RATE = Units.DegreesPerSecond.of(0.5 / 60);
   public static final AngularVelocity DRIVE_ROTATE_VELOCITY = Units.RadiansPerSecond.of(12 * Math.PI);
   public static final AngularVelocity AIM_VELOCITY_THRESHOLD = Units.DegreesPerSecond.of(5.0);
   public static final AngularAcceleration DRIVE_ROTATE_ACCELERATION = Units.RadiansPerSecond.of(4 * Math.PI).per(Units.Second);
@@ -138,8 +137,6 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   private Pose2d m_previousPose;
   private Rotation2d currentHeading;
   private final Field2d field;
-
-  private Alliance currentAlliance;
 
   public final Command ANTI_TIP_COMMAND = new FunctionalCommand(
     () -> LEDSubsystem.getInstance().startOverride(Pattern.RED_STROBE),
@@ -670,11 +667,6 @@ public static Hardware initializeHardware() {
     updatePose();
     smartDashboard();
     logOutputs();
-  }
-
-
-  public Alliance getAlliance() {
-    return currentAlliance;
   }
 
   /**
