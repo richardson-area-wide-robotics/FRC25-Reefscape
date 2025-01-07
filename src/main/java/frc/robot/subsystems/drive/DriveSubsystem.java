@@ -14,22 +14,32 @@ import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 import org.lasarobotics.drive.swerve.AdvancedSwerveKinematics;
 import org.lasarobotics.drive.swerve.AdvancedSwerveKinematics.ControlCentricity;
 import org.lasarobotics.drive.swerve.child.MAXSwerveModule;
+import org.lasarobotics.drive.swerve.parent.REVSwerveModule;
+import org.lasarobotics.drive.swerve.SwerveModule;
+import org.lasarobotics.hardware.revrobotics.Spark;
 import org.lasarobotics.drive.RotatePIDController;
 import org.lasarobotics.drive.ThrottleMap;
 import org.lasarobotics.hardware.kauailabs.NavX2;
 import org.lasarobotics.hardware.revrobotics.Spark.MotorKind;
 import org.lasarobotics.led.LEDStrip.Pattern;
 import org.lasarobotics.led.LEDSubsystem;
+import org.lasarobotics.utils.FFConstants;
 import org.lasarobotics.utils.GlobalConstants;
 import org.lasarobotics.utils.PIDConstants;
 import org.littletonrobotics.junction.Logger;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathConstraints;
-import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PathPlannerLogging;
-import com.pathplanner.lib.util.ReplanningConfig;
 
+import edu.wpi.first.math.geometry.Rotation2d;      // For handling rotations
+import edu.wpi.first.math.geometry.Translation2d;    // For handling 2D translations
+import edu.wpi.first.math.kinematics.DifferentialDriveKinematics; // For kinematics
+import edu.wpi.first.wpilibj.motorcontrol.MotorController; // For motor controllers
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard; // For dashboard integration
+import edu.wpi.first.wpilibj.Timer;                    // For timing operations
+import edu.wpi.first.wpilibj.simulation.SimDeviceSim;  // For simulation support
+import edu.wpi.first.units.measure.Dimensionless;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -52,10 +62,16 @@ import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.measure.Time;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.units.measure.AngularAcceleration;
+import edu.wpi.first.units.measure.LinearAcceleration;
+import org.lasarobotics.drive.swerve.DriveWheel;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Velocity;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -68,16 +84,16 @@ import frc.robot.Constants;
 public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   public static class Hardware {
     NavX2 navx;
-    MAXSwerveModule lFrontModule;
-    MAXSwerveModule rFrontModule;
-    MAXSwerveModule lRearModule;
-    MAXSwerveModule rRearModule;
+    REVSwerveModule lFrontModule;
+    REVSwerveModule rFrontModule;
+    REVSwerveModule lRearModule;
+    REVSwerveModule rRearModule;
 
     public Hardware(NavX2 navx,
-                    MAXSwerveModule lFrontModule,
-                    MAXSwerveModule rFrontModule,
-                    MAXSwerveModule lRearModule,
-                    MAXSwerveModule rRearModule) {
+          REVSwerveModule lFrontModule,
+          REVSwerveModule rFrontModule,
+          REVSwerveModule lRearModule,
+          REVSwerveModule rRearModule) {
       this.navx = navx;
       this.lFrontModule = lFrontModule;
       this.rFrontModule = rFrontModule;
@@ -126,14 +142,11 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   private final SwerveDrivePoseEstimator poseEstimator;
   private final AdvancedSwerveKinematics advancedKinematics;
 
-  @Getter
-  private final HolonomicPathFollowerConfig pathFollowerConfig;
-
   public final NavX2 navx;
-  private final MAXSwerveModule lFrontModule;
-  private final MAXSwerveModule rFrontModule;
-  private final MAXSwerveModule lRearModule;
-  private final MAXSwerveModule rRearModule;
+  private final REVSwerveModule lFrontModule;
+  private final REVSwerveModule rFrontModule;
+  private final REVSwerveModule lRearModule;
+  private final REVSwerveModule rRearModule;
 
 
   private ControlCentricity controlCentricity;
@@ -163,120 +176,97 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   );
 
   /**
-   * Create an instance of DriveSubsystem
-   * <p>
-   * NOTE: ONLY ONE INSTANCE SHOULD EXIST AT ANY TIME!
-   * <p>
-   * @param drivetrainHardware Hardware devices required by drivetrain
-   * @param pidf PID constants
-   * @param controlCentricity Control centricity
-   * @param throttleInputCurve Spline function characterising throttle input
-   * @param turnInputCurve Spline function characterising turn input
-   * @param turnScalar Scalar for turn input (degrees)
-   * @param deadband Deadband for controller input [+0.001, +0.2]
-   * @param lookAhead Rotate PID lookahead, in number of loops
-   */
-  public DriveSubsystem(Hardware drivetrainHardware, PIDConstants pidf, ControlCentricity controlCentricity,
-                        PolynomialSplineFunction throttleInputCurve, PolynomialSplineFunction turnInputCurve,
-                        double turnScalar, double deadband, double lookAhead) {
-    setSubsystem(getClass().getSimpleName());
-    DRIVE_MAX_LINEAR_SPEED = drivetrainHardware.lFrontModule.getMaxLinearSpeed();
-    DRIVE_AUTO_ACCELERATION = DRIVE_MAX_LINEAR_SPEED.per(Units.Second).minus(Units.MetersPerSecondPerSecond.of(1.0));
+ * DriveSubsystem constructor for managing a swerve drivetrain.
+ *
+ * @param drivetrainHardware Hardware devices required by drivetrain.
+ * @param pidf PID constants for the drive system.
+ * @param controlCentricity Control centricity configuration.
+ * @param throttleInputCurve Spline function for throttle input.
+ * @param turnInputCurve Spline function for turn input.
+ * @param turnScalar Scalar for turn input (degrees).
+ * @param deadband Deadband for controller input [+0.001, +0.2].
+ * @param lookAhead Rotate PID lookahead, in number of loops.
+ */
+public DriveSubsystem(Hardware drivetrainHardware, PIDConstants pidf, ControlCentricity controlCentricity,
+                      PolynomialSplineFunction throttleInputCurve, PolynomialSplineFunction turnInputCurve,
+                      double turnScalar, double deadband, double lookAhead) {
+
+    // Initialize subsystem name
+    setSubsystem(this.getClass().getSimpleName());
+
+    // Drivetrain hardware setup
     this.navx = drivetrainHardware.navx;
     this.lFrontModule = drivetrainHardware.lFrontModule;
     this.rFrontModule = drivetrainHardware.rFrontModule;
     this.lRearModule = drivetrainHardware.lRearModule;
     this.rRearModule = drivetrainHardware.rRearModule;
+
+    // Drivetrain constants
+    DRIVE_MAX_LINEAR_SPEED = drivetrainHardware.lFrontModule.getMaxLinearSpeed();
+    DRIVE_AUTO_ACCELERATION = DRIVE_MAX_LINEAR_SPEED
+        .per(Units.Second)
+        .minus(Units.MetersPerSecondPerSecond.of(1.0));
+
+    // Input curves and controllers
     this.controlCentricity = controlCentricity;
     this.throttleMap = new ThrottleMap(throttleInputCurve, DRIVE_MAX_LINEAR_SPEED, deadband);
     this.rotatePIDController = new RotatePIDController(turnInputCurve, pidf, turnScalar, deadband, lookAhead);
-    this.pathFollowerConfig = new HolonomicPathFollowerConfig(
-      new com.pathplanner.lib.util.PIDConstants(3.1, 0.0, 0.0),
-      new com.pathplanner.lib.util.PIDConstants(5.0, 0.0, 0.1),
-      DRIVE_MAX_LINEAR_SPEED.in(Units.MetersPerSecond),
-      lFrontModule.getModuleCoordinate().getNorm(),
-      new ReplanningConfig(),
-      GlobalConstants.ROBOT_LOOP_PERIOD
-    );
-    this.allianceCorrection = GlobalConstants.ROTATION_ZERO;
-    this.xVelocityFilter = new MedianFilter(INERTIAL_VELOCITY_FILTER_TAPS);
-    this.yVelocityFilter = new MedianFilter(INERTIAL_VELOCITY_FILTER_TAPS);
 
-    // Calibrate and reset navX
+    // Path follower configuration
+    this.pathFollowerConfig = new HolonomicPathFollowerConfig(
+        new com.pathplanner.lib.util.PIDConstants(3.1, 0.0, 0.0),
+        new com.pathplanner.lib.util.PIDConstants(5.0, 0.0, 0.1),
+        DRIVE_MAX_LINEAR_SPEED.in(Units.MetersPerSecond),
+        lFrontModule.getModuleCoordinate().getNorm(),
+        new ReplanningConfig(),
+        GlobalConstants.ROBOT_LOOP_PERIOD
+    );
+
+    // NavX calibration
     while (navx.isCalibrating()) stop();
     navx.reset();
 
-    // Setup rotate PID
-    rotatePIDController.setTolerance(TOLERANCE);
-    rotatePIDController.setSetpoint(getAngle().in(Units.Degrees));
-
-    // Define drivetrain kinematics
-    kinematics = new SwerveDriveKinematics(lFrontModule.getModuleCoordinate(),
-                                             rFrontModule.getModuleCoordinate(),
-                                             lRearModule.getModuleCoordinate(),
-                                             rRearModule.getModuleCoordinate());
-
-    // Define advanced drivetrain kinematics
-    advancedKinematics = new AdvancedSwerveKinematics(lFrontModule.getModuleCoordinate(),
-                                                        rFrontModule.getModuleCoordinate(),
-                                                        lRearModule.getModuleCoordinate(),
-                                                        rRearModule.getModuleCoordinate());
-
-    // Initialise pose estimator
-    poseEstimator = new SwerveDrivePoseEstimator(
-            kinematics,
-      getRotation2d(),
-      getModulePositions(),
-      new Pose2d(),
-      ODOMETRY_STDDEV,
-      VISION_STDDEV
+    // Swerve drive kinematics and pose estimator
+    kinematics = new SwerveDriveKinematics(
+        lFrontModule.getModuleCoordinate(),
+        rFrontModule.getModuleCoordinate(),
+        lRearModule.getModuleCoordinate(),
+        rRearModule.getModuleCoordinate()
     );
 
-    // Initialise chassis speeds
+    poseEstimator = new SwerveDrivePoseEstimator(
+        kinematics,
+        getRotation2d(),
+        getModulePositions(),
+        new Pose2d(),
+        ODOMETRY_STDDEV,
+        VISION_STDDEV
+    );
+
+    // Chassis speeds
     desiredChassisSpeeds = new ChassisSpeeds();
 
-    // Setup anti-tip command
-    //new Trigger(this::isTipping).whileTrue(ANTI_TIP_COMMAND);
-    //TODO ^ Does this work?
-
-    // Setup auto-aim PID controller
-    autoAimPIDControllerFront = new ProfiledPIDController(AUTO_AIM_PID.kP, 0.0, AUTO_AIM_PID.kD, AIM_PID_CONSTRAINT, AUTO_AIM_PID.period);
-    autoAimPIDControllerFront.enableContinuousInput(-180.0, +180.0);
-    autoAimPIDControllerFront.setTolerance(TOLERANCE);
-    autoAimPIDControllerBack = new ProfiledPIDController(AUTO_AIM_PID.kP, 0.0, AUTO_AIM_PID.kD, AIM_PID_CONSTRAINT, AUTO_AIM_PID.period);
-    autoAimPIDControllerBack.enableContinuousInput(-180.0, +180.0);
-    autoAimPIDControllerBack.setTolerance(TOLERANCE);
-
-    // Initialise other variables
-    m_previousPose = new Pose2d();
-    currentHeading = new Rotation2d();
-
-    // Initialise PurplePathClient
-    purplePathClient = new PurplePathClient(this);
-
-    // Initialise field
+    // Field2d visualization
     field = new Field2d();
     SmartDashboard.putData(field);
 
-    // Setup path logging callback
+    // Path logging for PathPlanner
     PathPlannerLogging.setLogActivePathCallback((poses) -> {
-      if (poses.isEmpty()) return;
-      var trajectory = TrajectoryGenerator.generateTrajectory(
-        poses,
-        new TrajectoryConfig(DRIVE_MAX_LINEAR_SPEED, DRIVE_AUTO_ACCELERATION)
-      );
-
-      field.getObject("currentPath").setTrajectory(trajectory);
+        if (poses.isEmpty()) return;
+        var trajectory = TrajectoryGenerator.generateTrajectory(
+            poses,
+            new TrajectoryConfig(DRIVE_MAX_LINEAR_SPEED, DRIVE_AUTO_ACCELERATION)
+        );
+        field.getObject("currentPath").setTrajectory(trajectory);
     });
-
-  }
+}
 
 /**
  * Initialize hardware devices for drive subsystem
  * @return Hardware object containing all necessary devices for this subsystem
  */
 public static Hardware initializeHardware() {
-  NavX2 navx = new NavX2(Constants.DriveHardware.NAVX_ID, GlobalConstants.ROBOT_LOOP_HZ * 2);
+  NavX2 navx = new NavX2(Constants.DriveHardware.NAVX_ID);
 
   MAXSwerveModule lFrontModule = new MAXSwerveModule(
     MAXSwerveModule.initializeHardware(
@@ -295,21 +285,25 @@ public static Hardware initializeHardware() {
   );
 
   // Inverted back left and front right motors
-  MAXSwerveModule rFrontModule = new MAXSwerveModule(
-    MAXSwerveModule.initializeHardware(
-      Constants.DriveHardware.RIGHT_FRONT_DRIVE_MOTOR_ID,
-      Constants.DriveHardware.RIGHT_FRONT_ROTATE_MOTOR_ID,
-      MotorKind.NEO_VORTEX
+  MAXSwerveModule rFrontModule = MAXSwerveModule.create(
+    new REVSwerveModule.Hardware(
+        new Spark(Constants.DriveHardware.RIGHT_FRONT_DRIVE_MOTOR_ID, Spark.MotorKind.NEO),
+        new Spark(Constants.DriveHardware.RIGHT_FRONT_ROTATE_MOTOR_ID, Spark.MotorKind.NEO_550),
     ),
-    MAXSwerveModule.ModuleLocation.RightFront,
+    SwerveModule.Location.RightFront,
     Constants.Drive.GEAR_RATIO,
-    DRIVE_WHEELBASE,
-    DRIVE_TRACK_WIDTH,
-    AUTO_LOCK_TIME,
-    MAX_SLIPPING_TIME,
-    DRIVE_CURRENT_LIMIT,
-    Constants.Drive.DRIVE_SLIP_RATIO
-  );
+    DriveWheel.create(null,null,null), // Replace with actual drive wheel configuration
+    PIDConstants.of(1, 1, 1,1,1), // Replace with actual PID constants
+    FFConstants.of(1,1,1,1),  // Replace with actual feed-forward constants
+    PIDConstants.of(1, 1, 1,1,1), // Replace with actual PID constants
+    FFConstants.of(1,1,1,1),  // Replace with actual feed-forward constants
+    Dimensionless.in(Constants.Drive.DRIVE_SLIP_RATIO),
+    new Mass(ROBOT_MASS), // Replace with actual mass value
+    new Distance(DRIVE_WHEELBASE),
+    new Distance(DRIVE_TRACK_WIDTH),
+    new Time(AUTO_LOCK_TIME),
+    new Current(DRIVE_CURRENT_LIMIT)
+);
 
   MAXSwerveModule lRearModule = new MAXSwerveModule(
     MAXSwerveModule.initializeHardware(
@@ -471,22 +465,6 @@ public static Hardware initializeHardware() {
 
     // Update current heading
     currentHeading = new Rotation2d(getPose().getX() - m_previousPose.getX(), getPose().getY() - m_previousPose.getY());
-
-    // Get estimated poses from VisionSubsystem
-    var apriltagCameraResults = VisionSubsystem.getInstance().getEstimatedGlobalPoses();
-
-    // Exit if no valid vision pose estimates
-    if (apriltagCameraResults.isEmpty()) return;
-
-    // Add vision measurements to pose estimator
-    for (var result : apriltagCameraResults) {
-      //if (result.estimatedPose.toPose2d().getTranslation().getDistance(m_previousPose.getTranslation()) > 1.0) continue;
-      poseEstimator.addVisionMeasurement(
-        result.estimatedRobotPose.estimatedPose.toPose2d(),
-        result.estimatedRobotPose.timestampSeconds,
-        result.visionMeasurementStdDevs
-      );
-    }
   }
 
   /**
@@ -726,26 +704,6 @@ public static Hardware initializeHardware() {
     );
   }
 
-  /**
-   * Reset current pose to vision estimate
-   */
-  private void resetPoseToVision() {
-    // Get vision estimated poses
-    var visionEstimatedRobotPoses = VisionSubsystem.getInstance().getEstimatedGlobalPoses();
-
-    // Exit if no valid vision pose estimates
-    if (visionEstimatedRobotPoses.isEmpty()) return;
-
-    // Add vision measurements to pose estimator
-    for (var visionEstimatedRobotPose : visionEstimatedRobotPoses) {
-      poseEstimator.resetPosition(
-        getRotation2d(),
-        getModulePositions(),
-        visionEstimatedRobotPose.estimatedRobotPose.estimatedPose.toPose2d()
-      );
-    }
-  }
-
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
@@ -979,13 +937,6 @@ public static Hardware initializeHardware() {
     return runOnce(() -> resetPose(poseSupplier.get()));
   }
 
-  /**
-   * Reset pose estimator to vision estimated pose
-   * @return Command to reset pose to current vision estimated pose
-   */
-  public Command resetPoseToVisionCommand() {
-    return runOnce(this::resetPoseToVision);
-  }
 
   /**
    * Go to goal pose

@@ -18,7 +18,7 @@ import org.lasarobotics.utils.GlobalConstants;
 import org.lasarobotics.utils.JSONObject;
 import org.littletonrobotics.junction.Logger;
 
-import com.pathplanner.lib.commands.FollowPathHolonomic;
+import com.pathplanner.lib.commands.FollowPathCommand;
 import com.pathplanner.lib.path.GoalEndState;
 import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.path.PathPoint;
@@ -102,12 +102,12 @@ public class PurplePathClient {
    * @return Underlying PathPlanner command to use
    */
   private Command getPathPlannerCommand(PathPlannerPath path) {
-    return new FollowPathHolonomic(
+    return new FollowPathCommand(
       path,
       m_driveSubsystem::getPose,
       m_driveSubsystem::getChassisSpeeds,
       m_driveSubsystem::autoDrive,
-      m_driveSubsystem.getPathFollowerConfig(),
+      m_driveSubsystem.(),
       () -> false,
       m_driveSubsystem
     );
