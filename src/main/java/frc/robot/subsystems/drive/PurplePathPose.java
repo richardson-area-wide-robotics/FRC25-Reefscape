@@ -9,6 +9,7 @@ import java.util.List;
 import com.pathplanner.lib.path.GoalEndState;
 import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.path.PathPlannerPath;
+import com.pathplanner.lib.path.Waypoint;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -107,14 +108,14 @@ public class PurplePathPose {
    * @param pathConstraints Path constraints to apply to final approach paths
    */
   public void calculateFinalApproach(PathConstraints pathConstraints) {
-    List<Translation2d> blueFinalApproachBezier = PathPlannerPath.bezierFromPoses(blueFinalApproachPose, bluePose);
+    List<Waypoint> blueFinalApproachBezier = PathPlannerPath.bezierFromPoses(blueFinalApproachPose, bluePose);
     blueFinalApproachPath = new PathPlannerPath(
       blueFinalApproachBezier,
       pathConstraints,
       new GoalEndState(0.0, blueFinalApproachPose.getRotation())
     );
 
-    List<Translation2d> redFinalApproachBezier = PathPlannerPath.bezierFromPoses(redFinalApproachPose, redPose);
+    List<Waypoint> redFinalApproachBezier = PathPlannerPath.bezierFromPoses(redFinalApproachPose, redPose);
     redFinalApproachPath = new PathPlannerPath(
       redFinalApproachBezier,
       pathConstraints,
