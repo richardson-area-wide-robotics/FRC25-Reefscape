@@ -17,19 +17,11 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.drive.DriveSubsystem;
+import frc.robot.subsystems.shooter.KitBotShooter;
 
 public class RobotContainer {
 
 
-  public static final DriveSubsystem DRIVE_SUBSYSTEM = new DriveSubsystem(
-      DriveSubsystem.initializeHardware(),
-      Constants.Drive.DRIVE_ROTATE_PID,
-      Constants.Drive.DRIVE_CONTROL_CENTRICITY,
-      Constants.Drive.DRIVE_THROTTLE_INPUT_CURVE,
-      Constants.Drive.DRIVE_TURN_INPUT_CURVE,
-      Angle.ofRelativeUnits(Constants.Drive.DRIVE_TURN_SCALAR, Units.Degree),
-      Dimensionless.ofRelativeUnits(Constants.HID.CONTROLLER_DEADBAND, Units.Value),
-      Time.ofRelativeUnits(Constants.Drive.DRIVE_LOOKAHEAD, Units.Second));
 
   private static final CommandXboxController PRIMARY_CONTROLLER = new CommandXboxController(
       Constants.HID.PRIMARY_CONTROLLER_PORT);
@@ -38,7 +30,14 @@ public class RobotContainer {
 
   private final SendableChooser<Command> automodeChooser;
 
+  // Subsystems
+  public static DriveSubsystem DRIVE_SUBSYSTEM;
+  public static KitBotShooter KIT_BOT_SHOOTER_SUBSYSTEM;
+
   public RobotContainer() {
+
+    // Create Subsystems
+    createSubSystems();
 
     // Set drive command
     DRIVE_SUBSYSTEM.setDefaultCommand(
@@ -49,7 +48,6 @@ public class RobotContainer {
 
     // Register named commands
     registerNamedCommands();
-
 
     // Bind buttons and triggers
     configureBindings();
@@ -72,6 +70,27 @@ public class RobotContainer {
     //PathPlannerAuto preLoad3 = new PathPlannerAuto("Preload + 1");
   }
 
+
+
+  /**
+   * Create the various subsystems
+   *
+   * @author Hudson Strub
+   * @since 2025
+   */
+  private void createSubSystems(){
+    KIT_BOT_SHOOTER_SUBSYSTEM = new KitBotShooter(1); //TODO Correct Motor ID
+    DRIVE_SUBSYSTEM = new DriveSubsystem(
+            DriveSubsystem.initializeHardware(),
+            Constants.Drive.DRIVE_ROTATE_PID,
+            Constants.Drive.DRIVE_CONTROL_CENTRICITY,
+            Constants.Drive.DRIVE_THROTTLE_INPUT_CURVE,
+            Constants.Drive.DRIVE_TURN_INPUT_CURVE,
+            Angle.ofRelativeUnits(Constants.Drive.DRIVE_TURN_SCALAR, Units.Degree),
+            Dimensionless.ofRelativeUnits(Constants.HID.CONTROLLER_DEADBAND, Units.Value),
+            Time.ofRelativeUnits(Constants.Drive.DRIVE_LOOKAHEAD, Units.Second));
+  }
+
   private void configureBindings() {
     // Start - toggle traction control
     bindControl(PRIMARY_CONTROLLER.start(), DRIVE_SUBSYSTEM.toggleTractionControlCommand());
@@ -81,6 +100,12 @@ public class RobotContainer {
 
     // Right Stick Button - Reset heading
     bindControl(PRIMARY_CONTROLLER.rightStick(), Commands.runOnce(DRIVE_SUBSYSTEM.navx::reset, DRIVE_SUBSYSTEM));
+
+    // Right Trigger - Intake
+    bindControl(PRIMARY_CONTROLLER.rightTrigger(), KIT_BOT_SHOOTER_SUBSYSTEM.setSpeedCommand(1));
+
+    // Left Trigger - Outtake
+    bindControl(PRIMARY_CONTROLLER.rightTrigger(), KIT_BOT_SHOOTER_SUBSYSTEM.setSpeedCommand(-1));
   }
 
   /**
