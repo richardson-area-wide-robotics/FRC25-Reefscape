@@ -5,28 +5,21 @@
 package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.auto.NamedCommands;
-import com.pathplanner.lib.commands.PathPlannerAuto;
-import com.revrobotics.REVPhysicsSim;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.units.Units;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.Dimensionless;
+import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.Constants.ShooterConstants.ShooterState;
-import frc.robot.subsystems.intake.Intake;
-import frc.robot.subsystems.shooter.Pivot;
-import frc.robot.subsystems.shooter.Shooter;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.drive.DriveSubsystem;
-import frc.robot.subsystems.shooter.Feeder;
 
 public class RobotContainer {
 
-  public final Intake INTAKE_SUBSYSTEM;
-  public final Shooter SHOOTER_SUBSYSTEM;
-  public final Pivot PIVOT_SUBSYSTEM;
-  public final Feeder FEEDER_SUBSYSTEM;
 
   public static final DriveSubsystem DRIVE_SUBSYSTEM = new DriveSubsystem(
       DriveSubsystem.initializeHardware(),
@@ -34,21 +27,18 @@ public class RobotContainer {
       Constants.Drive.DRIVE_CONTROL_CENTRICITY,
       Constants.Drive.DRIVE_THROTTLE_INPUT_CURVE,
       Constants.Drive.DRIVE_TURN_INPUT_CURVE,
-      Constants.Drive.DRIVE_TURN_SCALAR,
-      Constants.HID.CONTROLLER_DEADBAND,
-      Constants.Drive.DRIVE_LOOKAHEAD);
+      Angle.ofRelativeUnits(Constants.Drive.DRIVE_TURN_SCALAR, Units.Degree),
+      Dimensionless.ofRelativeUnits(Constants.HID.CONTROLLER_DEADBAND, Units.Value),
+      Time.ofRelativeUnits(Constants.Drive.DRIVE_LOOKAHEAD, Units.Second));
 
   private static final CommandXboxController PRIMARY_CONTROLLER = new CommandXboxController(
       Constants.HID.PRIMARY_CONTROLLER_PORT);
+  private static final CommandXboxController OPERATOR_CONTROLLER = new CommandXboxController(
+    Constants.HID.SECONDARY_CONTROLLER_PORT);
 
   private final SendableChooser<Command> automodeChooser;
 
   public RobotContainer() {
-    // Initialize subsystems
-    INTAKE_SUBSYSTEM = new Intake();
-    SHOOTER_SUBSYSTEM = new Shooter();
-    PIVOT_SUBSYSTEM = new Pivot();
-    FEEDER_SUBSYSTEM = new Feeder();
 
     // Set drive command
     DRIVE_SUBSYSTEM.setDefaultCommand(
@@ -60,8 +50,6 @@ public class RobotContainer {
     // Register named commands
     registerNamedCommands();
 
-    // Set up AutoBuilder
-    DRIVE_SUBSYSTEM.configureAutoBuilder();
 
     // Bind buttons and triggers
     configureBindings();
@@ -75,70 +63,43 @@ public class RobotContainer {
   }
 
   private void registerNamedCommands() {
-    NamedCommands.registerCommand("Intake", FEEDER_SUBSYSTEM.feedNote().alongWith(INTAKE_SUBSYSTEM.runIntake()));
-    NamedCommands.registerCommand("Pivot to Speaker", PIVOT_SUBSYSTEM.pivotPresetSpeaker());
-    NamedCommands.registerCommand("Shoot", Commands.runOnce(() -> SHOOTER_SUBSYSTEM.toggleState(ShooterState.SPEAKER), SHOOTER_SUBSYSTEM)
-    .andThen(FEEDER_SUBSYSTEM.shootNote())
-    .andThen(Commands.runOnce(() -> SHOOTER_SUBSYSTEM.toggleState(ShooterState.IDLE))));
+    //NamedCommands.registerCommand("Intake", FEEDER_SUBSYSTEM.feedNote().alongWith(INTAKE_SUBSYSTEM.runIntake()));
   }
 
   private void initializeAutos() {
-    PathPlannerAuto leaveAuto = new PathPlannerAuto("Leave");
-    PathPlannerAuto preLoad1 = new PathPlannerAuto("Preload + 1");
-    PathPlannerAuto preLoad3 = new PathPlannerAuto("Preload + 1");
+    //PathPlannerAuto leaveAuto = new PathPlannerAuto("Leave");
+    //PathPlannerAuto preLoad1 = new PathPlannerAuto("Preload + 1");
+    //PathPlannerAuto preLoad3 = new PathPlannerAuto("Preload + 1");
   }
 
   private void configureBindings() {
-    // Start button - toggle traction control
-    PRIMARY_CONTROLLER.start().onTrue(DRIVE_SUBSYSTEM.toggleTractionControlCommand());
+    // Start - toggle traction control
+    bindControl(PRIMARY_CONTROLLER.start(), DRIVE_SUBSYSTEM.toggleTractionControlCommand());
 
+    // Left POV - Reset pose
+    bindControl(PRIMARY_CONTROLLER.povLeft(), DRIVE_SUBSYSTEM.resetPoseCommand(Pose2d::new));
 
-    // Intake + Outtake
-    PRIMARY_CONTROLLER.leftBumper().whileTrue(
-      FEEDER_SUBSYSTEM.feedNote()
-      .alongWith(INTAKE_SUBSYSTEM.runIntake()))
-      .whileFalse(INTAKE_SUBSYSTEM.runStop());
+    // Right Stick Button - Reset heading
+    bindControl(PRIMARY_CONTROLLER.rightStick(), Commands.runOnce(DRIVE_SUBSYSTEM.navx::reset, DRIVE_SUBSYSTEM));
+  }
 
-    PRIMARY_CONTROLLER.rightBumper().whileTrue(
-      FEEDER_SUBSYSTEM.spitNote()
-      .alongWith(INTAKE_SUBSYSTEM.runOuttake()))
-      .whileFalse(INTAKE_SUBSYSTEM.runStop());
-
-    // pivot up/down
-    PRIMARY_CONTROLLER.leftTrigger().whileTrue(
-        PIVOT_SUBSYSTEM.pivotUp()).whileFalse(PIVOT_SUBSYSTEM.pivotIdle());
-
-    PRIMARY_CONTROLLER.rightTrigger().whileTrue(
-        PIVOT_SUBSYSTEM.pivotDown()).whileFalse(PIVOT_SUBSYSTEM.pivotIdle());
-
-    // Toggle shooter state
-    PRIMARY_CONTROLLER.y().onTrue(
-        Commands.runOnce(() -> {
-          SHOOTER_SUBSYSTEM.toggleState(ShooterState.SPEAKER);
-        }, SHOOTER_SUBSYSTEM));   
-
-    // Shoot note
-    PRIMARY_CONTROLLER.a().whileTrue(FEEDER_SUBSYSTEM.shootNote());
-
-    // B button - go to source
-    //PRIMARY_CONTROLLER.b().whileTrue(DRIVE_SUBSYSTEM.goToPoseCommand(Constants.Field.SOURCE));
-
-    // Reset pose
-    PRIMARY_CONTROLLER.povLeft().onTrue(DRIVE_SUBSYSTEM.resetPoseCommand(Pose2d::new));
-
-    // Pivot presets
-    PRIMARY_CONTROLLER.povUp().whileTrue(PIVOT_SUBSYSTEM.pivotPresetAMP());
-    PRIMARY_CONTROLLER.povDown().whileTrue(PIVOT_SUBSYSTEM.pivotPresetSpeaker());
-
-    // Reset heading
-    PRIMARY_CONTROLLER.rightStick().onTrue(Commands.runOnce(DRIVE_SUBSYSTEM.navx::reset, DRIVE_SUBSYSTEM));
+  /**
+   * Helper method to bind a control action to a command.
+   *
+   * @param control The button to bind to.
+   * @param command The command to execute when that button is pressed.
+   *
+   * @author Hudson Strub
+   * @since 2025
+   */
+  private void bindControl(Trigger control, Command command) {
+    control.onTrue(command);
   }
 
   /**
    * Run simulation related methods
    */
   public void simulationPeriodic() {
-    REVPhysicsSim.getInstance().run();
   }
 
   /**

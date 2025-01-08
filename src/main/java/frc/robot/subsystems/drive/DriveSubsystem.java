@@ -4,151 +4,100 @@
 
 package frc.robot.subsystems.drive;
 
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
-import org.lasarobotics.drive.AdvancedSwerveKinematics;
-import org.lasarobotics.drive.AdvancedSwerveKinematics.ControlCentricity;
-import org.lasarobotics.drive.MAXSwerveModule;
+import org.lasarobotics.drive.swerve.AdvancedSwerveKinematics;
+import org.lasarobotics.drive.swerve.AdvancedSwerveKinematics.ControlCentricity;
+import org.lasarobotics.drive.swerve.child.MAXSwerveModule;
+import org.lasarobotics.drive.swerve.parent.REVSwerveModule;
+import org.lasarobotics.drive.swerve.SwerveModule;
+import org.lasarobotics.hardware.revrobotics.Spark;
 import org.lasarobotics.drive.RotatePIDController;
 import org.lasarobotics.drive.ThrottleMap;
 import org.lasarobotics.hardware.kauailabs.NavX2;
-import org.lasarobotics.hardware.revrobotics.Spark.MotorKind;
 import org.lasarobotics.led.LEDStrip.Pattern;
 import org.lasarobotics.led.LEDSubsystem;
-import org.lasarobotics.utils.GlobalConstants;
+import org.lasarobotics.utils.FFConstants;
 import org.lasarobotics.utils.PIDConstants;
 import org.littletonrobotics.junction.Logger;
 
-import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathConstraints;
-import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PathPlannerLogging;
-import com.pathplanner.lib.util.ReplanningConfig;
 
-import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.geometry.Rotation2d;      // For handling rotations
+import edu.wpi.first.math.geometry.Translation2d;    // For handling 2D translations
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard; // For dashboard integration
+import edu.wpi.first.units.measure.Dimensionless;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.filter.MedianFilter;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.units.Angle;
-import edu.wpi.first.units.Current;
-import edu.wpi.first.units.Distance;
-import edu.wpi.first.units.Measure;
-import edu.wpi.first.units.Time;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.Time;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.units.measure.Mass;
+import edu.wpi.first.units.measure.MutLinearVelocity;
+import edu.wpi.first.units.measure.LinearAcceleration;
+import org.lasarobotics.drive.swerve.DriveWheel;
 import edu.wpi.first.units.Units;
-import edu.wpi.first.units.Velocity;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-import frc.robot.subsystems.vision.VisionSubsystem;
 
 public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
+  @AllArgsConstructor
   public static class Hardware {
-    NavX2 navx;
-    MAXSwerveModule lFrontModule;
-    MAXSwerveModule rFrontModule;
-    MAXSwerveModule lRearModule;
-    MAXSwerveModule rRearModule;
-
-    public Hardware(NavX2 navx,
-                    MAXSwerveModule lFrontModule,
-                    MAXSwerveModule rFrontModule,
-                    MAXSwerveModule lRearModule,
-                    MAXSwerveModule rRearModule) {
-      this.navx = navx;
-      this.lFrontModule = lFrontModule;
-      this.rFrontModule = rFrontModule;
-      this.lRearModule = lRearModule;
-      this.rRearModule = rRearModule;
-    }
+      NavX2 navx;
+      REVSwerveModule lFrontModule;
+      REVSwerveModule rFrontModule;
+      REVSwerveModule lRearModule;
+      REVSwerveModule rRearModule;
   }
-
-  // Drive specs
-  public static final Measure<Distance> DRIVE_WHEELBASE = Units.Meters.of(0.5588);
-  public static final Measure<Distance> DRIVE_TRACK_WIDTH = Units.Meters.of(0.5588);
-  public static final Measure<Time> AUTO_LOCK_TIME = Units.Seconds.of(3.0);
-  public static final Measure<Time> MAX_SLIPPING_TIME = Units.Seconds.of(1.2);
-  public static final Measure<Current> DRIVE_CURRENT_LIMIT = Units.Amps.of(60.0);
-  public static final Measure<Velocity<Angle>> NAVX2_YAW_DRIFT_RATE = Units.DegreesPerSecond.of(0.5 / 60);
-  public static final Measure<Velocity<Angle>> DRIVE_ROTATE_VELOCITY = Units.RadiansPerSecond.of(12 * Math.PI);
-  public static final Measure<Velocity<Angle>> AIM_VELOCITY_THRESHOLD = Units.DegreesPerSecond.of(5.0);
-  public static final Measure<Velocity<Velocity<Angle>>> DRIVE_ROTATE_ACCELERATION = Units.RadiansPerSecond.of(4 * Math.PI).per(Units.Second);
-  public static final Translation2d AIM_OFFSET = new Translation2d(0.0, -0.5);
-  public final Measure<Velocity<Distance>> DRIVE_MAX_LINEAR_SPEED;
-  public final Measure<Velocity<Velocity<Distance>>> DRIVE_AUTO_ACCELERATION;
-
-  // Other settings
-  private static final int INERTIAL_VELOCITY_FILTER_TAPS = 100;
-  private static final double TOLERANCE = 1.5;
-  private static final double TIP_THRESHOLD = 35.0;
-  private static final double BALANCED_THRESHOLD = 10.0;
-  private static final double AIM_VELOCITY_COMPENSATION_FUDGE_FACTOR = 0.1;
-  private static final Matrix<N3, N1> ODOMETRY_STDDEV = VecBuilder.fill(0.03, 0.03, Math.toRadians(1.0));
-  private static final Matrix<N3, N1> VISION_STDDEV = VecBuilder.fill(1.0, 1.0, Math.toRadians(3.0));
-  private static final PIDConstants AUTO_AIM_PID = new PIDConstants(10.0, 0.0, 0.5, 0.0, 0.0, GlobalConstants.ROBOT_LOOP_PERIOD);
-  private static final TrapezoidProfile.Constraints AIM_PID_CONSTRAINT = new TrapezoidProfile.Constraints(2160.0, 4320.0);
-
-    // Log
-  private static final String POSE_LOG_ENTRY = "/Pose";
-  private static final String ACTUAL_SWERVE_STATE_LOG_ENTRY = "/ActualSwerveState";
-  private static final String DESIRED_SWERVE_STATE_LOG_ENTRY = "/DesiredSwerveState";
-
 
   private final ThrottleMap throttleMap;
   private final RotatePIDController rotatePIDController;
-  private final ProfiledPIDController autoAimPIDControllerFront;
-  private final ProfiledPIDController autoAimPIDControllerBack;
   @Getter
   private final SwerveDriveKinematics kinematics;
   private final SwerveDrivePoseEstimator poseEstimator;
-  private final AdvancedSwerveKinematics advancedKinematics;
 
-  @Getter
-  private final HolonomicPathFollowerConfig pathFollowerConfig;
+  public final LinearVelocity DRIVE_MAX_LINEAR_SPEED;
+  public final LinearAcceleration DRIVE_AUTO_ACCELERATION;
+  private final AdvancedSwerveKinematics advancedKinematics = new AdvancedSwerveKinematics();
+  private final ProfiledPIDController autoAimPIDControllerFront;
+  private final ProfiledPIDController autoAimPIDControllerBack;
+  private final MedianFilter xVelocityFilter;
+  private final MedianFilter yVelocityFilter;
 
   public final NavX2 navx;
-  private final MAXSwerveModule lFrontModule;
-  private final MAXSwerveModule rFrontModule;
-  private final MAXSwerveModule lRearModule;
-  private final MAXSwerveModule rRearModule;
+  private final REVSwerveModule lFrontModule;
+  private final REVSwerveModule rFrontModule;
+  private final REVSwerveModule lRearModule;
+  private final REVSwerveModule rRearModule;
 
 
   private ControlCentricity controlCentricity;
   private ChassisSpeeds desiredChassisSpeeds;
   private boolean isTractionControlEnabled = true;
-  private final Rotation2d allianceCorrection;
   private Pose2d m_previousPose;
   private Rotation2d currentHeading;
-  private final PurplePathClient purplePathClient;
   private final Field2d field;
-  private final MedianFilter xVelocityFilter;
-  private final MedianFilter yVelocityFilter;
-
-  private Alliance currentAlliance;
 
   public final Command ANTI_TIP_COMMAND = new FunctionalCommand(
     () -> LEDSubsystem.getInstance().startOverride(Pattern.RED_STROBE),
@@ -164,190 +113,156 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   );
 
   /**
-   * Create an instance of DriveSubsystem
-   * <p>
-   * NOTE: ONLY ONE INSTANCE SHOULD EXIST AT ANY TIME!
-   * <p>
-   * @param drivetrainHardware Hardware devices required by drivetrain
-   * @param pidf PID constants
-   * @param controlCentricity Control centricity
-   * @param throttleInputCurve Spline function characterising throttle input
-   * @param turnInputCurve Spline function characterising turn input
-   * @param turnScalar Scalar for turn input (degrees)
-   * @param deadband Deadband for controller input [+0.001, +0.2]
-   * @param lookAhead Rotate PID lookahead, in number of loops
-   */
-  public DriveSubsystem(Hardware drivetrainHardware, PIDConstants pidf, ControlCentricity controlCentricity,
-                        PolynomialSplineFunction throttleInputCurve, PolynomialSplineFunction turnInputCurve,
-                        double turnScalar, double deadband, double lookAhead) {
-    setSubsystem(getClass().getSimpleName());
-    DRIVE_MAX_LINEAR_SPEED = drivetrainHardware.lFrontModule.getMaxLinearSpeed();
-    DRIVE_AUTO_ACCELERATION = DRIVE_MAX_LINEAR_SPEED.per(Units.Second).minus(Units.MetersPerSecondPerSecond.of(1.0));
+ * DriveSubsystem constructor for managing a swerve drivetrain.
+ *
+ * @param drivetrainHardware Hardware devices required by drivetrain.
+ * @param pidf PID constants for the drive system.
+ * @param controlCentricity Control centricity configuration.
+ * @param throttleInputCurve Spline function for throttle input.
+ * @param turnInputCurve Spline function for turn input.
+ * @param turnScalar Scalar for turn input (degrees).
+ * @param deadband Deadband for controller input [+0.001, +0.2].
+ * @param lookAhead Rotate PID lookahead, in number of loops.
+ */
+public DriveSubsystem(Hardware drivetrainHardware, PIDConstants pidf, ControlCentricity controlCentricity,
+                      PolynomialSplineFunction throttleInputCurve, PolynomialSplineFunction turnInputCurve,
+                      Angle turnScalar, Dimensionless deadband, Time lookAhead) {
+
+    // Initialize subsystem name
+    setSubsystem(this.getClass().getSimpleName());
+
+    // Drivetrain hardware setup
     this.navx = drivetrainHardware.navx;
     this.lFrontModule = drivetrainHardware.lFrontModule;
     this.rFrontModule = drivetrainHardware.rFrontModule;
     this.lRearModule = drivetrainHardware.lRearModule;
     this.rRearModule = drivetrainHardware.rRearModule;
+
+    // Drivetrain constants
+    DRIVE_MAX_LINEAR_SPEED = drivetrainHardware.lFrontModule.getMaxLinearVelocity();
+    DRIVE_AUTO_ACCELERATION = DRIVE_MAX_LINEAR_SPEED
+        .per(Units.Second)
+        .minus(Units.MetersPerSecondPerSecond.of(1.0));
+
+    // Input curves and controllers
     this.controlCentricity = controlCentricity;
     this.throttleMap = new ThrottleMap(throttleInputCurve, DRIVE_MAX_LINEAR_SPEED, deadband);
     this.rotatePIDController = new RotatePIDController(turnInputCurve, pidf, turnScalar, deadband, lookAhead);
-    this.pathFollowerConfig = new HolonomicPathFollowerConfig(
-      new com.pathplanner.lib.util.PIDConstants(3.1, 0.0, 0.0),
-      new com.pathplanner.lib.util.PIDConstants(5.0, 0.0, 0.1),
-      DRIVE_MAX_LINEAR_SPEED.in(Units.MetersPerSecond),
-      lFrontModule.getModuleCoordinate().getNorm(),
-      new ReplanningConfig(),
-      GlobalConstants.ROBOT_LOOP_PERIOD
-    );
-    this.allianceCorrection = GlobalConstants.ROTATION_ZERO;
-    this.xVelocityFilter = new MedianFilter(INERTIAL_VELOCITY_FILTER_TAPS);
-    this.yVelocityFilter = new MedianFilter(INERTIAL_VELOCITY_FILTER_TAPS);
 
-    // Calibrate and reset navX
+    // Path follower configuration
+    //this.pathFollowerConfig = new HolonomicPathFollowerConfig(
+    //    new com.pathplanner.lib.util.PIDConstants(3.1, 0.0, 0.0),
+    //    new com.pathplanner.lib.util.PIDConstants(5.0, 0.0, 0.1),
+    //    DRIVE_MAX_LINEAR_SPEED.in(Units.MetersPerSecond),
+    //    lFrontModule.getModuleCoordinate().getNorm(),
+    //    new ReplanningConfig(),
+    //);
+
+    // NavX calibration
     while (navx.isCalibrating()) stop();
     navx.reset();
 
-    // Setup rotate PID
-    rotatePIDController.setTolerance(TOLERANCE);
-    rotatePIDController.setSetpoint(getAngle().in(Units.Degrees));
-
-    // Define drivetrain kinematics
-    kinematics = new SwerveDriveKinematics(lFrontModule.getModuleCoordinate(),
-                                             rFrontModule.getModuleCoordinate(),
-                                             lRearModule.getModuleCoordinate(),
-                                             rRearModule.getModuleCoordinate());
-
-    // Define advanced drivetrain kinematics
-    advancedKinematics = new AdvancedSwerveKinematics(lFrontModule.getModuleCoordinate(),
-                                                        rFrontModule.getModuleCoordinate(),
-                                                        lRearModule.getModuleCoordinate(),
-                                                        rRearModule.getModuleCoordinate());
-
-    // Initialise pose estimator
-    poseEstimator = new SwerveDrivePoseEstimator(
-            kinematics,
-      getRotation2d(),
-      getModulePositions(),
-      new Pose2d(),
-      ODOMETRY_STDDEV,
-      VISION_STDDEV
+    // Swerve drive kinematics and pose estimator
+    kinematics = new SwerveDriveKinematics(
+        lFrontModule.getModuleCoordinate(),
+        rFrontModule.getModuleCoordinate(),
+        lRearModule.getModuleCoordinate(),
+        rRearModule.getModuleCoordinate()
     );
 
-    // Initialise chassis speeds
+    poseEstimator = new SwerveDrivePoseEstimator(
+        kinematics,
+        getRotation2d(),
+        getModulePositions(),
+        new Pose2d(),
+        Constants.Drive.ODOMETRY_STDDEV,
+        Constants.Drive.VISION_STDDEV
+    );
+
+    // Chassis speeds
     desiredChassisSpeeds = new ChassisSpeeds();
 
-    // Setup anti-tip command
-    //new Trigger(this::isTipping).whileTrue(ANTI_TIP_COMMAND);
-    //TODO ^ Does this work?
-
-    // Setup auto-aim PID controller
-    autoAimPIDControllerFront = new ProfiledPIDController(AUTO_AIM_PID.kP, 0.0, AUTO_AIM_PID.kD, AIM_PID_CONSTRAINT, AUTO_AIM_PID.period);
-    autoAimPIDControllerFront.enableContinuousInput(-180.0, +180.0);
-    autoAimPIDControllerFront.setTolerance(TOLERANCE);
-    autoAimPIDControllerBack = new ProfiledPIDController(AUTO_AIM_PID.kP, 0.0, AUTO_AIM_PID.kD, AIM_PID_CONSTRAINT, AUTO_AIM_PID.period);
-    autoAimPIDControllerBack.enableContinuousInput(-180.0, +180.0);
-    autoAimPIDControllerBack.setTolerance(TOLERANCE);
-
-    // Initialise other variables
-    m_previousPose = new Pose2d();
-    currentHeading = new Rotation2d();
-
-    // Initialise PurplePathClient
-    purplePathClient = new PurplePathClient(this);
-
-    // Initialise field
+    // Field2d visualization
     field = new Field2d();
     SmartDashboard.putData(field);
 
-    // Setup path logging callback
+    // Path logging for PathPlanner
     PathPlannerLogging.setLogActivePathCallback((poses) -> {
-      if (poses.isEmpty()) return;
-      var trajectory = TrajectoryGenerator.generateTrajectory(
-        poses,
-        new TrajectoryConfig(DRIVE_MAX_LINEAR_SPEED, DRIVE_AUTO_ACCELERATION)
-      );
-
-      field.getObject("currentPath").setTrajectory(trajectory);
+        if (poses.isEmpty()) return;
+        var trajectory = TrajectoryGenerator.generateTrajectory(
+            poses,
+            new TrajectoryConfig(DRIVE_MAX_LINEAR_SPEED, DRIVE_AUTO_ACCELERATION)
+        );
+        field.getObject("currentPath").setTrajectory(trajectory);
     });
 
-    // Set VisionSubsystem pose supplier for simulation
-    VisionSubsystem.getInstance().setPoseSupplier(this::getPose);
-  }
+    // may or may not work Lol
+    autoAimPIDControllerFront = new ProfiledPIDController(Constants.Drive.BALANCED_THRESHOLD, Constants.Drive.AUTO_LOCK_TIME, Constants.Drive.AIM_VELOCITY_COMPENSATION_FUDGE_FACTOR, null);
+    autoAimPIDControllerBack = new ProfiledPIDController(Constants.Drive.BALANCED_THRESHOLD, Constants.Drive.AUTO_LOCK_TIME, Constants.Drive.AIM_VELOCITY_COMPENSATION_FUDGE_FACTOR, null);
+    xVelocityFilter = new MedianFilter(0);
+    yVelocityFilter = new MedianFilter(0);
+}
 
 /**
  * Initialize hardware devices for drive subsystem
- * @return Hardware object containing all necessary devices for this subsystem
+ * 
+ * @return A Hardware object containing all necessary devices for this subsystem
  */
 public static Hardware initializeHardware() {
-  NavX2 navx = new NavX2(Constants.DriveHardware.NAVX_ID, GlobalConstants.ROBOT_LOOP_HZ * 2);
+  NavX2 navx = new NavX2(Constants.DriveHardware.NAVX_ID);
 
-  MAXSwerveModule lFrontModule = new MAXSwerveModule(
-    MAXSwerveModule.initializeHardware(
-      Constants.DriveHardware.LEFT_FRONT_DRIVE_MOTOR_ID,
-      Constants.DriveHardware.LEFT_FRONT_ROTATE_MOTOR_ID,
-      MotorKind.NEO_VORTEX
-    ),
-    MAXSwerveModule.ModuleLocation.LeftFront,
-    Constants.Drive.GEAR_RATIO,
-    DRIVE_WHEELBASE,
-    DRIVE_TRACK_WIDTH,
-    AUTO_LOCK_TIME,
-    MAX_SLIPPING_TIME,
-    DRIVE_CURRENT_LIMIT,
-    Constants.Drive.DRIVE_SLIP_RATIO
-  );
+  REVSwerveModule lFrontModule = createSwerve(
+          Constants.DriveHardware.LEFT_FRONT_DRIVE_MOTOR_ID,
+          Constants.DriveHardware.LEFT_FRONT_ROTATE_MOTOR_ID,
+          SwerveModule.Location.LeftFront);
 
-  // Inverted back left and front right motors
-  MAXSwerveModule rFrontModule = new MAXSwerveModule(
-    MAXSwerveModule.initializeHardware(
-      Constants.DriveHardware.RIGHT_FRONT_DRIVE_MOTOR_ID,
-      Constants.DriveHardware.RIGHT_FRONT_ROTATE_MOTOR_ID,
-      MotorKind.NEO_VORTEX
-    ),
-    MAXSwerveModule.ModuleLocation.RightFront,
-    Constants.Drive.GEAR_RATIO,
-    DRIVE_WHEELBASE,
-    DRIVE_TRACK_WIDTH,
-    AUTO_LOCK_TIME,
-    MAX_SLIPPING_TIME,
-    DRIVE_CURRENT_LIMIT,
-    Constants.Drive.DRIVE_SLIP_RATIO
-  );
+  REVSwerveModule rFrontModule = createSwerve(
+          Constants.DriveHardware.RIGHT_FRONT_DRIVE_MOTOR_ID,
+          Constants.DriveHardware.RIGHT_FRONT_ROTATE_MOTOR_ID,
+          SwerveModule.Location.RightFront);
 
-  MAXSwerveModule lRearModule = new MAXSwerveModule(
-    MAXSwerveModule.initializeHardware(
-      Constants.DriveHardware.LEFT_REAR_DRIVE_MOTOR_ID,
-      Constants.DriveHardware.LEFT_REAR_ROTATE_MOTOR_ID,
-      MotorKind.NEO_VORTEX
-    ),
-    MAXSwerveModule.ModuleLocation.LeftRear,
-    Constants.Drive.GEAR_RATIO,
-    DRIVE_WHEELBASE,
-    DRIVE_TRACK_WIDTH,
-    AUTO_LOCK_TIME,
-    MAX_SLIPPING_TIME,
-    DRIVE_CURRENT_LIMIT,
-    Constants.Drive.DRIVE_SLIP_RATIO
-  );
+  REVSwerveModule lRearModule = createSwerve(
+          Constants.DriveHardware.LEFT_REAR_DRIVE_MOTOR_ID,
+          Constants.DriveHardware.LEFT_REAR_ROTATE_MOTOR_ID,
+          SwerveModule.Location.LeftRear);
 
-  MAXSwerveModule rRearModule = new MAXSwerveModule(
-    MAXSwerveModule.initializeHardware(
-      Constants.DriveHardware.RIGHT_REAR_DRIVE_MOTOR_ID,
-      Constants.DriveHardware.RIGHT_REAR_ROTATE_MOTOR_ID,
-      MotorKind.NEO_VORTEX
-    ),
-    MAXSwerveModule.ModuleLocation.RightRear,
-    Constants.Drive.GEAR_RATIO,
-    DRIVE_WHEELBASE,
-    DRIVE_TRACK_WIDTH,
-    AUTO_LOCK_TIME,
-    MAX_SLIPPING_TIME,
-    DRIVE_CURRENT_LIMIT,
-    Constants.Drive.DRIVE_SLIP_RATIO
-  );
+  REVSwerveModule rRearModule = createSwerve(
+          Constants.DriveHardware.RIGHT_REAR_DRIVE_MOTOR_ID,
+          Constants.DriveHardware.RIGHT_REAR_ROTATE_MOTOR_ID,
+          SwerveModule.Location.RightRear);
 
     return new Hardware(navx, lFrontModule, rFrontModule, lRearModule, rRearModule);
 }
+
+  /** Make a {@link REVSwerveModule}
+   * 
+   * @param driveMotor the drive motor (Ex: forward-backword)
+   * @param rotateMotor the rotate motor (Ex: left-right)
+   * @param location the location of the swerve module (Ex: front left)
+   * 
+   * @author Hudson Strub
+   * @since 2025
+   */
+  private static REVSwerveModule createSwerve(Spark.ID driveMotor, Spark.ID rotateMotor, SwerveModule.Location location){
+    return MAXSwerveModule.create(
+          new REVSwerveModule.Hardware(
+                  new Spark(driveMotor, Spark.MotorKind.NEO_VORTEX),
+                  new Spark(rotateMotor, Spark.MotorKind.NEO_550)
+          ),
+          location,
+          Constants.Drive.GEAR_RATIO,
+          DriveWheel.create(null,null,null), // Replace with actual drive wheel configuration
+          PIDConstants.of(1, 1, 1,1,1), // Replace with actual PID constants
+          FFConstants.of(1,1,1,1),  // Replace with actual feed-forward constants
+          Constants.Drive.DRIVE_ROTATE_PID, // The PID for the rotate Motor
+          FFConstants.of(1,1,1,1),  // Replace with actual feed-forward constants
+          Dimensionless.ofRelativeUnits(Constants.Drive.DRIVE_SLIP_RATIO, Units.Value),
+          Mass.ofBaseUnits(100, Units.Pounds), // Replace with actual mass value
+          Distance.ofRelativeUnits(Constants.Drive.DRIVE_WHEELBASE, Units.Meter),
+          Distance.ofRelativeUnits(Constants.Drive.DRIVE_TRACK_WIDTH, Units.Meter),
+          Time.ofRelativeUnits(Constants.Drive.AUTO_LOCK_TIME, Units.Second),
+          Current.ofRelativeUnits(Constants.Drive.DRIVE_CURRENT_LIMIT, Units.Amp));
+  }
 
   /**
    * Set swerve modules
@@ -358,7 +273,7 @@ public static Hardware initializeHardware() {
     rFrontModule.set(moduleStates);
     lRearModule.set(moduleStates);
     rRearModule.set(moduleStates);
-    Logger.recordOutput(getName() + DESIRED_SWERVE_STATE_LOG_ENTRY, moduleStates);
+    Logger.recordOutput(getName() + Constants.Drive.DESIRED_SWERVE_STATE_LOG_ENTRY, moduleStates);
   }
 
   /**
@@ -367,12 +282,12 @@ public static Hardware initializeHardware() {
    * @param inertialVelocity Current inertial velocity
    * @param rotateRate Desired robot rotate rate
    */
-  private void setSwerveModules(SwerveModuleState[] moduleStates, Measure<Velocity<Distance>> inertialVelocity, Measure<Velocity<Angle>> rotateRate) {
-    lFrontModule.set(moduleStates, inertialVelocity, rotateRate);
-    rFrontModule.set(moduleStates, inertialVelocity, rotateRate);
-    lRearModule.set(moduleStates, inertialVelocity, rotateRate);
-    rRearModule.set(moduleStates, inertialVelocity, rotateRate);
-    Logger.recordOutput(getName() + DESIRED_SWERVE_STATE_LOG_ENTRY, moduleStates);
+  private void setSwerveModules(SwerveModuleState[] moduleStates, LinearVelocity inertialVelocity, AngularVelocity rotateRate) {
+    lFrontModule.set(moduleStates);
+    rFrontModule.set(moduleStates);
+    lRearModule.set(moduleStates);
+    rRearModule.set(moduleStates);
+    Logger.recordOutput(getName() + Constants.Drive.DESIRED_SWERVE_STATE_LOG_ENTRY, moduleStates);
   }
 
   /**
@@ -384,10 +299,10 @@ public static Hardware initializeHardware() {
    * @param controlCentricity Current robot rotate rate
    */
   private void drive(ControlCentricity controlCentricity,
-                     Measure<Velocity<Distance>> xRequest,
-                     Measure<Velocity<Distance>> yRequest,
-                     Measure<Velocity<Angle>> rotateRequest,
-                     Measure<Velocity<Distance>> inertialVelocity) {
+                     LinearVelocity xRequest,
+                     LinearVelocity yRequest,
+                     AngularVelocity rotateRequest,
+                     LinearVelocity inertialVelocity) {
     // Get requested chassis speeds, correcting for second order kinematics
     desiredChassisSpeeds = AdvancedSwerveKinematics.correctForDynamics(
       new ChassisSpeeds(xRequest, yRequest, rotateRequest)
@@ -396,7 +311,7 @@ public static Hardware initializeHardware() {
     // Convert speeds to module states, correcting for 2nd order kinematics
     SwerveModuleState[] moduleStates = advancedKinematics.toSwerveModuleStates(
             desiredChassisSpeeds,
-      getPose().getRotation().plus(allianceCorrection),
+      getPose().getRotation(),
       controlCentricity
     );
 
@@ -414,9 +329,9 @@ public static Hardware initializeHardware() {
    * @param yRequest      Desired Y (sideways) velocity
    * @param rotateRequest Desired rotate rate
    */
-  private void drive(Measure<Velocity<Distance>> xRequest,
-                     Measure<Velocity<Distance>> yRequest,
-                     Measure<Velocity<Angle>> rotateRequest) {
+  private void drive(LinearVelocity xRequest,
+                     LinearVelocity yRequest,
+                     AngularVelocity rotateRequest) {
     // Get requested chassis speeds, correcting for second order kinematics
     desiredChassisSpeeds = AdvancedSwerveKinematics.correctForDynamics(
       new ChassisSpeeds(xRequest, yRequest, rotateRequest)
@@ -425,7 +340,7 @@ public static Hardware initializeHardware() {
     // Convert speeds to module states, correcting for 2nd order kinematics
     SwerveModuleState[] moduleStates = advancedKinematics.toSwerveModuleStates(
             desiredChassisSpeeds,
-      getPose().getRotation().plus(allianceCorrection),
+      getPose().getRotation(),
             ControlCentricity.ROBOT_CENTRIC
     );
 
@@ -474,30 +389,14 @@ public static Hardware initializeHardware() {
 
     // Update current heading
     currentHeading = new Rotation2d(getPose().getX() - m_previousPose.getX(), getPose().getY() - m_previousPose.getY());
-
-    // Get estimated poses from VisionSubsystem
-    var apriltagCameraResults = VisionSubsystem.getInstance().getEstimatedGlobalPoses();
-
-    // Exit if no valid vision pose estimates
-    if (apriltagCameraResults.isEmpty()) return;
-
-    // Add vision measurements to pose estimator
-    for (var result : apriltagCameraResults) {
-      //if (result.estimatedPose.toPose2d().getTranslation().getDistance(m_previousPose.getTranslation()) > 1.0) continue;
-      poseEstimator.addVisionMeasurement(
-        result.estimatedRobotPose.estimatedPose.toPose2d(),
-        result.estimatedRobotPose.timestampSeconds,
-        result.visionMeasurementStdDevs
-      );
-    }
   }
 
   /**
    * Log DriveSubsystem outputs
    */
   private void logOutputs() {
-    Logger.recordOutput(getName() + POSE_LOG_ENTRY, getPose());
-    Logger.recordOutput(getName() + ACTUAL_SWERVE_STATE_LOG_ENTRY, getModuleStates());
+    Logger.recordOutput(getName() + Constants.Drive.POSE_LOG_ENTRY, getPose());
+    Logger.recordOutput(getName() + Constants.Drive.ACTUAL_SWERVE_STATE_LOG_ENTRY, getModuleStates());
   }
 
   /**
@@ -506,7 +405,6 @@ public static Hardware initializeHardware() {
   private void smartDashboard() {
     field.setRobotPose(getPose());
     SmartDashboard.putBoolean("TC", isTractionControlEnabled);
-    SmartDashboard.putBoolean("PurplePath", purplePathClient.isConnected());
     SmartDashboard.putBoolean("FC", controlCentricity.equals(ControlCentricity.FIELD_CENTRIC));
   }
 
@@ -519,8 +417,8 @@ public static Hardware initializeHardware() {
 
     // Drive to counter tipping motion
     drive(
-            DRIVE_MAX_LINEAR_SPEED.divide(4).times(Math.cos(direction)),
-      DRIVE_MAX_LINEAR_SPEED.divide(4).times(Math.sin(direction)),
+            DRIVE_MAX_LINEAR_SPEED.div(4).times(Math.cos(direction)),
+      DRIVE_MAX_LINEAR_SPEED.div(4).times(Math.sin(direction)),
       Units.DegreesPerSecond.of(0.0)
     );
   }
@@ -538,29 +436,29 @@ public static Hardware initializeHardware() {
     // Calculate desired robot velocity
     double moveRequest = Math.hypot(xRequest, yRequest);
     double moveDirection = Math.atan2(yRequest, xRequest);
-    double velocityOutput = throttleMap.throttleLookup(moveRequest);
+    LinearVelocity velocityOutput = throttleMap.throttleLookup(moveRequest);
 
     // Drive normally and return if invalid point
     if (point == null) {
-      double rotateOutput = -rotatePIDController.calculate(getAngle(), getRotateRate(), rotateRequest);
+      AngularVelocity rotateOutput = rotatePIDController.calculate(getAngle(), getRotateRate(), rotateRequest).unaryMinus();
       drive(
         controlCentricity,
-        Units.MetersPerSecond.of(-velocityOutput * Math.cos(moveDirection)),
-        Units.MetersPerSecond.of(-velocityOutput * Math.sin(moveDirection)),
-        Units.DegreesPerSecond.of(rotateOutput),
+        velocityOutput.unaryMinus().times(Math.cos(moveDirection)),
+        velocityOutput.unaryMinus().times(Math.sin(moveDirection)),
+        rotateOutput,
         getInertialVelocity()
       );
       return;
     }
 
     // Adjust point
-    point = point.plus(AIM_OFFSET);
+    point = point.plus(Constants.Drive.AIM_OFFSET);
     // Get current pose
     Pose2d currentPose = getPose();
     // Angle to target point
     Rotation2d targetAngle = new Rotation2d(point.getX() - currentPose.getX(), point.getY() - currentPose.getY());
     // Movement vector of robot
-    Vector2D robotVector = new Vector2D(velocityOutput * currentHeading.getCos(), velocityOutput * currentHeading.getSin());
+    Vector2D robotVector = new Vector2D(velocityOutput.times(currentHeading.getCos()).magnitude(), velocityOutput.times(currentHeading.getSin()).magnitude());
     // Aim point
     Translation2d aimPoint = point.minus(new Translation2d(robotVector.getX(), robotVector.getY()));
     // Vector from robot to target
@@ -568,14 +466,14 @@ public static Hardware initializeHardware() {
     // Parallel component of robot's motion to target vector
     Vector2D parallelRobotVector = targetVector.scalarMultiply(robotVector.dotProduct(targetVector) / targetVector.getNormSq());
     // Perpendicular component of robot's motion to target vector
-    Vector2D perpendicularRobotVector = robotVector.subtract(parallelRobotVector).scalarMultiply(velocityCorrection ? AIM_VELOCITY_COMPENSATION_FUDGE_FACTOR : 0.0);
+    Vector2D perpendicularRobotVector = robotVector.subtract(parallelRobotVector).scalarMultiply(velocityCorrection ?Constants.Drive. AIM_VELOCITY_COMPENSATION_FUDGE_FACTOR : 0.0);
     // Adjust aim point using calculated vector
     Translation2d adjustedPoint = point.minus(new Translation2d(perpendicularRobotVector.getX(), perpendicularRobotVector.getY()));
     // Calculate new angle using adjusted point
     Rotation2d adjustedAngle = new Rotation2d(adjustedPoint.getX() - currentPose.getX(), adjustedPoint.getY() - currentPose.getY());
     // Calculate necessary rotate rate
     double rotateOutput = reversed
-      ? autoAimPIDControllerBack.calculate(currentPose.getRotation().plus(GlobalConstants.ROTATION_PI).getDegrees(), adjustedAngle.getDegrees())
+      ? autoAimPIDControllerBack.calculate(currentPose.getRotation().plus(Rotation2d.fromRadians(Math.PI)).getDegrees(), adjustedAngle.getDegrees())
       : autoAimPIDControllerFront.calculate(currentPose.getRotation().getDegrees(), adjustedAngle.getDegrees());
 
     // Log aim point
@@ -586,28 +484,14 @@ public static Hardware initializeHardware() {
     // Drive robot accordingly
     drive(
       controlCentricity,
-      Units.MetersPerSecond.of(-velocityOutput * Math.cos(moveDirection)),
-      Units.MetersPerSecond.of(-velocityOutput * Math.sin(moveDirection)),
+      velocityOutput.unaryMinus().times(Math.cos(moveDirection)),
+      velocityOutput.unaryMinus().times(Math.sin(moveDirection)),
       Units.DegreesPerSecond.of(rotateOutput),
       getInertialVelocity()
     );
   }
 
-  /**
-   * Aim robot by given angle
-   * @param angle Desired angle in degrees
-   */
-  private void aimAtAngle(double angle) {
-    double rotateOutput = rotatePIDController.calculate(getAngle().in(Units.Degrees), getAngle().in(Units.Degrees) + angle);
 
-    drive(
-            controlCentricity,
-      Units.MetersPerSecond.of(0),
-      Units.MetersPerSecond.of(0),
-      Units.DegreesPerSecond.of(rotateOutput),
-      getInertialVelocity()
-    );
-  }
 
   /**
    * Call this repeatedly to drive using PID during teleoperation
@@ -621,8 +505,8 @@ public static Hardware initializeHardware() {
     double moveDirection = Math.atan2(yRequest, xRequest);
 
     // Get throttle and rotate output
-    double velocityOutput = throttleMap.throttleLookup(moveRequest);
-    double rotateOutput = -rotatePIDController.calculate(getAngle(), getRotateRate(), rotateRequest);
+    LinearVelocity velocityOutput = throttleMap.throttleLookup(moveRequest);
+    AngularVelocity rotateOutput = rotatePIDController.calculate(getAngle(), getRotateRate(), rotateRequest).unaryMinus();
 
     // Update auto-aim controllers
     autoAimPIDControllerFront.calculate(
@@ -630,16 +514,16 @@ public static Hardware initializeHardware() {
       getPose().getRotation().getDegrees()
     );
     autoAimPIDControllerBack.calculate(
-      getPose().getRotation().plus(GlobalConstants.ROTATION_PI).getDegrees(),
-      getPose().getRotation().plus(GlobalConstants.ROTATION_PI).getDegrees()
+      getPose().getRotation().plus(Rotation2d.fromRadians(Math.PI)).getDegrees(),
+      getPose().getRotation().plus(Rotation2d.fromRadians(Math.PI)).getDegrees()
     );
 
     // Drive robot
     drive(
             controlCentricity,
-      Units.MetersPerSecond.of(-velocityOutput * Math.cos(moveDirection)),
-      Units.MetersPerSecond.of(-velocityOutput * Math.sin(moveDirection)),
-      Units.DegreesPerSecond.of(rotateOutput),
+      velocityOutput.unaryMinus().times(Math.cos(moveDirection)),
+      velocityOutput.unaryMinus().times(Math.sin(moveDirection)),
+      rotateOutput,
       getInertialVelocity()
     );
   }
@@ -662,26 +546,6 @@ public static Hardware initializeHardware() {
     rFrontModule.stop();
     lRearModule.stop();
     rRearModule.stop();
-  }
-
-  /**
-   * Call method during initialization of disabled mode to set motors to brake mode
-   */
-  public void disabledInit() {
-    lFrontModule.disabledInit();
-    rFrontModule.disabledInit();
-    lRearModule.disabledInit();
-    rRearModule.disabledInit();
-  }
-
-  /**
-   * Call method when exiting disabled mode to set motors to coast mode
-   */
-  public void disabledExit() {
-    lFrontModule.disabledExit();
-    rFrontModule.disabledExit();
-    lRearModule.disabledExit();
-    rRearModule.disabledExit();
   }
 
   /**
@@ -729,35 +593,15 @@ public static Hardware initializeHardware() {
     );
   }
 
-  /**
-   * Reset current pose to vision estimate
-   */
-  private void resetPoseToVision() {
-    // Get vision estimated poses
-    var visionEstimatedRobotPoses = VisionSubsystem.getInstance().getEstimatedGlobalPoses();
-
-    // Exit if no valid vision pose estimates
-    if (visionEstimatedRobotPoses.isEmpty()) return;
-
-    // Add vision measurements to pose estimator
-    for (var visionEstimatedRobotPose : visionEstimatedRobotPoses) {
-      poseEstimator.resetPosition(
-        getRotation2d(),
-        getModulePositions(),
-        visionEstimatedRobotPose.estimatedRobotPose.estimatedPose.toPose2d()
-      );
-    }
-  }
-
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
     // Filter inertial velocity
-    navx.getInputs().xVelocity = Units.MetersPerSecond.of(
-      xVelocityFilter.calculate(navx.getInputs().xVelocity.in(Units.MetersPerSecond))
+    navx.getInputs().velocityX = (MutLinearVelocity) Units.MetersPerSecond.of(
+      xVelocityFilter.calculate(navx.getInputs().velocityX.in(Units.MetersPerSecond))
     );
-    navx.getInputs().yVelocity = Units.MetersPerSecond.of(
-      yVelocityFilter.calculate(navx.getInputs().yVelocity.in(Units.MetersPerSecond))
+    navx.getInputs().velocityY = (MutLinearVelocity) Units.MetersPerSecond.of(
+      yVelocityFilter.calculate(navx.getInputs().velocityY.in(Units.MetersPerSecond))
     );
 
     if (RobotBase.isSimulation()) return;
@@ -768,42 +612,10 @@ public static Hardware initializeHardware() {
 
   @Override
   public void simulationPeriodic() {
-    // This method will be called once per scheduler run in simulation
-    double randomNoise = ThreadLocalRandom.current().nextDouble(0.8, 1.0);
-    navx.getInputs().xVelocity = Units.MetersPerSecond.of(desiredChassisSpeeds.vxMetersPerSecond * randomNoise);
-    navx.getInputs().yVelocity = Units.MetersPerSecond.of(desiredChassisSpeeds.vyMetersPerSecond * randomNoise);
-    navx.getInputs().yawRate = Units.RadiansPerSecond.of(desiredChassisSpeeds.omegaRadiansPerSecond * randomNoise);
-
-    int yawDriftDirection = ThreadLocalRandom.current().nextDouble(1.0) < 0.5 ? -1 : +1;
-    double angle = navx.getSimAngle() - Math.toDegrees(desiredChassisSpeeds.omegaRadiansPerSecond * randomNoise) * GlobalConstants.ROBOT_LOOP_PERIOD
-                   + (NAVX2_YAW_DRIFT_RATE.in(Units.DegreesPerSecond) * GlobalConstants.ROBOT_LOOP_PERIOD * yawDriftDirection);
-    navx.setSimAngle(angle);
 
     updatePose();
     smartDashboard();
     logOutputs();
-  }
-
-  /**
-   * Configure the auto builder
-   */
-  public void configureAutoBuilder() {
-    AutoBuilder.configureHolonomic(
-      this::getPose,
-      this::resetPose,
-      this::getChassisSpeeds,
-      this::autoDrive,
-            pathFollowerConfig,
-      () -> {
-        var alliance = DriverStation.getAlliance();
-          return alliance.filter(value -> value == Alliance.Red).isPresent();
-      },
-      this
-    );
-  }
-
-  public Alliance getAlliance() {
-    return currentAlliance;
   }
 
   /**
@@ -836,8 +648,8 @@ public static Hardware initializeHardware() {
       getPose().getRotation().getDegrees()
     );
     autoAimPIDControllerBack.calculate(
-      getPose().getRotation().plus(GlobalConstants.ROTATION_PI).getDegrees(),
-      getPose().getRotation().plus(GlobalConstants.ROTATION_PI).getDegrees()
+      getPose().getRotation().plus(Rotation2d.fromRadians(Math.PI)).getDegrees(),
+      getPose().getRotation().plus(Rotation2d.fromRadians(Math.PI)).getDegrees()
     );
   }
 
@@ -903,13 +715,6 @@ public static Hardware initializeHardware() {
     return aimAtPointCommand(() -> 0.0, () -> 0.0, () -> 0.0, () -> point, reversed, velocityCorrection);
   }
 
-  /**
-   * Change robot aim by desired angle
-   * @return Command that aims robot
-   */
-  public Command aimAtAngleCommand(DoubleSupplier angleRequestSupplier) {
-    return run(() -> aimAtAngle(angleRequestSupplier.getAsDouble()));
-  }
 
   /**
    * Drive the robot
@@ -983,30 +788,6 @@ public static Hardware initializeHardware() {
   }
 
   /**
-   * Reset pose estimator to vision estimated pose
-   * @return Command to reset pose to current vision estimated pose
-   */
-  public Command resetPoseToVisionCommand() {
-    return runOnce(this::resetPoseToVision);
-  }
-
-  /**
-   * Go to goal pose
-   * @param goal Desired goal pose
-   * @param parallelCommand Command to run in parallel on final approach
-   * @param endCommand Command to run after goal is reached
-   * @return Command that will drive robot to the desired pose
-   */
-  public Command goToPoseCommand(PurplePathPose goal, Command parallelCommand, Command endCommand) {
-    goal.calculateFinalApproach(getPathConstraints());
-    return Commands.sequence(
-      defer(() -> purplePathClient.getTrajectoryCommand(goal, parallelCommand).finallyDo(this::resetRotatePID)),
-      stopCommand(),
-      Commands.parallel(driveCommand(() -> 0.0, () -> 0.0, () -> 0.0), endCommand)
-    );
-  }
-
-  /**
    * @return Command to aim a point on the field in robot centric mode
    */
   public Command aimAtPointRobotCentric(DoubleSupplier xRequestSupplier, DoubleSupplier yRequestSupplier, DoubleSupplier rotateRequestSupplier,
@@ -1027,19 +808,10 @@ public static Hardware initializeHardware() {
   }
 
   /**
-   * Go to goal pose
-   * @param goal Desired goal pose
-   * @return Command that will drive robot to the desired pose
-   */
-  public Command goToPoseCommand(PurplePathPose goal) {
-    return goToPoseCommand(goal, Commands.none(), Commands.none());
-  }
-
-  /**
    * Reset DriveSubsystem turn PID
    */
   public void resetRotatePID() {
-    rotatePIDController.setSetpoint(getAngle().in(Units.Degrees));
+    rotatePIDController.setSetpoint(getAngle());
     rotatePIDController.reset();
   }
 
@@ -1051,8 +823,8 @@ public static Hardware initializeHardware() {
     return new PathConstraints(
       3.0,
       1.0,
-      DRIVE_ROTATE_VELOCITY.in(Units.RadiansPerSecond),
-      DRIVE_ROTATE_ACCELERATION.magnitude()
+      Constants.Drive.DRIVE_ROTATE_VELOCITY.in(Units.RadiansPerSecond),
+      Constants.Drive.DRIVE_ROTATE_ACCELERATION.magnitude()
     );
   }
 
@@ -1073,21 +845,21 @@ public static Hardware initializeHardware() {
   }
 
   /**
-   * Get whether or not robot is tipping over
+   * Get whether robot is tipping over
    * @return True if robot is tipping
    */
   public boolean isTipping() {
-    return Math.abs(getPitch().in(Units.Degrees)) > TIP_THRESHOLD ||
-           Math.abs(getRoll().in(Units.Degrees)) > TIP_THRESHOLD;
+    return Math.abs(getPitch().in(Units.Degrees)) > Constants.Drive.TIP_THRESHOLD ||
+           Math.abs(getRoll().in(Units.Degrees)) > Constants.Drive.TIP_THRESHOLD;
   }
 
   /**
-   * Get whether or not robot is nearly balanced
+   * Get whether robot is nearly balanced
    * @return True if robot is (nearly) balanced
    */
   public boolean isBalanced() {
-    return Math.abs(getPitch().in(Units.Degrees)) < BALANCED_THRESHOLD &&
-           Math.abs(getRoll().in(Units.Degrees)) < BALANCED_THRESHOLD;
+    return Math.abs(getPitch().in(Units.Degrees)) < Constants.Drive.BALANCED_THRESHOLD &&
+           Math.abs(getRoll().in(Units.Degrees)) < Constants.Drive.BALANCED_THRESHOLD;
   }
 
   /**
@@ -1095,16 +867,16 @@ public static Hardware initializeHardware() {
    * @return True if aimed
    */
   public boolean isAimed() {
-    return (autoAimPIDControllerFront.atGoal() || autoAimPIDControllerBack.atGoal()) && getRotateRate().lt(AIM_VELOCITY_THRESHOLD);
+    return (autoAimPIDControllerFront.atGoal() || autoAimPIDControllerBack.atGoal()) && getRotateRate().lt(Constants.Drive.AIM_VELOCITY_THRESHOLD);
   }
 
   /**
    * Get inertial velocity of robot
    * @return Inertial velocity of robot in m/s
    */
-  public Measure<Velocity<Distance>> getInertialVelocity() {
+  public LinearVelocity getInertialVelocity() {
     return Units.MetersPerSecond.of(
-      Math.hypot(navx.getInputs().xVelocity.in(Units.MetersPerSecond), navx.getInputs().yVelocity.in(Units.MetersPerSecond))
+      Math.hypot(navx.getInputs().velocityX.in(Units.MetersPerSecond), navx.getInputs().velocityY.in(Units.MetersPerSecond))
     );
   }
 
@@ -1112,7 +884,7 @@ public static Hardware initializeHardware() {
    * Get pitch of robot
    * @return Current pitch angle of robot in degrees
    */
-  public Measure<Angle> getPitch() {
+  public Angle getPitch() {
     // Robot pitch axis is navX pitch axis
     return navx.getInputs().pitchAngle;
   }
@@ -1121,7 +893,7 @@ public static Hardware initializeHardware() {
    * Get roll of robot
    * @return Current roll angle of robot in degrees
    */
-  public Measure<Angle> getRoll() {
+  public Angle getRoll() {
     // Robot roll axis is navX roll axis
     return navx.getInputs().rollAngle;
   }
@@ -1130,7 +902,7 @@ public static Hardware initializeHardware() {
    * Return the heading of the robot in degrees
    * @return Current heading of the robot in degrees
    */
-  public Measure<Angle> getAngle() {
+  public Angle getAngle() {
     return navx.getInputs().yawAngle;
   }
 
@@ -1138,7 +910,7 @@ public static Hardware initializeHardware() {
    * Get rotate rate of robot
    * @return Current rotate rate of robot
    */
-  public Measure<Velocity<Angle>> getRotateRate() {
+  public AngularVelocity getRotateRate() {
     return navx.getInputs().yawRate;
   }
 
