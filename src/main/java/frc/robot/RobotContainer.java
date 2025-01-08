@@ -7,6 +7,10 @@ package frc.robot;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.units.Units;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.Dimensionless;
+import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -23,9 +27,9 @@ public class RobotContainer {
       Constants.Drive.DRIVE_CONTROL_CENTRICITY,
       Constants.Drive.DRIVE_THROTTLE_INPUT_CURVE,
       Constants.Drive.DRIVE_TURN_INPUT_CURVE,
-      Constants.Drive.DRIVE_TURN_SCALAR,
-      Constants.HID.CONTROLLER_DEADBAND,
-      Constants.Drive.DRIVE_LOOKAHEAD);
+      Angle.ofRelativeUnits(Constants.Drive.DRIVE_TURN_SCALAR, Units.Degree),
+      Dimensionless.ofRelativeUnits(Constants.HID.CONTROLLER_DEADBAND, Units.Value),
+      Time.ofRelativeUnits(Constants.Drive.DRIVE_LOOKAHEAD, Units.Second));
 
   private static final CommandXboxController PRIMARY_CONTROLLER = new CommandXboxController(
       Constants.HID.PRIMARY_CONTROLLER_PORT);

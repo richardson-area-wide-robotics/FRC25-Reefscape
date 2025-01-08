@@ -19,7 +19,6 @@ import org.lasarobotics.hardware.revrobotics.Spark;
 import org.lasarobotics.drive.RotatePIDController;
 import org.lasarobotics.drive.ThrottleMap;
 import org.lasarobotics.hardware.kauailabs.NavX2;
-import org.lasarobotics.hardware.revrobotics.Spark.MotorKind;
 import org.lasarobotics.led.LEDStrip.Pattern;
 import org.lasarobotics.led.LEDSubsystem;
 import org.lasarobotics.utils.FFConstants;
@@ -57,7 +56,6 @@ import edu.wpi.first.units.measure.Mass;
 import edu.wpi.first.units.measure.MutLinearVelocity;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.LinearAcceleration;
-import edu.wpi.first.units.DimensionlessUnit;
 import org.lasarobotics.drive.swerve.DriveWheel;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -234,6 +232,12 @@ public DriveSubsystem(Hardware drivetrainHardware, PIDConstants pidf, ControlCen
         );
         field.getObject("currentPath").setTrajectory(trajectory);
     });
+
+    // may or may not work Lol
+    autoAimPIDControllerFront = new ProfiledPIDController(BALANCED_THRESHOLD, AUTO_LOCK_TIME, AIM_VELOCITY_COMPENSATION_FUDGE_FACTOR, null);
+    autoAimPIDControllerBack = new ProfiledPIDController(BALANCED_THRESHOLD, AUTO_LOCK_TIME, AIM_VELOCITY_COMPENSATION_FUDGE_FACTOR, null);
+    xVelocityFilter = new MedianFilter(0);
+    yVelocityFilter = new MedianFilter(0);
 }
 
 /**
