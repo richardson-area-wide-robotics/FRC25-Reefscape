@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.drive.DriveSubsystem;
 
 public class RobotContainer {
@@ -32,6 +33,8 @@ public class RobotContainer {
 
   private static final CommandXboxController PRIMARY_CONTROLLER = new CommandXboxController(
       Constants.HID.PRIMARY_CONTROLLER_PORT);
+  private static final CommandXboxController OPERATOR_CONTROLLER = new CommandXboxController(
+    Constants.HID.SECONDARY_CONTROLLER_PORT);
 
   private final SendableChooser<Command> automodeChooser;
 
@@ -70,14 +73,27 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
-    // Start button - toggle traction control
-    PRIMARY_CONTROLLER.start().onTrue(DRIVE_SUBSYSTEM.toggleTractionControlCommand());
+    // Start - toggle traction control
+    bindControl(PRIMARY_CONTROLLER.start(), DRIVE_SUBSYSTEM.toggleTractionControlCommand());
 
-    // Reset pose
-    PRIMARY_CONTROLLER.povLeft().onTrue(DRIVE_SUBSYSTEM.resetPoseCommand(Pose2d::new));
+    // Left POV - Reset pose
+    bindControl(PRIMARY_CONTROLLER.povLeft(), DRIVE_SUBSYSTEM.resetPoseCommand(Pose2d::new));
 
-    // Reset heading
-    PRIMARY_CONTROLLER.rightStick().onTrue(Commands.runOnce(DRIVE_SUBSYSTEM.navx::reset, DRIVE_SUBSYSTEM));
+    // Right Stick Button - Reset heading
+    bindControl(PRIMARY_CONTROLLER.rightStick(), Commands.runOnce(DRIVE_SUBSYSTEM.navx::reset, DRIVE_SUBSYSTEM));
+  }
+
+  /**
+   * Helper method to bind a control action to a command.
+   *
+   * @param control The button to bind to.
+   * @param command The command to execute when that button is pressed.
+   *
+   * @author Hudson Strub
+   * @since 2025
+   */
+  private void bindControl(Trigger control, Command command) {
+    control.onTrue(command);
   }
 
   /**

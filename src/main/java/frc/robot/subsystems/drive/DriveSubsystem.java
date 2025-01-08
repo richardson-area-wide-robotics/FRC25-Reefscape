@@ -246,7 +246,7 @@ public static Hardware initializeHardware() {
   private static REVSwerveModule createSwerve(Spark.ID driveMotor, Spark.ID rotateMotor, SwerveModule.Location location){
     return MAXSwerveModule.create(
           new REVSwerveModule.Hardware(
-                  new Spark(driveMotor, Spark.MotorKind.NEO),
+                  new Spark(driveMotor, Spark.MotorKind.NEO_VORTEX),
                   new Spark(rotateMotor, Spark.MotorKind.NEO_550)
           ),
           location,
