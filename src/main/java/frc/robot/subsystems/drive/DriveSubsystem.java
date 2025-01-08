@@ -33,8 +33,6 @@ import edu.wpi.first.math.geometry.Rotation2d;      // For handling rotations
 import edu.wpi.first.math.geometry.Translation2d;    // For handling 2D translations
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard; // For dashboard integration
 import edu.wpi.first.units.measure.Dimensionless;
-import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.filter.MedianFilter;
@@ -43,8 +41,6 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.units.measure.Angle;
@@ -55,7 +51,6 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Mass;
 import edu.wpi.first.units.measure.MutLinearVelocity;
-import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.LinearAcceleration;
 import org.lasarobotics.drive.swerve.DriveWheel;
 import edu.wpi.first.units.Units;
@@ -76,15 +71,12 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       REVSwerveModule rRearModule;
   }
 
-  // Drive specs
-  public static final double DRIVE_WHEELBASE = 0.5588;
-  public static final double DRIVE_TRACK_WIDTH = 0.5588;
-  public static final double AUTO_LOCK_TIME = 3.0;
-  public static final double DRIVE_CURRENT_LIMIT = 60.0;
-  public static final AngularVelocity DRIVE_ROTATE_VELOCITY = Units.RadiansPerSecond.of(12 * Math.PI);
-  public static final AngularVelocity AIM_VELOCITY_THRESHOLD = Units.DegreesPerSecond.of(5.0);
-  public static final AngularAcceleration DRIVE_ROTATE_ACCELERATION = Units.RadiansPerSecond.of(4 * Math.PI).per(Units.Second);
-  public static final Translation2d AIM_OFFSET = new Translation2d(0.0, -0.5);
+  private final ThrottleMap throttleMap;
+  private final RotatePIDController rotatePIDController;
+  @Getter
+  private final SwerveDriveKinematics kinematics;
+  private final SwerveDrivePoseEstimator poseEstimator;
+
   public final LinearVelocity DRIVE_MAX_LINEAR_SPEED;
   public final LinearAcceleration DRIVE_AUTO_ACCELERATION;
   private final AdvancedSwerveKinematics advancedKinematics = new AdvancedSwerveKinematics();
@@ -92,25 +84,6 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   private final ProfiledPIDController autoAimPIDControllerBack;
   private final MedianFilter xVelocityFilter;
   private final MedianFilter yVelocityFilter;
-
-  // Other settings
-  private static final double TIP_THRESHOLD = 35.0;
-  private static final double BALANCED_THRESHOLD = 10.0;
-  private static final double AIM_VELOCITY_COMPENSATION_FUDGE_FACTOR = 0.1;
-  private static final Matrix<N3, N1> ODOMETRY_STDDEV = VecBuilder.fill(0.03, 0.03, Math.toRadians(1.0));
-  private static final Matrix<N3, N1> VISION_STDDEV = VecBuilder.fill(1.0, 1.0, Math.toRadians(3.0));
-  
-  // Log
-  private static final String POSE_LOG_ENTRY = "/Pose";
-  private static final String ACTUAL_SWERVE_STATE_LOG_ENTRY = "/ActualSwerveState";
-  private static final String DESIRED_SWERVE_STATE_LOG_ENTRY = "/DesiredSwerveState";
-
-
-  private final ThrottleMap throttleMap;
-  private final RotatePIDController rotatePIDController;
-  @Getter
-  private final SwerveDriveKinematics kinematics;
-  private final SwerveDrivePoseEstimator poseEstimator;
 
   public final NavX2 navx;
   private final REVSwerveModule lFrontModule;
@@ -202,8 +175,8 @@ public DriveSubsystem(Hardware drivetrainHardware, PIDConstants pidf, ControlCen
         getRotation2d(),
         getModulePositions(),
         new Pose2d(),
-        ODOMETRY_STDDEV,
-        VISION_STDDEV
+        Constants.Drive.ODOMETRY_STDDEV,
+        Constants.Drive.VISION_STDDEV
     );
 
     // Chassis speeds
@@ -224,8 +197,8 @@ public DriveSubsystem(Hardware drivetrainHardware, PIDConstants pidf, ControlCen
     });
 
     // may or may not work Lol
-    autoAimPIDControllerFront = new ProfiledPIDController(BALANCED_THRESHOLD, AUTO_LOCK_TIME, AIM_VELOCITY_COMPENSATION_FUDGE_FACTOR, null);
-    autoAimPIDControllerBack = new ProfiledPIDController(BALANCED_THRESHOLD, AUTO_LOCK_TIME, AIM_VELOCITY_COMPENSATION_FUDGE_FACTOR, null);
+    autoAimPIDControllerFront = new ProfiledPIDController(Constants.Drive.BALANCED_THRESHOLD, Constants.Drive.AUTO_LOCK_TIME, Constants.Drive.AIM_VELOCITY_COMPENSATION_FUDGE_FACTOR, null);
+    autoAimPIDControllerBack = new ProfiledPIDController(Constants.Drive.BALANCED_THRESHOLD, Constants.Drive.AUTO_LOCK_TIME, Constants.Drive.AIM_VELOCITY_COMPENSATION_FUDGE_FACTOR, null);
     xVelocityFilter = new MedianFilter(0);
     yVelocityFilter = new MedianFilter(0);
 }
@@ -285,10 +258,10 @@ public static Hardware initializeHardware() {
           FFConstants.of(1,1,1,1),  // Replace with actual feed-forward constants
           Dimensionless.ofRelativeUnits(Constants.Drive.DRIVE_SLIP_RATIO, Units.Value),
           Mass.ofBaseUnits(100, Units.Pounds), // Replace with actual mass value
-          Distance.ofRelativeUnits(DRIVE_WHEELBASE, Units.Meter),
-          Distance.ofRelativeUnits(DRIVE_TRACK_WIDTH, Units.Meter),
-          Time.ofRelativeUnits(AUTO_LOCK_TIME, Units.Second),
-          Current.ofRelativeUnits(DRIVE_CURRENT_LIMIT, Units.Amp));
+          Distance.ofRelativeUnits(Constants.Drive.DRIVE_WHEELBASE, Units.Meter),
+          Distance.ofRelativeUnits(Constants.Drive.DRIVE_TRACK_WIDTH, Units.Meter),
+          Time.ofRelativeUnits(Constants.Drive.AUTO_LOCK_TIME, Units.Second),
+          Current.ofRelativeUnits(Constants.Drive.DRIVE_CURRENT_LIMIT, Units.Amp));
   }
 
   /**
@@ -300,7 +273,7 @@ public static Hardware initializeHardware() {
     rFrontModule.set(moduleStates);
     lRearModule.set(moduleStates);
     rRearModule.set(moduleStates);
-    Logger.recordOutput(getName() + DESIRED_SWERVE_STATE_LOG_ENTRY, moduleStates);
+    Logger.recordOutput(getName() + Constants.Drive.DESIRED_SWERVE_STATE_LOG_ENTRY, moduleStates);
   }
 
   /**
@@ -314,7 +287,7 @@ public static Hardware initializeHardware() {
     rFrontModule.set(moduleStates);
     lRearModule.set(moduleStates);
     rRearModule.set(moduleStates);
-    Logger.recordOutput(getName() + DESIRED_SWERVE_STATE_LOG_ENTRY, moduleStates);
+    Logger.recordOutput(getName() + Constants.Drive.DESIRED_SWERVE_STATE_LOG_ENTRY, moduleStates);
   }
 
   /**
@@ -422,8 +395,8 @@ public static Hardware initializeHardware() {
    * Log DriveSubsystem outputs
    */
   private void logOutputs() {
-    Logger.recordOutput(getName() + POSE_LOG_ENTRY, getPose());
-    Logger.recordOutput(getName() + ACTUAL_SWERVE_STATE_LOG_ENTRY, getModuleStates());
+    Logger.recordOutput(getName() + Constants.Drive.POSE_LOG_ENTRY, getPose());
+    Logger.recordOutput(getName() + Constants.Drive.ACTUAL_SWERVE_STATE_LOG_ENTRY, getModuleStates());
   }
 
   /**
@@ -479,7 +452,7 @@ public static Hardware initializeHardware() {
     }
 
     // Adjust point
-    point = point.plus(AIM_OFFSET);
+    point = point.plus(Constants.Drive.AIM_OFFSET);
     // Get current pose
     Pose2d currentPose = getPose();
     // Angle to target point
@@ -493,7 +466,7 @@ public static Hardware initializeHardware() {
     // Parallel component of robot's motion to target vector
     Vector2D parallelRobotVector = targetVector.scalarMultiply(robotVector.dotProduct(targetVector) / targetVector.getNormSq());
     // Perpendicular component of robot's motion to target vector
-    Vector2D perpendicularRobotVector = robotVector.subtract(parallelRobotVector).scalarMultiply(velocityCorrection ? AIM_VELOCITY_COMPENSATION_FUDGE_FACTOR : 0.0);
+    Vector2D perpendicularRobotVector = robotVector.subtract(parallelRobotVector).scalarMultiply(velocityCorrection ?Constants.Drive. AIM_VELOCITY_COMPENSATION_FUDGE_FACTOR : 0.0);
     // Adjust aim point using calculated vector
     Translation2d adjustedPoint = point.minus(new Translation2d(perpendicularRobotVector.getX(), perpendicularRobotVector.getY()));
     // Calculate new angle using adjusted point
@@ -850,8 +823,8 @@ public static Hardware initializeHardware() {
     return new PathConstraints(
       3.0,
       1.0,
-      DRIVE_ROTATE_VELOCITY.in(Units.RadiansPerSecond),
-      DRIVE_ROTATE_ACCELERATION.magnitude()
+      Constants.Drive.DRIVE_ROTATE_VELOCITY.in(Units.RadiansPerSecond),
+      Constants.Drive.DRIVE_ROTATE_ACCELERATION.magnitude()
     );
   }
 
@@ -876,8 +849,8 @@ public static Hardware initializeHardware() {
    * @return True if robot is tipping
    */
   public boolean isTipping() {
-    return Math.abs(getPitch().in(Units.Degrees)) > TIP_THRESHOLD ||
-           Math.abs(getRoll().in(Units.Degrees)) > TIP_THRESHOLD;
+    return Math.abs(getPitch().in(Units.Degrees)) > Constants.Drive.TIP_THRESHOLD ||
+           Math.abs(getRoll().in(Units.Degrees)) > Constants.Drive.TIP_THRESHOLD;
   }
 
   /**
@@ -885,8 +858,8 @@ public static Hardware initializeHardware() {
    * @return True if robot is (nearly) balanced
    */
   public boolean isBalanced() {
-    return Math.abs(getPitch().in(Units.Degrees)) < BALANCED_THRESHOLD &&
-           Math.abs(getRoll().in(Units.Degrees)) < BALANCED_THRESHOLD;
+    return Math.abs(getPitch().in(Units.Degrees)) < Constants.Drive.BALANCED_THRESHOLD &&
+           Math.abs(getRoll().in(Units.Degrees)) < Constants.Drive.BALANCED_THRESHOLD;
   }
 
   /**
@@ -894,7 +867,7 @@ public static Hardware initializeHardware() {
    * @return True if aimed
    */
   public boolean isAimed() {
-    return (autoAimPIDControllerFront.atGoal() || autoAimPIDControllerBack.atGoal()) && getRotateRate().lt(AIM_VELOCITY_THRESHOLD);
+    return (autoAimPIDControllerFront.atGoal() || autoAimPIDControllerBack.atGoal()) && getRotateRate().lt(Constants.Drive.AIM_VELOCITY_THRESHOLD);
   }
 
   /**
