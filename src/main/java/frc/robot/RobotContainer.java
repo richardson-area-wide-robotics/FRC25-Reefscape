@@ -5,7 +5,6 @@
 package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.commands.PathPlannerAuto;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Angle;
@@ -65,9 +64,9 @@ public class RobotContainer {
   }
 
   private void initializeAutos() {
-    PathPlannerAuto leaveAuto = new PathPlannerAuto("Leave");
-    PathPlannerAuto preLoad1 = new PathPlannerAuto("Preload + 1");
-    PathPlannerAuto preLoad3 = new PathPlannerAuto("Preload + 1");
+    //PathPlannerAuto leaveAuto = new PathPlannerAuto("Leave");
+    //PathPlannerAuto preLoad1 = new PathPlannerAuto("Preload + 1");
+    //PathPlannerAuto preLoad3 = new PathPlannerAuto("Preload + 1");
   }
 
   private void configureBindings() {
