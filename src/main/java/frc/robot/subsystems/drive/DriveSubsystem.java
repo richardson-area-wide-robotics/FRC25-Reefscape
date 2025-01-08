@@ -243,77 +243,52 @@ public DriveSubsystem(Hardware drivetrainHardware, PIDConstants pidf, ControlCen
 public static Hardware initializeHardware() {
   NavX2 navx = new NavX2(Constants.DriveHardware.NAVX_ID);
 
-  REVSwerveModule lFrontModule = new REVSwerveModule(
-    REVSwerveModule.initializeHardware(
-      Constants.DriveHardware.LEFT_FRONT_DRIVE_MOTOR_ID,
-      Constants.DriveHardware.LEFT_FRONT_ROTATE_MOTOR_ID,
-      MotorKind.NEO_VORTEX
-    ),
-    REVSwerveModule.ModuleLocation.LeftFront,
-    Constants.Drive.GEAR_RATIO,
-    DRIVE_WHEELBASE,
-    DRIVE_TRACK_WIDTH,
-    AUTO_LOCK_TIME,
-    MAX_SLIPPING_TIME,
-    DRIVE_CURRENT_LIMIT,
-    Constants.Drive.DRIVE_SLIP_RATIO
-  );
+  REVSwerveModule lFrontModule = createSwerve(
+          Constants.DriveHardware.LEFT_FRONT_DRIVE_MOTOR_ID,
+          Constants.DriveHardware.LEFT_FRONT_ROTATE_MOTOR_ID,
+          SwerveModule.Location.LeftFront);
+
 
   // Inverted back left and front right motors
-  REVSwerveModule rFrontModule = REVSwerveModule.create(
-    new REVSwerveModule.Hardware(
-        new Spark(Constants.DriveHardware.RIGHT_FRONT_DRIVE_MOTOR_ID, Spark.MotorKind.NEO),
-        new Spark(Constants.DriveHardware.RIGHT_FRONT_ROTATE_MOTOR_ID, Spark.MotorKind.NEO_550)
-    ),
-    SwerveModule.Location.RightFront,
-    Constants.Drive.GEAR_RATIO,
-    DriveWheel.create(null,null,null), // Replace with actual drive wheel configuration
-    PIDConstants.of(1, 1, 1,1,1), // Replace with actual PID constants
-    FFConstants.of(1,1,1,1),  // Replace with actual feed-forward constants
-    PIDConstants.of(1, 1, 1,1,1), // Replace with actual PID constants
-    FFConstants.of(1,1,1,1),  // Replace with actual feed-forward constants
-    of(Constants.Drive.DRIVE_SLIP_RATIO),
-    Mass.ofBaseUnits(100, Units.Pounds), // Replace with actual mass value
-    Distance.ofRelativeUnits(DRIVE_WHEELBASE, Units.Meter),
-    Distance.ofRelativeUnits(DRIVE_TRACK_WIDTH, Units.Meter),
-    Time.ofRelativeUnits(AUTO_LOCK_TIME, Units.Second),
-    Current.ofRelativeUnits(DRIVE_CURRENT_LIMIT, Units.Amp)
-);
+  REVSwerveModule rFrontModule = createSwerve(
+          Constants.DriveHardware.RIGHT_FRONT_DRIVE_MOTOR_ID,
+          Constants.DriveHardware.RIGHT_FRONT_ROTATE_MOTOR_ID,
+          SwerveModule.Location.RightFront);
 
-  REVSwerveModule lRearModule = new REVSwerveModule(
-    REVSwerveModule.initializeHardware(
-      Constants.DriveHardware.LEFT_REAR_DRIVE_MOTOR_ID,
-      Constants.DriveHardware.LEFT_REAR_ROTATE_MOTOR_ID,
-      MotorKind.NEO_VORTEX
-    ),
-    REVSwerveModule.ModuleLocation.LeftRear,
-    Constants.Drive.GEAR_RATIO,
-    DRIVE_WHEELBASE,
-    DRIVE_TRACK_WIDTH,
-    AUTO_LOCK_TIME,
-    MAX_SLIPPING_TIME,
-    DRIVE_CURRENT_LIMIT,
-    Constants.Drive.DRIVE_SLIP_RATIO
-  );
 
-  REVSwerveModule rRearModule = new REVSwerveModule(
-    REVSwerveModule.initializeHardware(
-      Constants.DriveHardware.RIGHT_REAR_DRIVE_MOTOR_ID,
-      Constants.DriveHardware.RIGHT_REAR_ROTATE_MOTOR_ID,
-      MotorKind.NEO_VORTEX
-    ),
-    REVSwerveModule.ModuleLocation.RightRear,
-    Constants.Drive.GEAR_RATIO,
-    DRIVE_WHEELBASE,
-    DRIVE_TRACK_WIDTH,
-    AUTO_LOCK_TIME,
-    MAX_SLIPPING_TIME,
-    DRIVE_CURRENT_LIMIT,
-    Constants.Drive.DRIVE_SLIP_RATIO
-  );
+  REVSwerveModule lRearModule = createSwerve(
+          Constants.DriveHardware.LEFT_REAR_DRIVE_MOTOR_ID,
+          Constants.DriveHardware.LEFT_REAR_ROTATE_MOTOR_ID,
+          SwerveModule.Location.LeftRear);
+
+  REVSwerveModule rRearModule = createSwerve(
+          Constants.DriveHardware.RIGHT_REAR_DRIVE_MOTOR_ID,
+          Constants.DriveHardware.RIGHT_REAR_ROTATE_MOTOR_ID,
+          SwerveModule.Location.RightRear);
 
     return new Hardware(navx, lFrontModule, rFrontModule, lRearModule, rRearModule);
 }
+
+  private static REVSwerveModule createSwerve(Spark.ID driveMotor, Spark.ID rotateMotor, SwerveModule.Location location){
+    return REVSwerveModule.create(
+          new REVSwerveModule.Hardware(
+                  new Spark(driveMotor, Spark.MotorKind.NEO),
+                  new Spark(rotateMotor, Spark.MotorKind.NEO_550)
+          ),
+          location,
+          Constants.Drive.GEAR_RATIO,
+          DriveWheel.create(null,null,null), // Replace with actual drive wheel configuration
+          PIDConstants.of(1, 1, 1,1,1), // Replace with actual PID constants
+          FFConstants.of(1,1,1,1),  // Replace with actual feed-forward constants
+          PIDConstants.of(1, 1, 1,1,1), // Replace with actual PID constants
+          FFConstants.of(1,1,1,1),  // Replace with actual feed-forward constants
+          of(Constants.Drive.DRIVE_SLIP_RATIO),
+          Mass.ofBaseUnits(100, Units.Pounds), // Replace with actual mass value
+          Distance.ofRelativeUnits(DRIVE_WHEELBASE, Units.Meter),
+          Distance.ofRelativeUnits(DRIVE_TRACK_WIDTH, Units.Meter),
+          Time.ofRelativeUnits(AUTO_LOCK_TIME, Units.Second),
+          Current.ofRelativeUnits(DRIVE_CURRENT_LIMIT, Units.Amp));
+  }
 
   /**
    * Set swerve modules
