@@ -57,6 +57,7 @@ import edu.wpi.first.units.measure.Mass;
 import edu.wpi.first.units.measure.MutLinearVelocity;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.LinearAcceleration;
+import edu.wpi.first.units.DimensionlessUnit;
 import org.lasarobotics.drive.swerve.DriveWheel;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -164,7 +165,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
  */
 public DriveSubsystem(Hardware drivetrainHardware, PIDConstants pidf, ControlCentricity controlCentricity,
                       PolynomialSplineFunction throttleInputCurve, PolynomialSplineFunction turnInputCurve,
-                      double turnScalar, double deadband, double lookAhead) {
+                      Angle turnScalar, Dimensionless deadband, Time lookAhead) {
 
     // Initialize subsystem name
     setSubsystem(this.getClass().getSimpleName());
@@ -184,7 +185,7 @@ public DriveSubsystem(Hardware drivetrainHardware, PIDConstants pidf, ControlCen
 
     // Input curves and controllers
     this.controlCentricity = controlCentricity;
-    this.throttleMap = new ThrottleMap(throttleInputCurve, DRIVE_MAX_LINEAR_SPEED, Dimensionless.ofBaseUnits(deadband, Units.Watts));
+    this.throttleMap = new ThrottleMap(throttleInputCurve, DRIVE_MAX_LINEAR_SPEED, deadband);
     this.rotatePIDController = new RotatePIDController(turnInputCurve, pidf, turnScalar, deadband, lookAhead);
 
     // Path follower configuration
@@ -242,13 +243,13 @@ public DriveSubsystem(Hardware drivetrainHardware, PIDConstants pidf, ControlCen
 public static Hardware initializeHardware() {
   NavX2 navx = new NavX2(Constants.DriveHardware.NAVX_ID);
 
-  MAXSwerveModule lFrontModule = new MAXSwerveModule(
-    MAXSwerveModule.initializeHardware(
+  REVSwerveModule lFrontModule = new REVSwerveModule(
+    REVSwerveModule.initializeHardware(
       Constants.DriveHardware.LEFT_FRONT_DRIVE_MOTOR_ID,
       Constants.DriveHardware.LEFT_FRONT_ROTATE_MOTOR_ID,
       MotorKind.NEO_VORTEX
     ),
-    MAXSwerveModule.ModuleLocation.LeftFront,
+    REVSwerveModule.ModuleLocation.LeftFront,
     Constants.Drive.GEAR_RATIO,
     DRIVE_WHEELBASE,
     DRIVE_TRACK_WIDTH,
@@ -259,7 +260,7 @@ public static Hardware initializeHardware() {
   );
 
   // Inverted back left and front right motors
-  MAXSwerveModule rFrontModule = MAXSwerveModule.create(
+  REVSwerveModule rFrontModule = REVSwerveModule.create(
     new REVSwerveModule.Hardware(
         new Spark(Constants.DriveHardware.RIGHT_FRONT_DRIVE_MOTOR_ID, Spark.MotorKind.NEO),
         new Spark(Constants.DriveHardware.RIGHT_FRONT_ROTATE_MOTOR_ID, Spark.MotorKind.NEO_550)
@@ -271,7 +272,7 @@ public static Hardware initializeHardware() {
     FFConstants.of(1,1,1,1),  // Replace with actual feed-forward constants
     PIDConstants.of(1, 1, 1,1,1), // Replace with actual PID constants
     FFConstants.of(1,1,1,1),  // Replace with actual feed-forward constants
-    Dimensionless.in(Constants.Drive.DRIVE_SLIP_RATIO),
+    of(Constants.Drive.DRIVE_SLIP_RATIO),
     Mass.ofBaseUnits(100, Units.Pounds), // Replace with actual mass value
     Distance.ofRelativeUnits(DRIVE_WHEELBASE, Units.Meter),
     Distance.ofRelativeUnits(DRIVE_TRACK_WIDTH, Units.Meter),
@@ -279,13 +280,13 @@ public static Hardware initializeHardware() {
     Current.ofRelativeUnits(DRIVE_CURRENT_LIMIT, Units.Amp)
 );
 
-  MAXSwerveModule lRearModule = new MAXSwerveModule(
-    MAXSwerveModule.initializeHardware(
+  REVSwerveModule lRearModule = new REVSwerveModule(
+    REVSwerveModule.initializeHardware(
       Constants.DriveHardware.LEFT_REAR_DRIVE_MOTOR_ID,
       Constants.DriveHardware.LEFT_REAR_ROTATE_MOTOR_ID,
       MotorKind.NEO_VORTEX
     ),
-    MAXSwerveModule.ModuleLocation.LeftRear,
+    REVSwerveModule.ModuleLocation.LeftRear,
     Constants.Drive.GEAR_RATIO,
     DRIVE_WHEELBASE,
     DRIVE_TRACK_WIDTH,
@@ -295,13 +296,13 @@ public static Hardware initializeHardware() {
     Constants.Drive.DRIVE_SLIP_RATIO
   );
 
-  MAXSwerveModule rRearModule = new MAXSwerveModule(
-    MAXSwerveModule.initializeHardware(
+  REVSwerveModule rRearModule = new REVSwerveModule(
+    REVSwerveModule.initializeHardware(
       Constants.DriveHardware.RIGHT_REAR_DRIVE_MOTOR_ID,
       Constants.DriveHardware.RIGHT_REAR_ROTATE_MOTOR_ID,
       MotorKind.NEO_VORTEX
     ),
-    MAXSwerveModule.ModuleLocation.RightRear,
+    REVSwerveModule.ModuleLocation.RightRear,
     Constants.Drive.GEAR_RATIO,
     DRIVE_WHEELBASE,
     DRIVE_TRACK_WIDTH,
@@ -333,10 +334,10 @@ public static Hardware initializeHardware() {
    * @param rotateRate Desired robot rotate rate
    */
   private void setSwerveModules(SwerveModuleState[] moduleStates, LinearVelocity inertialVelocity, AngularVelocity rotateRate) {
-    lFrontModule.set(moduleStates, inertialVelocity, rotateRate);
-    rFrontModule.set(moduleStates, inertialVelocity, rotateRate);
-    lRearModule.set(moduleStates, inertialVelocity, rotateRate);
-    rRearModule.set(moduleStates, inertialVelocity, rotateRate);
+    lFrontModule.set(moduleStates);
+    rFrontModule.set(moduleStates);
+    lRearModule.set(moduleStates);
+    rRearModule.set(moduleStates);
     Logger.recordOutput(getName() + DESIRED_SWERVE_STATE_LOG_ENTRY, moduleStates);
   }
 
