@@ -89,11 +89,11 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   }
 
   // Drive specs
-  public static final Distance DRIVE_WHEELBASE = Units.Meters.of(0.5588);
-  public static final Distance DRIVE_TRACK_WIDTH = Units.Meters.of(0.5588);
-  public static final Time AUTO_LOCK_TIME = Units.Seconds.of(3.0);
+  public static final double DRIVE_WHEELBASE = 0.5588;
+  public static final double DRIVE_TRACK_WIDTH = 0.5588;
+  public static final double AUTO_LOCK_TIME = 3.0;
   public static final Time MAX_SLIPPING_TIME = Units.Seconds.of(1.2);
-  public static final Current DRIVE_CURRENT_LIMIT = Units.Amps.of(60.0);
+  public static final double DRIVE_CURRENT_LIMIT = 60.0;
   public static final AngularVelocity DRIVE_ROTATE_VELOCITY = Units.RadiansPerSecond.of(12 * Math.PI);
   public static final AngularVelocity AIM_VELOCITY_THRESHOLD = Units.DegreesPerSecond.of(5.0);
   public static final AngularAcceleration DRIVE_ROTATE_ACCELERATION = Units.RadiansPerSecond.of(4 * Math.PI).per(Units.Second);
@@ -263,7 +263,7 @@ public static Hardware initializeHardware() {
   MAXSwerveModule rFrontModule = MAXSwerveModule.create(
     new REVSwerveModule.Hardware(
         new Spark(Constants.DriveHardware.RIGHT_FRONT_DRIVE_MOTOR_ID, Spark.MotorKind.NEO),
-        new Spark(Constants.DriveHardware.RIGHT_FRONT_ROTATE_MOTOR_ID, Spark.MotorKind.NEO_550),
+        new Spark(Constants.DriveHardware.RIGHT_FRONT_ROTATE_MOTOR_ID, Spark.MotorKind.NEO_550)
     ),
     SwerveModule.Location.RightFront,
     Constants.Drive.GEAR_RATIO,
@@ -274,10 +274,10 @@ public static Hardware initializeHardware() {
     FFConstants.of(1,1,1,1),  // Replace with actual feed-forward constants
     Dimensionless.in(Constants.Drive.DRIVE_SLIP_RATIO),
     Mass.ofBaseUnits(100, Units.Pounds), // Replace with actual mass value
-    Distance.ofBaseUnits(DRIVE_WHEELBASE, Units.Inch),
-    new Distance(DRIVE_TRACK_WIDTH),
-    new Time(AUTO_LOCK_TIME),
-    new Current(DRIVE_CURRENT_LIMIT)
+    Distance.ofRelativeUnits(DRIVE_WHEELBASE, Units.Meter),
+    Distance.ofRelativeUnits(DRIVE_TRACK_WIDTH, Units.Meter),
+    Time.ofRelativeUnits(AUTO_LOCK_TIME, Units.Second),
+    Current.ofRelativeUnits(DRIVE_CURRENT_LIMIT, Units.Amp)
 );
 
   MAXSwerveModule lRearModule = new MAXSwerveModule(
