@@ -270,7 +270,7 @@ public static Hardware initializeHardware() {
 }
 
   private static REVSwerveModule createSwerve(Spark.ID driveMotor, Spark.ID rotateMotor, SwerveModule.Location location){
-    return REVSwerveModule.create(
+    return MAXSwerveModule.create(
           new REVSwerveModule.Hardware(
                   new Spark(driveMotor, Spark.MotorKind.NEO),
                   new Spark(rotateMotor, Spark.MotorKind.NEO_550)
@@ -282,7 +282,7 @@ public static Hardware initializeHardware() {
           FFConstants.of(1,1,1,1),  // Replace with actual feed-forward constants
           PIDConstants.of(1, 1, 1,1,1), // Replace with actual PID constants
           FFConstants.of(1,1,1,1),  // Replace with actual feed-forward constants
-          of(Constants.Drive.DRIVE_SLIP_RATIO),
+          Dimensionless.ofRelativeUnits(Constants.Drive.DRIVE_SLIP_RATIO, Units.Value),
           Mass.ofBaseUnits(100, Units.Pounds), // Replace with actual mass value
           Distance.ofRelativeUnits(DRIVE_WHEELBASE, Units.Meter),
           Distance.ofRelativeUnits(DRIVE_TRACK_WIDTH, Units.Meter),
