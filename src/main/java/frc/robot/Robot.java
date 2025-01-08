@@ -23,9 +23,8 @@ public class Robot extends LoggedRobot {
   private Command autonomousCommand;
 
   private RobotContainer robotContainer;
-  // TODO ROBOT_LOOP_HZ was this last year, should is still be the same?
   public Robot() {
-    super(50);
+    super();
   }
 
   @Override

@@ -7,6 +7,7 @@ package frc.robot.subsystems.drive;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
@@ -66,31 +67,19 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
 public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
+  @AllArgsConstructor
   public static class Hardware {
-    NavX2 navx;
-    REVSwerveModule lFrontModule;
-    REVSwerveModule rFrontModule;
-    REVSwerveModule lRearModule;
-    REVSwerveModule rRearModule;
-
-    public Hardware(NavX2 navx,
-          REVSwerveModule lFrontModule,
-          REVSwerveModule rFrontModule,
-          REVSwerveModule lRearModule,
-          REVSwerveModule rRearModule) {
-      this.navx = navx;
-      this.lFrontModule = lFrontModule;
-      this.rFrontModule = rFrontModule;
-      this.lRearModule = lRearModule;
-      this.rRearModule = rRearModule;
-    }
+      NavX2 navx;
+      REVSwerveModule lFrontModule;
+      REVSwerveModule rFrontModule;
+      REVSwerveModule lRearModule;
+      REVSwerveModule rRearModule;
   }
 
   // Drive specs
   public static final double DRIVE_WHEELBASE = 0.5588;
   public static final double DRIVE_TRACK_WIDTH = 0.5588;
   public static final double AUTO_LOCK_TIME = 3.0;
-  public static final Time MAX_SLIPPING_TIME = Units.Seconds.of(1.2);
   public static final double DRIVE_CURRENT_LIMIT = 60.0;
   public static final AngularVelocity DRIVE_ROTATE_VELOCITY = Units.RadiansPerSecond.of(12 * Math.PI);
   public static final AngularVelocity AIM_VELOCITY_THRESHOLD = Units.DegreesPerSecond.of(5.0);
@@ -110,7 +99,8 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   private static final double AIM_VELOCITY_COMPENSATION_FUDGE_FACTOR = 0.1;
   private static final Matrix<N3, N1> ODOMETRY_STDDEV = VecBuilder.fill(0.03, 0.03, Math.toRadians(1.0));
   private static final Matrix<N3, N1> VISION_STDDEV = VecBuilder.fill(1.0, 1.0, Math.toRadians(3.0));
-    // Log
+  
+  // Log
   private static final String POSE_LOG_ENTRY = "/Pose";
   private static final String ACTUAL_SWERVE_STATE_LOG_ENTRY = "/ActualSwerveState";
   private static final String DESIRED_SWERVE_STATE_LOG_ENTRY = "/DesiredSwerveState";
@@ -242,7 +232,8 @@ public DriveSubsystem(Hardware drivetrainHardware, PIDConstants pidf, ControlCen
 
 /**
  * Initialize hardware devices for drive subsystem
- * @return Hardware object containing all necessary devices for this subsystem
+ * 
+ * @return A Hardware object containing all necessary devices for this subsystem
  */
 public static Hardware initializeHardware() {
   NavX2 navx = new NavX2(Constants.DriveHardware.NAVX_ID);
@@ -252,13 +243,10 @@ public static Hardware initializeHardware() {
           Constants.DriveHardware.LEFT_FRONT_ROTATE_MOTOR_ID,
           SwerveModule.Location.LeftFront);
 
-
-  // Inverted back left and front right motors
   REVSwerveModule rFrontModule = createSwerve(
           Constants.DriveHardware.RIGHT_FRONT_DRIVE_MOTOR_ID,
           Constants.DriveHardware.RIGHT_FRONT_ROTATE_MOTOR_ID,
           SwerveModule.Location.RightFront);
-
 
   REVSwerveModule lRearModule = createSwerve(
           Constants.DriveHardware.LEFT_REAR_DRIVE_MOTOR_ID,
@@ -273,6 +261,15 @@ public static Hardware initializeHardware() {
     return new Hardware(navx, lFrontModule, rFrontModule, lRearModule, rRearModule);
 }
 
+  /** Make a {@link REVSwerveModule}
+   * 
+   * @param driveMotor the drive motor (Ex: forward-backword)
+   * @param rotateMotor the rotate motor (Ex: left-right)
+   * @param location the location of the swerve module (Ex: front left)
+   * 
+   * @author Hudson Strub
+   * @since 2025
+   */
   private static REVSwerveModule createSwerve(Spark.ID driveMotor, Spark.ID rotateMotor, SwerveModule.Location location){
     return MAXSwerveModule.create(
           new REVSwerveModule.Hardware(
@@ -284,7 +281,7 @@ public static Hardware initializeHardware() {
           DriveWheel.create(null,null,null), // Replace with actual drive wheel configuration
           PIDConstants.of(1, 1, 1,1,1), // Replace with actual PID constants
           FFConstants.of(1,1,1,1),  // Replace with actual feed-forward constants
-          PIDConstants.of(1, 1, 1,1,1), // Replace with actual PID constants
+          Constants.Drive.DRIVE_ROTATE_PID, // The PID for the rotate Motor
           FFConstants.of(1,1,1,1),  // Replace with actual feed-forward constants
           Dimensionless.ofRelativeUnits(Constants.Drive.DRIVE_SLIP_RATIO, Units.Value),
           Mass.ofBaseUnits(100, Units.Pounds), // Replace with actual mass value
@@ -875,7 +872,7 @@ public static Hardware initializeHardware() {
   }
 
   /**
-   * Get whether or not robot is tipping over
+   * Get whether robot is tipping over
    * @return True if robot is tipping
    */
   public boolean isTipping() {
@@ -884,7 +881,7 @@ public static Hardware initializeHardware() {
   }
 
   /**
-   * Get whether or not robot is nearly balanced
+   * Get whether robot is nearly balanced
    * @return True if robot is (nearly) balanced
    */
   public boolean isBalanced() {

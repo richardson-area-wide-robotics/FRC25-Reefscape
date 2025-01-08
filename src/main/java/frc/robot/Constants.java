@@ -68,7 +68,12 @@ public final class Constants {
   }
 
 
-  /** Constants for the Swerve Modules */
+  /** Constants for the physical hardware for drive 
+   * (Swerve Modules, etc)
+   * 
+   * @author PurpleLib
+   * @since 2024
+   */
   public static class DriveHardware {
     public static final NavX2.ID NAVX_ID = new NavX2.ID("DriveHardware/NavX2");
     public static final Spark.ID LEFT_FRONT_DRIVE_MOTOR_ID = new Spark.ID("DriveHardware/Swerve/LeftFront/Drive", 5);
