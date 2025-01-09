@@ -3,18 +3,28 @@
 
 graph LR;
     PDH{{Power Distribution Hub}};
-
+    RoboRIO==>CoralSubsystem;
+    RoboRIO==>AlgeaSubsystem;
+    RoboRIO==>ClimberSystem
 
     subgraph IntakeGroup
         direction LR
-        RoboRIO==>CoralSubsystem((Coral/Algae Subsystem))==>IntakeOSystem((Intake/Outake));
-       
+        CoralSubsystem((Coral Subsystem))==>IntakeOSystem;
+        AlgeaSubsystem((Algae Subsystem))==>IntakeOSystem;
+        IntakeOSystem((Intake/Outake));
     end
+
 
     subgraph ClimberGroup
         direction LR
-        RoboRIO==>ClimberSystem(Climber);
-        ClimberSystem==>FUNCCLIMBER1;
+        ClimberSystem(Climber);
+        DeployClimber(Deploy Climber);
+        ClimberSystem==>DeployClimber;
+        DeployClimber ==> CageHug;
+        CageHug(hug cage);
+        CageHug ==> FUNCCLIMBER1;
+        FUNCCLIMBER1[/Climb up/]==>FUNCCLIMBER2
+        FUNCCLIMBER2[/Climb down/]
     end
 
 
@@ -48,14 +58,11 @@ graph LR;
         MaxBL==>EncoderBL[[Absolute Encoder]];
     end
 
-    RADIO[(RADIO
-FUNCTION : communicate between robot and drive station)]==>RoboRIO;
-    RoboRIO{{RoboRIO
-FUNCTION : Brain of the robot, controls all subsystems}}==>DriveTrain;
+    RADIO[(RADIO FUNCTION : communicate between robot and drive station)]==>RoboRIO;
+    RoboRIO{{RoboRIO FUNCTION : Brain of the robot, controls all subsystems}}==>DriveTrain;
 
 
-    FUNCCLIMBER1[/Climb up/]==>FUNCCLIMBER2
-    FUNCCLIMBER2[/Climb down/]
+
 
 
 
