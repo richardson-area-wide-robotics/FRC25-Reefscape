@@ -9,10 +9,26 @@ graph LR;
 
     subgraph IntakeGroup
         direction LR
-        CoralSubsystem((Coral Subsystem))==>IntakeOSystem;
+        CoralSubsystem((Coral Subsystem))==>Elevator;
         AlgeaSubsystem((Algae Subsystem))==>IntakeOSystem;
         IntakeOSystem((Intake/Outake));
+        subgraph CoralGroup
+                direction LR
+                Elevator(Elevator) ==> ElevatorUp;
+                ElevatorUp(Elevator Up) ==> ElevatorDown;
+                ElevatorDown(ElevatorDown) ==> ElevatorStop;
+                ElevatorStop(Elevator Stop) ==> ElevatorL1;
+                ElevatorL1(ElevatorL1) ==> ElevatorL2;
+                ElevatorL2(ElevatorL2) ==> ElevatorL3;
+                ElevatorL3(ElevatorL3) ==> ElevatorL4;
+                ElevatorL4(ElevatorL4) ==> IntakeOSystem;
+        end
     end
+
+    subgraph AlgaeGroup
+        direction LR
+    end
+
 
 
     subgraph ClimberGroup
