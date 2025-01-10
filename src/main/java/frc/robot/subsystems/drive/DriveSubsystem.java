@@ -251,7 +251,10 @@ public static Hardware initializeHardware() {
           ),
           location,
           Constants.Drive.GEAR_RATIO,
-          DriveWheel.create(null,null,null), // Replace with actual drive wheel configuration
+          DriveWheel.create(
+            Distance.ofBaseUnits(75, Units.Millimeter), 
+            Dimensionless.ofRelativeUnits(0, Units.Value),
+            Dimensionless.ofRelativeUnits(0, Units.Value)), // TODO: Replace with actual drive wheel configuration
           PIDConstants.of(1, 1, 1,1,1), // Replace with actual PID constants
           FFConstants.of(1,1,1,1),  // Replace with actual feed-forward constants
           Constants.Drive.DRIVE_ROTATE_PID, // The PID for the rotate Motor
