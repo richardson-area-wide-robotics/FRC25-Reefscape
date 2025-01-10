@@ -15,6 +15,7 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 import com.pathplanner.lib.pathfinding.Pathfinding;
 
+import edu.wpi.first.hal.HALUtil;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -30,7 +31,9 @@ public class Robot extends LoggedRobot {
 
   @Override
   @SuppressWarnings("resource")
-public void robotInit() {
+  public void robotInit() {
+    Thread.setDefaultUncaughtExceptionHandler(new RobotExceptionHandler());
+
     // AdvantageKit Logging
     Logger.recordMetadata("ProjectName", "RAWR");
     Logger.recordMetadata("GitSHA", BuildConstants.GIT_SHA);
@@ -62,15 +65,15 @@ public void robotInit() {
 
     // Start logging! No more data receivers, replay sources, or metadata values may be added.
     Logger.start();
-    String containerTeam = "1745";
+    int containerTeam = HALUtil.getTeamNumber();
 
     switch (containerTeam) {
-        case "1745":
+        case 1745:
         default:
             robotContainer = RobotContainer.createContainer();
             break;
     }
-}
+  }
 
 
   @Override
