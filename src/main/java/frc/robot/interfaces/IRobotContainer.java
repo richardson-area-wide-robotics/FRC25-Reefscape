@@ -1,7 +1,6 @@
 package frc.robot.interfaces;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.RobotContainer;
 
 /**
  * Interface for a team's RobotContainer, 
@@ -12,7 +11,7 @@ import frc.robot.RobotContainer;
  */
 public interface IRobotContainer {
 
-    static RobotContainer createContainer() {
+    static IRobotContainer createContainer() {
         throw new UnsupportedOperationException("createContainer must be implemented in the specific RobotContainer class");
     }
 
