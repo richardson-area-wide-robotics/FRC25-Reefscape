@@ -42,8 +42,7 @@ public class RobotContainer implements IRobotContainer {
 
   private static SendableChooser<Command> automodeChooser = null; 
 
-  @Override
-  public RobotContainer createContainer(){
+  public static RobotContainer createContainer(){
         // Set drive command
         DRIVE_SUBSYSTEM.setDefaultCommand(
           DRIVE_SUBSYSTEM.driveCommand(
@@ -68,17 +67,17 @@ public class RobotContainer implements IRobotContainer {
       return new RobotContainer();
   }
 
-  private void registerNamedCommands() {
+  private static void registerNamedCommands() {
     //NamedCommands.registerCommand("Intake", FEEDER_SUBSYSTEM.feedNote().alongWith(INTAKE_SUBSYSTEM.runIntake()));
   }
 
-  private void initializeAutos() {
+  private static void initializeAutos() {
     //PathPlannerAuto leaveAuto = new PathPlannerAuto("Leave");
     //PathPlannerAuto preLoad1 = new PathPlannerAuto("Preload + 1");
     //PathPlannerAuto preLoad3 = new PathPlannerAuto("Preload + 1");
   }
 
-  private void configureBindings() {
+  private static void configureBindings() {
     // Start - toggle traction control
     bindControl(PRIMARY_CONTROLLER.start(), DRIVE_SUBSYSTEM.toggleTractionControlCommand());
 

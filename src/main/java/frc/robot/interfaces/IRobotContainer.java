@@ -3,9 +3,8 @@ package frc.robot.interfaces;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotContainer;
 
-
 /**
- * Interface for a teams RobotContainer, 
+ * Interface for a team's RobotContainer, 
  * ideally each team that needs different functionality would implement this
  * 
  * @author Hudson Strub
@@ -13,8 +12,10 @@ import frc.robot.RobotContainer;
  */
 public interface IRobotContainer {
 
+    static RobotContainer createContainer() {
+        throw new UnsupportedOperationException("createContainer must be implemented in the specific RobotContainer class");
+    }
 
-    RobotContainer createContainer();
     void simulationPeriodic();
     Command getAutonomousCommand();
 }
