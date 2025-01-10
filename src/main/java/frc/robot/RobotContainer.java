@@ -16,9 +16,13 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.interfaces.IRobotContainer;
 import frc.robot.subsystems.drive.DriveSubsystem;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
-public class RobotContainer {
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public class RobotContainer implements IRobotContainer {
 
 
   public static final DriveSubsystem DRIVE_SUBSYSTEM = new DriveSubsystem(
@@ -36,30 +40,32 @@ public class RobotContainer {
   private static final CommandXboxController OPERATOR_CONTROLLER = new CommandXboxController(
     Constants.HID.SECONDARY_CONTROLLER_PORT);
 
-  private final SendableChooser<Command> automodeChooser;
+  private static SendableChooser<Command> automodeChooser = null; 
 
-  public RobotContainer() {
+  @Override
+  public RobotContainer createContainer(){
+        // Set drive command
+        DRIVE_SUBSYSTEM.setDefaultCommand(
+          DRIVE_SUBSYSTEM.driveCommand(
+              PRIMARY_CONTROLLER::getLeftY,
+              PRIMARY_CONTROLLER::getLeftX,
+              PRIMARY_CONTROLLER::getRightX));
+  
+      // Register named commands
+      registerNamedCommands();
+  
+  
+      // Bind buttons and triggers
+      configureBindings();
+  
+      // Set up the auto chooser
+      automodeChooser = AutoBuilder.buildAutoChooser();
+      SmartDashboard.putData(Constants.SmartDashboard.SMARTDASHBOARD_AUTO_MODE, automodeChooser);
+  
+      // Initialize autos
+      initializeAutos();
 
-    // Set drive command
-    DRIVE_SUBSYSTEM.setDefaultCommand(
-        DRIVE_SUBSYSTEM.driveCommand(
-            PRIMARY_CONTROLLER::getLeftY,
-            PRIMARY_CONTROLLER::getLeftX,
-            PRIMARY_CONTROLLER::getRightX));
-
-    // Register named commands
-    registerNamedCommands();
-
-
-    // Bind buttons and triggers
-    configureBindings();
-
-    // Set up the auto chooser
-    automodeChooser = AutoBuilder.buildAutoChooser();
-    SmartDashboard.putData(Constants.SmartDashboard.SMARTDASHBOARD_AUTO_MODE, automodeChooser);
-
-    // Initialize autos
-    initializeAutos();
+      return new RobotContainer();
   }
 
   private void registerNamedCommands() {
@@ -92,13 +98,14 @@ public class RobotContainer {
    * @author Hudson Strub
    * @since 2025
    */
-  private void bindControl(Trigger control, Command command) {
+  private static void bindControl(Trigger control, Command command) {
     control.onTrue(command);
   }
 
   /**
    * Run simulation related methods
    */
+  @Override
   public void simulationPeriodic() {
   }
 
@@ -107,6 +114,7 @@ public class RobotContainer {
    * 
    * @return Autonomous command
    */
+  @Override
   public Command getAutonomousCommand() {
     return automodeChooser.getSelected();
   }
