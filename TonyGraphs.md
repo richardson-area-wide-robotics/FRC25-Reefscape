@@ -1,6 +1,5 @@
 ```mermaid
 
-
 graph LR;
     PDH{{Power Distribution Hub}};
     RoboRIO==>CoralSubsystem;
@@ -25,12 +24,6 @@ graph LR;
         end
     end
 
-    subgraph AlgaeGroup
-        direction LR
-    end
-
-
-
     subgraph ClimberGroup
         direction LR
         ClimberSystem(Climber);
@@ -42,7 +35,6 @@ graph LR;
         FUNCCLIMBER1[/Climb up/]==>FUNCCLIMBER2
         FUNCCLIMBER2[/Climb down/]
     end
-
 
     subgraph DriveTrainGroup
         direction LR
@@ -64,32 +56,47 @@ graph LR;
         FrontLeftSwerve==>VortexFL(Vortex *6*);
         BackRightSwerve==>VortexBR(Vortex *7*);
         BackLeftSwerve==>VortexBL(Vortex *8*);
-    end
 
-    subgraph EncoderGroup
+        subgraph SwerveGroupFR
         direction LR
+        MaxFR
+        VortexFR
         MaxFR==>EncoderFR[[Absolute Encoder]];
+        end
+
+        subgraph SwerveGroupFL
+        direction LR
+        MaxFL
+        VortexFL
         MaxFL==>EncoderFL[[Absolute Encoder]];
+        end
+
+        subgraph SwerveGroupBR
+        direction LR
+        MaxBR
+        VortexBR
         MaxBR==>EncoderBR[[Absolute Encoder]];
+        end
+
+        subgraph SwerveGroupBL
+        direction LR
+        MaxBL
+        VortexBL
         MaxBL==>EncoderBL[[Absolute Encoder]];
+        end
     end
 
     RADIO[(RADIO FUNCTION : communicate between robot and drive station)]==>RoboRIO;
     RoboRIO{{RoboRIO FUNCTION : Brain of the robot, controls all subsystems}}==>DriveTrain;
-
-
-
-
-
-
+    
     PDH==>|Slot 1|VortexFL
     PDH==>|Slot 2|MaxFL
     PDH==>|Slot 3|VortexFR
     PDH==>|Slot 4|MaxFR
-    PDH==>|Slot 5|MaxBL
-    PDH==>|Slot 6|MaxBR
+    PDH==>|Slot 5|VortexBL
+    PDH==>|Slot 6|MaxBL
     PDH==>|Slot 7|VortexBR
-    PDH==>|Slot 8|VortexBL
-
+    PDH==>|Slot 8|MaxBR
+    PDH==>|Slot 9|RoboRIO
 
 ```
