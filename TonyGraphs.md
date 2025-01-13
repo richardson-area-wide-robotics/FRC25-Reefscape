@@ -49,12 +49,12 @@ graph LR;
     subgraph SwerveGroup
         direction LR
         FrontRightSwerve==>MaxFR(Max *1*);
-        FrontLeftSwerve==>MaxFL(Max *2*);
-        BackRightSwerve==>MaxBR(Max *3*);
-        BackLeftSwerve==>MaxBL(Max *4*);
-        FrontRightSwerve==>VortexFR(Vortex *5*);
-        FrontLeftSwerve==>VortexFL(Vortex *6*);
-        BackRightSwerve==>VortexBR(Vortex *7*);
+        FrontLeftSwerve==>MaxFL(Max *3*);
+        BackRightSwerve==>MaxBR(Max *5*);
+        BackLeftSwerve==>MaxBL(Max *7*);
+        FrontRightSwerve==>VortexFR(Vortex *2*);
+        FrontLeftSwerve==>VortexFL(Vortex *4*);
+        BackRightSwerve==>VortexBR(Vortex *6*);
         BackLeftSwerve==>VortexBL(Vortex *8*);
 
         subgraph SwerveGroupFR
