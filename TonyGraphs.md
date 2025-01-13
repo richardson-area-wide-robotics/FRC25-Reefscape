@@ -89,14 +89,14 @@ graph LR;
     RADIO[(RADIO FUNCTION : communicate between robot and drive station)]==>RoboRIO;
     RoboRIO{{RoboRIO FUNCTION : Brain of the robot, controls all subsystems}}==>DriveTrain;
     
-    PDH==>|Slot 1|VortexFL
+    PDH==>|Slot 1|MaxFR
     PDH==>|Slot 2|MaxFL
-    PDH==>|Slot 3|VortexFR
-    PDH==>|Slot 4|MaxFR
-    PDH==>|Slot 5|VortexBL
-    PDH==>|Slot 6|MaxBL
+    PDH==>|Slot 3|MaxBR
+    PDH==>|Slot 4|MaxBL
+    PDH==>|Slot 5|VortexFR
+    PDH==>|Slot 6|VortexFL
     PDH==>|Slot 7|VortexBR
-    PDH==>|Slot 8|MaxBR
+    PDH==>|Slot 8|VortexBL
     PDH==>|Slot 9|RoboRIO
 
     linkStyle 36,37,38,39,40,41,42,43,44 stroke-width:4px,fill:none,stroke:orange;
