@@ -44,9 +44,8 @@ graph LR;
         DriveTrain==>FrontLeftSwerve(Front Left Swerve);
         DriveTrain==>BackRightSwerve(Back Right Swerve);
         DriveTrain==>BackLeftSwerve(Back Left Swerve);
-    end
 
-    subgraph SwerveGroup
+subgraph SwerveGroup
         direction LR
         FrontRightSwerve==>MaxFR(Max *1*);
         FrontLeftSwerve==>MaxFL(Max *2*);
@@ -85,6 +84,9 @@ graph LR;
         MaxBL==>EncoderBL[[Absolute Encoder]];
         end
     end
+    end
+
+    
 
     RADIO[(RADIO FUNCTION : communicate between robot and drive station)]==>RoboRIO;
     RoboRIO{{RoboRIO FUNCTION : Brain of the robot, controls all subsystems}}==>DriveTrain;
