@@ -26,6 +26,10 @@ import org.lasarobotics.utils.FFConstants;
 import org.lasarobotics.utils.PIDConstants;
 import org.littletonrobotics.junction.Logger;
 
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.config.ModuleConfig;
+import com.pathplanner.lib.config.RobotConfig;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.math.geometry.Rotation2d;      // For handling rotations
@@ -40,6 +44,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.units.measure.Angle;
@@ -49,10 +54,12 @@ import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Mass;
+import edu.wpi.first.units.measure.MomentOfInertia;
 import edu.wpi.first.units.measure.MutLinearVelocity;
 import edu.wpi.first.units.measure.LinearAcceleration;
 import org.lasarobotics.drive.swerve.DriveWheel;
 import edu.wpi.first.units.Units;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
@@ -83,6 +90,14 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   private final ProfiledPIDController autoAimPIDControllerBack;
   private final MedianFilter xVelocityFilter;
   private final MedianFilter yVelocityFilter;
+  private final PPHolonomicDriveController pathFollowerConfig;
+  private final RobotConfig robotConfig;
+  private final ModuleConfig moduleConfig;
+  private final Translation2d lFrontOffset;
+  private final Translation2d rFrontOffset;
+  private final Translation2d lRearOffset;
+  private final Translation2d rRearOffset;
+  private final Translation2d[] moduleOffset;
 
   public final NavX2 navx;
   private final RAWRSwerveModule lFrontModule;
@@ -110,7 +125,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       this::isBalanced,
       this
     );
-  
+
     /**
    * DriveSubsystem constructor for managing a swerve drivetrain.
    *
@@ -149,13 +164,37 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
       this.rotatePIDController = new RotatePIDController(turnInputCurve, pidf, turnScalar, deadband, lookAhead);
   
       // Path follower configuration
-      //this.pathFollowerConfig = new HolonomicPathFollowerConfig(
-      //    new com.pathplanner.lib.util.PIDConstants(3.1, 0.0, 0.0),
-      //    new com.pathplanner.lib.util.PIDConstants(5.0, 0.0, 0.1),
-      //    DRIVE_MAX_LINEAR_SPEED.in(Units.MetersPerSecond),
-      //    lFrontModule.getModuleCoordinate().getNorm(),
-      //    new ReplanningConfig(),
-      //);
+      this.pathFollowerConfig = new PPHolonomicDriveController(
+          new com.pathplanner.lib.config.PIDConstants(3.1, 0.0, 0.0),
+          new com.pathplanner.lib.config.PIDConstants(5.0, 0.0, 0.1),
+          DRIVE_MAX_LINEAR_SPEED.in(Units.MetersPerSecond)
+      );
+
+      // Set module offsets
+      // TODO: Change to actual module offsets
+      this.lFrontOffset = new Translation2d(0.273, 0.273);
+      this.rFrontOffset = new Translation2d(0.273, -0.273);
+      this.lRearOffset = new Translation2d(-0.273, 0.273);
+      this.rRearOffset = new Translation2d(-0.273, -0.273);
+      this.moduleOffset = new Translation2d[] {lFrontOffset, rFrontOffset, lRearOffset, rRearOffset};
+
+      // Module configuration
+      this.moduleConfig = new ModuleConfig(
+        Distance.ofRelativeUnits(37.5, Units.Millimeter),
+        DRIVE_MAX_LINEAR_SPEED,
+        1.0,
+        DCMotor.getNeoVortex(1),
+        Current.ofRelativeUnits(60, Units.Amp),
+        1
+        );
+
+      // Robot configuration for auto
+      this.robotConfig = new RobotConfig(
+        Mass.ofRelativeUnits(100, Units.Pound),
+        MomentOfInertia.ofRelativeUnits(6.883, Units.KilogramSquareMeters),
+        moduleConfig,
+        moduleOffset
+      );
   
       // NavX calibration
       while (navx.isCalibrating()) stop();
@@ -516,7 +555,27 @@ public static final Map<SwerveModule.Location, Angle> ZERO_OFFSET = Map.ofEntrie
     );
   }
 
-
+  /**
+   * Configure the auto builder
+   */
+  public void configureAutoBuilder() {
+    AutoBuilder.configure(
+            this::getPose,
+            this::resetPose,
+            this::getChassisSpeeds,
+            (speeds, feedforwards) -> autoDrive(speeds),
+            pathFollowerConfig,
+            robotConfig,
+            () -> {
+              var alliance = DriverStation.getAlliance();
+              if (alliance.isPresent()) {
+                return alliance.get() == DriverStation.Alliance.Red;
+              }
+              return false;
+            },
+            this
+    );
+  }
 
   /**
    * Call this repeatedly to drive using PID during teleoperation
