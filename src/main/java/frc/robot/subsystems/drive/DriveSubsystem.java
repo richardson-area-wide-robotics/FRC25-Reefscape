@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems.drive;
 
+import java.util.Map;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
@@ -13,7 +14,6 @@ import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 import org.lasarobotics.drive.swerve.AdvancedSwerveKinematics;
 import org.lasarobotics.drive.swerve.AdvancedSwerveKinematics.ControlCentricity;
-import org.lasarobotics.drive.swerve.child.MAXSwerveModule;
 import org.lasarobotics.drive.swerve.parent.REVSwerveModule;
 import org.lasarobotics.drive.swerve.SwerveModule;
 import org.lasarobotics.hardware.revrobotics.Spark;
@@ -28,7 +28,6 @@ import org.littletonrobotics.junction.Logger;
 
 import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.util.PathPlannerLogging;
-
 import edu.wpi.first.math.geometry.Rotation2d;      // For handling rotations
 import edu.wpi.first.math.geometry.Translation2d;    // For handling 2D translations
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard; // For dashboard integration
@@ -60,15 +59,16 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.RAWRSwerveModule;
 
 public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   @AllArgsConstructor
   public static class Hardware {
       NavX2 navx;
-      REVSwerveModule lFrontModule;
-      REVSwerveModule rFrontModule;
-      REVSwerveModule lRearModule;
-      REVSwerveModule rRearModule;
+      RAWRSwerveModule lFrontModule;
+      RAWRSwerveModule rFrontModule;
+      RAWRSwerveModule lRearModule;
+      RAWRSwerveModule rRearModule;
   }
 
   private final ThrottleMap throttleMap;
@@ -79,17 +79,17 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
 
   public final LinearVelocity DRIVE_MAX_LINEAR_SPEED;
   public final LinearAcceleration DRIVE_AUTO_ACCELERATION;
-  private final AdvancedSwerveKinematics advancedKinematics = new AdvancedSwerveKinematics();
+  private AdvancedSwerveKinematics advancedKinematics;
   private final ProfiledPIDController autoAimPIDControllerFront;
   private final ProfiledPIDController autoAimPIDControllerBack;
   private final MedianFilter xVelocityFilter;
   private final MedianFilter yVelocityFilter;
 
   public final NavX2 navx;
-  private final REVSwerveModule lFrontModule;
-  private final REVSwerveModule rFrontModule;
-  private final REVSwerveModule lRearModule;
-  private final REVSwerveModule rRearModule;
+  private final RAWRSwerveModule lFrontModule;
+  private final RAWRSwerveModule rFrontModule;
+  private final RAWRSwerveModule lRearModule;
+  private final RAWRSwerveModule rRearModule;
 
 
   private ControlCentricity controlCentricity;
@@ -98,77 +98,82 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   private Pose2d m_previousPose;
   private Rotation2d currentHeading;
   private final Field2d field;
-
-  public final Command ANTI_TIP_COMMAND = new FunctionalCommand(
-    () -> LEDSubsystem.getInstance().startOverride(Pattern.RED_STROBE),
-          this::antiTip,
-    (interrupted) -> {
-      resetRotatePID();
-      stop();
-      lock();
-      LEDSubsystem.getInstance().endOverride();
-    },
-    this::isBalanced,
-    this
-  );
-
-  /**
- * DriveSubsystem constructor for managing a swerve drivetrain.
- *
- * @param drivetrainHardware Hardware devices required by drivetrain.
- * @param pidf PID constants for the drive system.
- * @param controlCentricity Control centricity configuration.
- * @param throttleInputCurve Spline function for throttle input.
- * @param turnInputCurve Spline function for turn input.
- * @param turnScalar Scalar for turn input (degrees).
- * @param deadband Deadband for controller input [+0.001, +0.2].
- * @param lookAhead Rotate PID lookahead, in number of loops.
- */
-public DriveSubsystem(Hardware drivetrainHardware, PIDConstants pidf, ControlCentricity controlCentricity,
-                      PolynomialSplineFunction throttleInputCurve, PolynomialSplineFunction turnInputCurve,
-                      Angle turnScalar, Dimensionless deadband, Time lookAhead) {
-
-    // Initialize subsystem name
-    setSubsystem(this.getClass().getSimpleName());
-
-    // Drivetrain hardware setup
-    this.navx = drivetrainHardware.navx;
-    this.lFrontModule = drivetrainHardware.lFrontModule;
-    this.rFrontModule = drivetrainHardware.rFrontModule;
-    this.lRearModule = drivetrainHardware.lRearModule;
-    this.rRearModule = drivetrainHardware.rRearModule;
-
-    // Drivetrain constants
-    DRIVE_MAX_LINEAR_SPEED = drivetrainHardware.lFrontModule.getMaxLinearVelocity();
-    DRIVE_AUTO_ACCELERATION = DRIVE_MAX_LINEAR_SPEED
-        .per(Units.Second)
-        .minus(Units.MetersPerSecondPerSecond.of(1.0));
-
-    // Input curves and controllers
-    this.controlCentricity = controlCentricity;
-    this.throttleMap = new ThrottleMap(throttleInputCurve, DRIVE_MAX_LINEAR_SPEED, deadband);
-    this.rotatePIDController = new RotatePIDController(turnInputCurve, pidf, turnScalar, deadband, lookAhead);
-
-    // Path follower configuration
-    //this.pathFollowerConfig = new HolonomicPathFollowerConfig(
-    //    new com.pathplanner.lib.util.PIDConstants(3.1, 0.0, 0.0),
-    //    new com.pathplanner.lib.util.PIDConstants(5.0, 0.0, 0.1),
-    //    DRIVE_MAX_LINEAR_SPEED.in(Units.MetersPerSecond),
-    //    lFrontModule.getModuleCoordinate().getNorm(),
-    //    new ReplanningConfig(),
-    //);
-
-    // NavX calibration
-    while (navx.isCalibrating()) stop();
-    navx.reset();
-
-    // Swerve drive kinematics and pose estimator
-    kinematics = new SwerveDriveKinematics(
-        lFrontModule.getModuleCoordinate(),
-        rFrontModule.getModuleCoordinate(),
-        lRearModule.getModuleCoordinate(),
-        rRearModule.getModuleCoordinate()
+  
+    public final Command ANTI_TIP_COMMAND = new FunctionalCommand(
+      () -> LEDSubsystem.getInstance().startOverride(Pattern.RED_STROBE),
+            this::antiTip,
+      (interrupted) -> {
+        resetRotatePID();
+        stop();
+        lock();
+        LEDSubsystem.getInstance().endOverride();
+      },
+      this::isBalanced,
+      this
     );
+  
+    /**
+   * DriveSubsystem constructor for managing a swerve drivetrain.
+   *
+   * @param drivetrainHardware Hardware devices required by drivetrain.
+   * @param pidf PID constants for the drive system.
+   * @param controlCentricity Control centricity configuration.
+   * @param throttleInputCurve Spline function for throttle input.
+   * @param turnInputCurve Spline function for turn input.
+   * @param turnScalar Scalar for turn input (degrees).
+   * @param deadband Deadband for controller input [+0.001, +0.2].
+   * @param lookAhead Rotate PID lookahead, in number of loops.
+   */
+  public DriveSubsystem(Hardware drivetrainHardware, PIDConstants pidf, ControlCentricity controlCentricity,
+                        PolynomialSplineFunction throttleInputCurve, PolynomialSplineFunction turnInputCurve,
+                        Angle turnScalar, Dimensionless deadband, Time lookAhead) {
+  
+      // Initialize subsystem name
+      setSubsystem(this.getClass().getSimpleName());
+  
+      // Drivetrain hardware setup
+      this.navx = drivetrainHardware.navx;
+      this.lFrontModule = drivetrainHardware.lFrontModule;
+      this.rFrontModule = drivetrainHardware.rFrontModule;
+      this.lRearModule = drivetrainHardware.lRearModule;
+      this.rRearModule = drivetrainHardware.rRearModule;
+  
+      // Drivetrain constants
+      DRIVE_MAX_LINEAR_SPEED = drivetrainHardware.lFrontModule.getMaxLinearVelocity();
+      DRIVE_AUTO_ACCELERATION = DRIVE_MAX_LINEAR_SPEED
+          .per(Units.Second)
+          .minus(Units.MetersPerSecondPerSecond.of(1.0));
+  
+      // Input curves and controllers
+      this.controlCentricity = controlCentricity;
+      this.throttleMap = new ThrottleMap(throttleInputCurve, DRIVE_MAX_LINEAR_SPEED, deadband);
+      this.rotatePIDController = new RotatePIDController(turnInputCurve, pidf, turnScalar, deadband, lookAhead);
+  
+      // Path follower configuration
+      //this.pathFollowerConfig = new HolonomicPathFollowerConfig(
+      //    new com.pathplanner.lib.util.PIDConstants(3.1, 0.0, 0.0),
+      //    new com.pathplanner.lib.util.PIDConstants(5.0, 0.0, 0.1),
+      //    DRIVE_MAX_LINEAR_SPEED.in(Units.MetersPerSecond),
+      //    lFrontModule.getModuleCoordinate().getNorm(),
+      //    new ReplanningConfig(),
+      //);
+  
+      // NavX calibration
+      while (navx.isCalibrating()) stop();
+      navx.reset();
+  
+      // Swerve drive kinematics and pose estimator
+      kinematics = new SwerveDriveKinematics(
+          lFrontModule.getModuleCoordinate(),
+          rFrontModule.getModuleCoordinate(),
+          lRearModule.getModuleCoordinate(),
+          rRearModule.getModuleCoordinate()
+      );
+  
+      advancedKinematics = new AdvancedSwerveKinematics(lFrontModule.getModuleCoordinate(),
+                                                        rFrontModule.getModuleCoordinate(),
+                                                        lRearModule.getModuleCoordinate(),
+                                                        rRearModule.getModuleCoordinate());
 
     poseEstimator = new SwerveDrivePoseEstimator(
         kinematics,
@@ -211,28 +216,36 @@ public DriveSubsystem(Hardware drivetrainHardware, PIDConstants pidf, ControlCen
 public static Hardware initializeHardware() {
   NavX2 navx = new NavX2(Constants.DriveHardware.NAVX_ID);
 
-  REVSwerveModule lFrontModule = createSwerve(
+  RAWRSwerveModule lFrontModule = createSwerve(
           Constants.DriveHardware.LEFT_FRONT_DRIVE_MOTOR_ID,
           Constants.DriveHardware.LEFT_FRONT_ROTATE_MOTOR_ID,
           SwerveModule.Location.LeftFront);
 
-  REVSwerveModule rFrontModule = createSwerve(
+  RAWRSwerveModule rFrontModule = createSwerve(
           Constants.DriveHardware.RIGHT_FRONT_DRIVE_MOTOR_ID,
           Constants.DriveHardware.RIGHT_FRONT_ROTATE_MOTOR_ID,
           SwerveModule.Location.RightFront);
 
-  REVSwerveModule lRearModule = createSwerve(
+  RAWRSwerveModule lRearModule = createSwerve(
           Constants.DriveHardware.LEFT_REAR_DRIVE_MOTOR_ID,
           Constants.DriveHardware.LEFT_REAR_ROTATE_MOTOR_ID,
           SwerveModule.Location.LeftRear);
 
-  REVSwerveModule rRearModule = createSwerve(
+  RAWRSwerveModule rRearModule = createSwerve(
           Constants.DriveHardware.RIGHT_REAR_DRIVE_MOTOR_ID,
           Constants.DriveHardware.RIGHT_REAR_ROTATE_MOTOR_ID,
           SwerveModule.Location.RightRear);
 
     return new Hardware(navx, lFrontModule, rFrontModule, lRearModule, rRearModule);
 }
+
+
+public static final Map<SwerveModule.Location, Angle> ZERO_OFFSET = Map.ofEntries(
+  Map.entry(SwerveModule.Location.LeftFront, Units.Radians.of(Math.PI / 2)),
+  Map.entry(SwerveModule.Location.RightFront, Units.Radians.zero()),
+  Map.entry(SwerveModule.Location.LeftRear, Units.Radians.of(Math.PI)),
+  Map.entry(SwerveModule.Location.RightRear, Units.Radians.of(Math.PI / 2))
+);
 
   /** Make a {@link REVSwerveModule}
    * 
@@ -243,18 +256,25 @@ public static Hardware initializeHardware() {
    * @author Hudson Strub
    * @since 2025
    */
-  private static REVSwerveModule createSwerve(Spark.ID driveMotor, Spark.ID rotateMotor, SwerveModule.Location location){
-    return MAXSwerveModule.create(
-          new REVSwerveModule.Hardware(
+  private static RAWRSwerveModule createSwerve(Spark.ID driveMotor, Spark.ID rotateMotor, SwerveModule.Location location){
+    
+    RAWRSwerveModule.Hardware hardware = new RAWRSwerveModule.Hardware(
                   new Spark(driveMotor, Spark.MotorKind.NEO_VORTEX),
                   new Spark(rotateMotor, Spark.MotorKind.NEO_550)
-          ),
+          );
+  
+    
+    RAWRSwerveModule swerveModule = new RAWRSwerveModule(
+          hardware,
           location,
+          SwerveModule.MountOrientation.STANDARD,
+          SwerveModule.MountOrientation.INVERTED,
           Constants.Drive.GEAR_RATIO,
           DriveWheel.create(
             Distance.ofBaseUnits(75, Units.Millimeter), 
-            Dimensionless.ofRelativeUnits(0, Units.Value),
-            Dimensionless.ofRelativeUnits(0, Units.Value)), // TODO: Replace with actual drive wheel configuration
+            Dimensionless.ofRelativeUnits(0.1, Units.Value),
+            Dimensionless.ofRelativeUnits(0.1, Units.Value)), // TODO: Replace with actual drive wheel configuration
+          ZERO_OFFSET.get(location),
           PIDConstants.of(1, 1, 1,1,1), // Replace with actual PID constants
           FFConstants.of(1,1,1,1),  // Replace with actual feed-forward constants
           Constants.Drive.DRIVE_ROTATE_PID, // The PID for the rotate Motor
@@ -265,6 +285,9 @@ public static Hardware initializeHardware() {
           Distance.ofRelativeUnits(Constants.Drive.DRIVE_TRACK_WIDTH, Units.Meter),
           Time.ofRelativeUnits(Constants.Drive.AUTO_LOCK_TIME, Units.Second),
           Current.ofRelativeUnits(Constants.Drive.DRIVE_CURRENT_LIMIT, Units.Amp));
+    
+    
+    return swerveModule;
   }
 
   /**
