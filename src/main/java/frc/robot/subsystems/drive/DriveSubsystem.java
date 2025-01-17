@@ -55,7 +55,6 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Mass;
 import edu.wpi.first.units.measure.MomentOfInertia;
-import edu.wpi.first.units.measure.MutLinearVelocity;
 import edu.wpi.first.units.measure.LinearAcceleration;
 import org.lasarobotics.drive.swerve.DriveWheel;
 import edu.wpi.first.units.Units;
@@ -184,7 +183,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
         DRIVE_MAX_LINEAR_SPEED,
         1.0,
         DCMotor.getNeoVortex(1),
-        Current.ofRelativeUnits(60, Units.Amp),
+        Current.ofBaseUnits(60, Units.Amp),
         1
         );
 
@@ -309,20 +308,20 @@ public static final Map<SwerveModule.Location, Angle> ZERO_OFFSET = Map.ofEntrie
           SwerveModule.MountOrientation.INVERTED,
           Constants.Drive.GEAR_RATIO,
           DriveWheel.create(
-            Distance.ofBaseUnits(75, Units.Millimeter), 
-            Dimensionless.ofRelativeUnits(0.1, Units.Value),
-            Dimensionless.ofRelativeUnits(0.1, Units.Value)), // TODO: Replace with actual drive wheel configuration
+            Distance.ofRelativeUnits(75, Units.Millimeter), 
+            Dimensionless.ofBaseUnits(0.15, Units.Value),
+            Dimensionless.ofBaseUnits(0.1, Units.Value)), // TODO: Replace with actual drive wheel configuration
           ZERO_OFFSET.get(location),
           PIDConstants.of(1, 1, 1,1,1), // Replace with actual PID constants
           FFConstants.of(1,1,1,1),  // Replace with actual feed-forward constants
           Constants.Drive.DRIVE_ROTATE_PID, // The PID for the rotate Motor
           FFConstants.of(1,1,1,1),  // Replace with actual feed-forward constants
-          Dimensionless.ofRelativeUnits(Constants.Drive.DRIVE_SLIP_RATIO, Units.Value),
-          Mass.ofBaseUnits(100, Units.Pounds), // Replace with actual mass value
-          Distance.ofRelativeUnits(Constants.Drive.DRIVE_WHEELBASE, Units.Meter),
-          Distance.ofRelativeUnits(Constants.Drive.DRIVE_TRACK_WIDTH, Units.Meter),
-          Time.ofRelativeUnits(Constants.Drive.AUTO_LOCK_TIME, Units.Second),
-          Current.ofRelativeUnits(Constants.Drive.DRIVE_CURRENT_LIMIT, Units.Amp));
+          Dimensionless.ofBaseUnits(Constants.Drive.DRIVE_SLIP_RATIO, Units.Value),
+          Mass.ofRelativeUnits(100, Units.Pounds), // Replace with actual mass value
+          Distance.ofBaseUnits(Constants.Drive.DRIVE_WHEELBASE, Units.Meter),
+          Distance.ofBaseUnits(Constants.Drive.DRIVE_TRACK_WIDTH, Units.Meter),
+          Time.ofBaseUnits(Constants.Drive.AUTO_LOCK_TIME, Units.Second),
+          Current.ofBaseUnits(Constants.Drive.DRIVE_CURRENT_LIMIT, Units.Amp));
     
     
     return swerveModule;
