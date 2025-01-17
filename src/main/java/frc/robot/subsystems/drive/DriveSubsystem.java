@@ -681,12 +681,12 @@ public static final Map<SwerveModule.Location, Angle> ZERO_OFFSET = Map.ofEntrie
   public void periodic() {
     // This method will be called once per scheduler run
     // Filter inertial velocity
-    navx.getInputs().velocityX = (MutLinearVelocity) Units.MetersPerSecond.of(
+    navx.getInputs().velocityX = (Units.MetersPerSecond.of(
       xVelocityFilter.calculate(navx.getInputs().velocityX.in(Units.MetersPerSecond))
-    );
-    navx.getInputs().velocityY = (MutLinearVelocity) Units.MetersPerSecond.of(
+    )).mutableCopy();
+    navx.getInputs().velocityY = (Units.MetersPerSecond.of(
       yVelocityFilter.calculate(navx.getInputs().velocityY.in(Units.MetersPerSecond))
-    );
+    )).mutableCopy();
 
     updatePose();
     smartDashboard();
