@@ -53,7 +53,6 @@ import edu.wpi.first.units.measure.MutLinearVelocity;
 import edu.wpi.first.units.measure.LinearAcceleration;
 import org.lasarobotics.drive.swerve.DriveWheel;
 import edu.wpi.first.units.Units;
-import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
@@ -204,8 +203,8 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     // may or may not work Lol
     autoAimPIDControllerFront = new ProfiledPIDController(Constants.Drive.BALANCED_THRESHOLD, Constants.Drive.AUTO_LOCK_TIME, Constants.Drive.AIM_VELOCITY_COMPENSATION_FUDGE_FACTOR, null);
     autoAimPIDControllerBack = new ProfiledPIDController(Constants.Drive.BALANCED_THRESHOLD, Constants.Drive.AUTO_LOCK_TIME, Constants.Drive.AIM_VELOCITY_COMPENSATION_FUDGE_FACTOR, null);
-    xVelocityFilter = new MedianFilter(0);
-    yVelocityFilter = new MedianFilter(0);
+    xVelocityFilter = new MedianFilter(1);
+    yVelocityFilter = new MedianFilter(1);
 }
 
 /**
@@ -630,7 +629,6 @@ public static final Map<SwerveModule.Location, Angle> ZERO_OFFSET = Map.ofEntrie
       yVelocityFilter.calculate(navx.getInputs().velocityY.in(Units.MetersPerSecond))
     );
 
-    if (RobotBase.isSimulation()) return;
     updatePose();
     smartDashboard();
     logOutputs();
