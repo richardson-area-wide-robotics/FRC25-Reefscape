@@ -308,7 +308,7 @@ public static final Map<SwerveModule.Location, Angle> ZERO_OFFSET = Map.ofEntrie
           SwerveModule.MountOrientation.INVERTED,
           Constants.Drive.GEAR_RATIO,
           DriveWheel.create(
-            Distance.ofRelativeUnits(3, Units.Inches), 
+            Distance.ofRelativeUnits(75, Units.Millimeter), 
             Dimensionless.ofBaseUnits(0.15, Units.Value),
             Dimensionless.ofBaseUnits(0.1, Units.Value)), // TODO: Replace with actual drive wheel configuration
           ZERO_OFFSET.get(location),
