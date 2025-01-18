@@ -314,7 +314,7 @@ public static final Map<SwerveModule.Location, Angle> ZERO_OFFSET = Map.ofEntrie
           ZERO_OFFSET.get(location),
           PIDConstants.of(0, 0, 0,1,1), // Replace with actual PID constants
           FFConstants.of(1,1,1,1),  // Replace with actual feed-forward constants
-          PIDConstants.of(6, 0, 1,0, 0), // The PID for the rotate Motor
+          PIDConstants.of(4.5, 0, 1,0, 0), // The PID for the rotate Motor
           FFConstants.of(1,1,1,1),  // Replace with actual feed-forward constants
           Dimensionless.ofBaseUnits(Constants.Drive.DRIVE_SLIP_RATIO, Units.Value),
           Mass.ofRelativeUnits(100, Units.Pounds), // Replace with actual mass value
