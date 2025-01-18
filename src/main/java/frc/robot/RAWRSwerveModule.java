@@ -211,19 +211,19 @@ public class RAWRSwerveModule extends SwerveModule implements Sendable {
     m_rotateMotorConfig.smartCurrentLimit((int)ROTATE_MOTOR_CURRENT_LIMIT.in(Units.Amps));
 
     // Set status frame rates
-    m_driveMotorConfig.signals.primaryEncoderPositionPeriodMs(10);
-    m_driveMotorConfig.signals.primaryEncoderVelocityPeriodMs(10);
-    m_driveMotorConfig.signals.absoluteEncoderPositionPeriodMs(10);
-    m_driveMotorConfig.signals.absoluteEncoderVelocityPeriodMs(10);
-    m_driveMotorConfig.signals.analogPositionPeriodMs(10);
-    m_driveMotorConfig.signals.analogVelocityPeriodMs(10);
+    m_driveMotorConfig.signals.primaryEncoderPositionPeriodMs(23);
+    m_driveMotorConfig.signals.primaryEncoderVelocityPeriodMs(20);
+    m_driveMotorConfig.signals.absoluteEncoderPositionPeriodMs(20);
+    m_driveMotorConfig.signals.absoluteEncoderVelocityPeriodMs(20);
+    m_driveMotorConfig.signals.analogPositionPeriodMs(20);
+    m_driveMotorConfig.signals.analogVelocityPeriodMs(20);
     m_driveMotorConfig.signals.limitsPeriodMs(10);
-    m_rotateMotorConfig.signals.primaryEncoderPositionPeriodMs(10);
-    m_rotateMotorConfig.signals.primaryEncoderVelocityPeriodMs(10);
-    m_rotateMotorConfig.signals.absoluteEncoderPositionPeriodMs(10);
-    m_rotateMotorConfig.signals.absoluteEncoderVelocityPeriodMs(10);
-    m_rotateMotorConfig.signals.analogPositionPeriodMs(10);
-    m_rotateMotorConfig.signals.analogVelocityPeriodMs(10);
+    m_rotateMotorConfig.signals.primaryEncoderPositionPeriodMs(23);
+    m_rotateMotorConfig.signals.primaryEncoderVelocityPeriodMs(20);
+    m_rotateMotorConfig.signals.absoluteEncoderPositionPeriodMs(20);
+    m_rotateMotorConfig.signals.absoluteEncoderVelocityPeriodMs(20);
+    m_rotateMotorConfig.signals.analogPositionPeriodMs(20);
+    m_rotateMotorConfig.signals.analogVelocityPeriodMs(20);
     m_rotateMotorConfig.signals.limitsPeriodMs(10);
 
     // Reset encoder

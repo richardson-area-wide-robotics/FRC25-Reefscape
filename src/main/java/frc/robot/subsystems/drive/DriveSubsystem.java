@@ -308,13 +308,13 @@ public static final Map<SwerveModule.Location, Angle> ZERO_OFFSET = Map.ofEntrie
           SwerveModule.MountOrientation.INVERTED,
           Constants.Drive.GEAR_RATIO,
           DriveWheel.create(
-            Distance.ofRelativeUnits(75, Units.Millimeter), 
+            Distance.ofRelativeUnits(3, Units.Inches), 
             Dimensionless.ofBaseUnits(0.15, Units.Value),
             Dimensionless.ofBaseUnits(0.1, Units.Value)), // TODO: Replace with actual drive wheel configuration
           ZERO_OFFSET.get(location),
-          PIDConstants.of(1, 1, 1,1,1), // Replace with actual PID constants
+          PIDConstants.of(0, 0, 0,1,1), // Replace with actual PID constants
           FFConstants.of(1,1,1,1),  // Replace with actual feed-forward constants
-          Constants.Drive.DRIVE_ROTATE_PID, // The PID for the rotate Motor
+          PIDConstants.of(6, 0, 1,0, 0), // The PID for the rotate Motor
           FFConstants.of(1,1,1,1),  // Replace with actual feed-forward constants
           Dimensionless.ofBaseUnits(Constants.Drive.DRIVE_SLIP_RATIO, Units.Value),
           Mass.ofRelativeUnits(100, Units.Pounds), // Replace with actual mass value
@@ -590,16 +590,6 @@ public static final Map<SwerveModule.Location, Angle> ZERO_OFFSET = Map.ofEntrie
     // Get throttle and rotate output
     LinearVelocity velocityOutput = throttleMap.throttleLookup(moveRequest);
     AngularVelocity rotateOutput = rotatePIDController.calculate(getAngle(), getRotateRate(), rotateRequest).unaryMinus();
-
-    // Update auto-aim controllers
-    autoAimPIDControllerFront.calculate(
-      getPose().getRotation().getDegrees(),
-      getPose().getRotation().getDegrees()
-    );
-    autoAimPIDControllerBack.calculate(
-      getPose().getRotation().plus(Rotation2d.fromRadians(Math.PI)).getDegrees(),
-      getPose().getRotation().plus(Rotation2d.fromRadians(Math.PI)).getDegrees()
-    );
 
     // Drive robot
     drive(
