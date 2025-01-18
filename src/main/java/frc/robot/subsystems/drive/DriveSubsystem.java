@@ -320,8 +320,7 @@ public static final Map<SwerveModule.Location, Angle> ZERO_OFFSET = Map.ofEntrie
           Mass.ofRelativeUnits(100, Units.Pounds), // Replace with actual mass value
           Distance.ofBaseUnits(Constants.Drive.DRIVE_WHEELBASE, Units.Meter),
           Distance.ofBaseUnits(Constants.Drive.DRIVE_TRACK_WIDTH, Units.Meter),
-          Time.ofBaseUnits(Constants.Drive.AUTO_LOCK_TIME, Units.Second),
-          Current.ofBaseUnits(Constants.Drive.DRIVE_CURRENT_LIMIT, Units.Amp));
+          Time.ofBaseUnits(Constants.Drive.AUTO_LOCK_TIME, Units.Second));
     
     
     return swerveModule;

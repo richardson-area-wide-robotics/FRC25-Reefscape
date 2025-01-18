@@ -20,6 +20,7 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Time;
 
 
 /**
@@ -48,6 +49,22 @@ public final class Constants {
     public static final double CONTROLLER_DEADBAND = 0.1;
   }
 
+  public static class SwerveConstants {
+    public static final Time DEFAULT_SIGNAL_PERIOD = Units.Milliseconds.of(10.0);
+    public static final double DRIVETRAIN_EFFICIENCY = 0.90;
+
+    public static final double EPSILON = 5e-3;
+    /**In Amps, the max current a Drive Motor can use*/
+    public static final int DRIVE_MOTOR_CURRENT_LIMIT = 60;
+    /**In Amps, the max current a Rotate Motor can use*/
+    public static final int ROTATE_MOTOR_CURRENT_LIMIT = 20;
+
+    public static final String ROTATE_ERROR_LOG_ENTRY = "/RotateError";
+    public static final String MAX_LINEAR_VELOCITY_LOG_ENTRY = "/MaxLinearVelocity";
+    public static final double MAX_AUTO_LOCK_TIME = 10.0;
+    
+  }
+
   public static class Drive {
     // Drive specs
     public static final PIDConstants DRIVE_ROTATE_PID = PIDConstants.of(6.45, 0.0, 0.45, 0.0, 0.0);
@@ -57,7 +74,6 @@ public final class Constants {
     public static final double DRIVE_WHEELBASE = 0.5588;
     public static final double DRIVE_TRACK_WIDTH = 0.5588;
     public static final double AUTO_LOCK_TIME = 3.0;
-    public static final double DRIVE_CURRENT_LIMIT = 60.0;
     public static final AngularVelocity DRIVE_ROTATE_VELOCITY = Units.RadiansPerSecond.of(12 * Math.PI);
     public static final AngularVelocity AIM_VELOCITY_THRESHOLD = Units.DegreesPerSecond.of(5.0);
     public static final AngularAcceleration DRIVE_ROTATE_ACCELERATION = Units.RadiansPerSecond.of(4 * Math.PI).per(Units.Second);

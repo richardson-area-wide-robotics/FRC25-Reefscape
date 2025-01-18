@@ -36,7 +36,6 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Dimensionless;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
@@ -48,6 +47,7 @@ import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
+import frc.robot.Constants.SwerveConstants;
 
 /** REV MAXSwerve module */
 public class RAWRSwerveModule extends SwerveModule implements Sendable {
@@ -64,17 +64,6 @@ public class RAWRSwerveModule extends SwerveModule implements Sendable {
     }
   }
 
-  public static final Time DEFAULT_SIGNAL_PERIOD = Units.Milliseconds.of(10.0);
-  public static final Time SLOW_SIGNAL_PERIOD = Units.Seconds.of(10.0);
-  public static final double DRIVETRAIN_EFFICIENCY = 0.90;
-
-  private final double EPSILON = 5e-3;
-  private final Current DRIVE_MOTOR_CURRENT_LIMIT;
-  private final Current ROTATE_MOTOR_CURRENT_LIMIT = Units.Amps.of(20.0);
-
-  private static final String ROTATE_ERROR_LOG_ENTRY = "/RotateError";
-  private static final String MAX_LINEAR_VELOCITY_LOG_ENTRY = "/MaxLinearVelocity";
-  private static final double MAX_AUTO_LOCK_TIME = 10.0;
   private final double DRIVE_TICKS_PER_METER;
   private final double DRIVE_METERS_PER_TICK;
   private final double DRIVE_METERS_PER_ROTATION;
@@ -119,7 +108,6 @@ public class RAWRSwerveModule extends SwerveModule implements Sendable {
    * @param wheelbase Robot wheelbase
    * @param trackWidth Robot track width
    * @param autoLockTime Time before automatically rotating module to locked position (10 seconds max)
-   * @param driveCurrentLimit Desired stator current limit for the drive motor
    */
   public RAWRSwerveModule(Hardware swerveHardware,
                          SwerveModule.Location location,
@@ -131,18 +119,18 @@ public class RAWRSwerveModule extends SwerveModule implements Sendable {
                          PIDConstants rotatePID, FFConstants rotateFF,
                          Dimensionless slipRatio, Mass mass,
                          Distance wheelbase, Distance trackWidth,
-                         Time autoLockTime, Current driveCurrentLimit) {
+                         Time autoLockTime) {
     super(location, gearRatio, driveWheel, zeroOffset, wheelbase, trackWidth, swerveHardware.driveMotor.getID().name);
     int encoderTicksPerRotation = swerveHardware.driveMotor.getKind().equals(MotorKind.NEO_VORTEX)
       ? GlobalConstants.VORTEX_ENCODER_TICKS_PER_ROTATION
       : GlobalConstants.NEO_ENCODER_TICKS_PER_ROTATION;
-    DRIVE_MOTOR_CURRENT_LIMIT = driveCurrentLimit;
+  
     DRIVE_TICKS_PER_METER =
       (encoderTicksPerRotation * gearRatio.getDriveRatio())
       * (1 / (driveWheel.diameter.in(Units.Meters) * Math.PI));
     DRIVE_METERS_PER_TICK = 1 / DRIVE_TICKS_PER_METER;
     DRIVE_METERS_PER_ROTATION = DRIVE_METERS_PER_TICK * encoderTicksPerRotation;
-    DRIVE_MAX_LINEAR_SPEED = (swerveHardware.driveMotor.getKind().getMaxRPM() / 60) * DRIVE_METERS_PER_ROTATION * DRIVETRAIN_EFFICIENCY;
+    DRIVE_MAX_LINEAR_SPEED = (swerveHardware.driveMotor.getKind().getMaxRPM() / 60) * DRIVE_METERS_PER_ROTATION * SwerveConstants.DRIVETRAIN_EFFICIENCY;
 
     // Set traction control controller
     super.setTractionControlController(new TractionControlController(driveWheel, slipRatio, mass, Units.MetersPerSecond.of(DRIVE_MAX_LINEAR_SPEED)));
@@ -160,11 +148,11 @@ public class RAWRSwerveModule extends SwerveModule implements Sendable {
     this.m_simDrivePosition = 0.0;
     this.m_simModulePosition = new SwerveModulePosition();
     this.m_desiredState = new SwerveModuleState(Units.MetersPerSecond.of(0.0), m_zeroOffset.plus(m_location.getLockPosition()));
-    this.m_autoLockTime = MathUtil.clamp(autoLockTime.in(Units.Milliseconds), 0.0, MAX_AUTO_LOCK_TIME * 1000);
+    this.m_autoLockTime = MathUtil.clamp(autoLockTime.in(Units.Milliseconds), 0.0, SwerveConstants.MAX_AUTO_LOCK_TIME * 1000);
     this.m_previousRotatePosition = m_zeroOffset.plus(m_location.getLockPosition());
     this.m_autoLockTimer = Instant.now();
 
-    Logger.recordOutput(m_driveMotor.getID().name + MAX_LINEAR_VELOCITY_LOG_ENTRY, DRIVE_MAX_LINEAR_SPEED);
+    Logger.recordOutput(m_driveMotor.getID().name + SwerveConstants.MAX_LINEAR_VELOCITY_LOG_ENTRY, DRIVE_MAX_LINEAR_SPEED);
 
     m_driveMotorConfig = (m_driveMotor.getKind().equals(MotorKind.NEO_VORTEX)) ? new SparkFlexConfig() : new SparkMaxConfig();
     m_rotateMotorConfig = (m_rotateMotor.getKind().equals(MotorKind.NEO_VORTEX)) ? new SparkFlexConfig() : new SparkMaxConfig();
@@ -207,8 +195,8 @@ public class RAWRSwerveModule extends SwerveModule implements Sendable {
     m_rotateMotorConfig.idleMode(IdleMode.kBrake);
 
     // Set current limits
-    m_driveMotorConfig.smartCurrentLimit((int)DRIVE_MOTOR_CURRENT_LIMIT.in(Units.Amps));
-    m_rotateMotorConfig.smartCurrentLimit((int)ROTATE_MOTOR_CURRENT_LIMIT.in(Units.Amps));
+    m_driveMotorConfig.smartCurrentLimit(SwerveConstants.DRIVE_MOTOR_CURRENT_LIMIT);
+    m_rotateMotorConfig.smartCurrentLimit(SwerveConstants.ROTATE_MOTOR_CURRENT_LIMIT);
 
     // Set status frame rates
     m_driveMotorConfig.signals.primaryEncoderPositionPeriodMs(23);
@@ -255,7 +243,7 @@ public class RAWRSwerveModule extends SwerveModule implements Sendable {
       throw new IllegalArgumentException("Drive motor MUST be a NEO or a NEO Vortex!");
     if (rotateMotorKind != MotorKind.NEO && rotateMotorKind != MotorKind.NEO_VORTEX && rotateMotorKind != MotorKind.NEO_550)
       throw new IllegalArgumentException("Rotate motor MUST be a NEO 550, NEO, or NEO Vortex!");
-    var frequency = RobotBase.isReal() ? DEFAULT_SIGNAL_PERIOD.asFrequency() : GlobalConstants.ROBOT_LOOP_HZ;
+    var frequency = RobotBase.isReal() ? SwerveConstants.DEFAULT_SIGNAL_PERIOD.asFrequency() : GlobalConstants.ROBOT_LOOP_HZ;
     Hardware swerveModuleHardware = new Hardware(
       new Spark(driveMotorID, driveMotorKind, frequency),
       new Spark(rotateMotorID, rotateMotorKind, frequency)
@@ -284,7 +272,7 @@ public class RAWRSwerveModule extends SwerveModule implements Sendable {
    */
   private void periodic() {
     super.logOutputs();
-    Logger.recordOutput(m_rotateMotor.getID().name + ROTATE_ERROR_LOG_ENTRY, m_desiredState.angle.minus(Rotation2d.fromRadians(m_rotateMotor.getInputs().absoluteEncoderPosition)));
+    Logger.recordOutput(m_rotateMotor.getID().name + SwerveConstants.ROTATE_ERROR_LOG_ENTRY, m_desiredState.angle.minus(Rotation2d.fromRadians(m_rotateMotor.getInputs().absoluteEncoderPosition)));
   }
 
  /**
@@ -420,7 +408,7 @@ public class RAWRSwerveModule extends SwerveModule implements Sendable {
   @Override
   public void set(SwerveModuleState state) {
     // Auto lock modules if auto lock enabled, speed not requested, and time has elapsed
-    if (super.isAutoLockEnabled() && state.speedMetersPerSecond < EPSILON) {
+    if (super.isAutoLockEnabled() && state.speedMetersPerSecond < SwerveConstants.EPSILON) {
       state.speedMetersPerSecond = 0.0;
       // Time's up, lock now...
       if (Duration.between(m_autoLockTimer, Instant.now()).toMillis() > m_autoLockTime)
