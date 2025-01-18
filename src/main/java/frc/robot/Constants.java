@@ -51,7 +51,6 @@ public final class Constants {
 
   public static class SwerveConstants {
     public static final Time DEFAULT_SIGNAL_PERIOD = Units.Milliseconds.of(10.0);
-    public static final double DRIVETRAIN_EFFICIENCY = 0.90;
 
     public static final double EPSILON = 5e-3;
     /**In Amps, the max current a Drive Motor can use*/
@@ -59,6 +58,10 @@ public final class Constants {
     /**In Amps, the max current a Rotate Motor can use*/
     public static final int ROTATE_MOTOR_CURRENT_LIMIT = 20;
 
+    /**The Gear Ratio used for our swerve modules*/
+    public static final MAXSwerveModule.GearRatio GEAR_RATIO = MAXSwerveModule.GearRatio.L3;
+
+    // Log
     public static final String ROTATE_ERROR_LOG_ENTRY = "/RotateError";
     public static final String MAX_LINEAR_VELOCITY_LOG_ENTRY = "/MaxLinearVelocity";
     public static final double MAX_AUTO_LOCK_TIME = 10.0;
@@ -67,6 +70,7 @@ public final class Constants {
 
   public static class Drive {
     // Drive specs
+    public static final double DRIVETRAIN_EFFICIENCY = 0.90;
     public static final PIDConstants DRIVE_ROTATE_PID = PIDConstants.of(6.45, 0.0, 0.45, 0.0, 0.0);
     public static final double DRIVE_SLIP_RATIO = 0.05;
     public static final double DRIVE_TURN_SCALAR = 60.0;
@@ -93,23 +97,19 @@ public final class Constants {
     
     public static final ControlCentricity DRIVE_CONTROL_CENTRICITY = ControlCentricity.FIELD_CENTRIC;
 
-    private static final double[] DRIVE_THROTTLE_INPUT_CURVE_X = { 0.0, 0.100, 0.200, 0.300, 0.400, 0.500, 0.600, 0.700, 0.800, 0.900, 1.000 };
+    // Input Curves
+    private static final double[] m_DriveThrottleInputCurveX = { 0.0, 0.100, 0.200, 0.300, 0.400, 0.500, 0.600, 0.700, 0.800, 0.900, 1.000 };
+    private static final double[] m_DriveThrottleInputCurveY = { 0.0, 0.052, 0.207, 0.465, 0.827, 1.293, 1.862, 2.534, 3.310, 4.189, 5.172 };
+    private static final double[] m_DriveTurnInputCurveX = { 0.0, 0.100, 0.200, 0.300, 0.400, 0.500, 0.600, 0.700, 0.800, 0.900, 1.0 };
+    private static final double[] m_DriveTurnInputCurveY = { 0.0, 0.010, 0.050, 0.100, 0.150, 0.200, 0.250, 0.300, 0.400, 0.600, 1.0 };
 
-    private static final double[] DRIVE_THROTTLE_INPUT_CURVE_Y = { 0.0, 0.052, 0.207, 0.465, 0.827, 1.293, 1.862, 2.534, 3.310, 4.189, 5.172 };
-    
-    private static final double[] DRIVE_TURN_INPUT_CURVE_X = { 0.0, 0.100, 0.200, 0.300, 0.400, 0.500, 0.600, 0.700, 0.800, 0.900, 1.0 };
-    
-    private static final double[] DRIVE_TURN_INPUT_CURVE_Y = { 0.0, 0.010, 0.050, 0.100, 0.150, 0.200, 0.250, 0.300, 0.400, 0.600, 1.0 };
-
-    
-    
     private static final SplineInterpolator SPLINE_INTERPOLATOR = new SplineInterpolator();
-    public static final PolynomialSplineFunction DRIVE_THROTTLE_INPUT_CURVE = SPLINE_INTERPOLATOR
-        .interpolate(DRIVE_THROTTLE_INPUT_CURVE_X, DRIVE_THROTTLE_INPUT_CURVE_Y);
-    public static final PolynomialSplineFunction DRIVE_TURN_INPUT_CURVE = SPLINE_INTERPOLATOR
-        .interpolate(DRIVE_TURN_INPUT_CURVE_X, DRIVE_TURN_INPUT_CURVE_Y);
 
-    public static final MAXSwerveModule.GearRatio GEAR_RATIO = MAXSwerveModule.GearRatio.L3;
+
+    public static final PolynomialSplineFunction DRIVE_THROTTLE_INPUT_CURVE = SPLINE_INTERPOLATOR
+        .interpolate(m_DriveThrottleInputCurveX, m_DriveThrottleInputCurveY);
+    public static final PolynomialSplineFunction DRIVE_TURN_INPUT_CURVE = SPLINE_INTERPOLATOR
+        .interpolate(m_DriveTurnInputCurveX, m_DriveTurnInputCurveY);
   }
 
 
