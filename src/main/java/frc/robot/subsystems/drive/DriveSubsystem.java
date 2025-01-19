@@ -4,7 +4,6 @@
 
 package frc.robot.subsystems.drive;
 
-import java.util.Map;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
@@ -14,15 +13,12 @@ import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 import org.lasarobotics.drive.swerve.AdvancedSwerveKinematics;
 import org.lasarobotics.drive.swerve.AdvancedSwerveKinematics.ControlCentricity;
-import org.lasarobotics.drive.swerve.parent.REVSwerveModule;
 import org.lasarobotics.drive.swerve.SwerveModule;
-import org.lasarobotics.hardware.revrobotics.Spark;
 import org.lasarobotics.drive.RotatePIDController;
 import org.lasarobotics.drive.ThrottleMap;
 import org.lasarobotics.hardware.kauailabs.NavX2;
 import org.lasarobotics.led.LEDStrip.Pattern;
 import org.lasarobotics.led.LEDSubsystem;
-import org.lasarobotics.utils.FFConstants;
 import org.lasarobotics.utils.PIDConstants;
 import org.littletonrobotics.junction.Logger;
 
@@ -56,7 +52,6 @@ import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Mass;
 import edu.wpi.first.units.measure.MomentOfInertia;
 import edu.wpi.first.units.measure.LinearAcceleration;
-import org.lasarobotics.drive.swerve.DriveWheel;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -217,8 +212,8 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
         getRotation2d(),
         getModulePositions(),
         new Pose2d(),
-        Constants.Drive.ODOMETRY_STDDEV,
-        Constants.Drive.VISION_STDDEV
+        Constants.DriveConstants.ODOMETRY_STDDEV,
+        Constants.DriveConstants.VISION_STDDEV
     );
 
     // Chassis speeds
@@ -239,8 +234,8 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     });
 
     // may or may not work Lol
-    autoAimPIDControllerFront = new ProfiledPIDController(Constants.Drive.BALANCED_THRESHOLD, Constants.Drive.AUTO_LOCK_TIME, Constants.Drive.AIM_VELOCITY_COMPENSATION_FUDGE_FACTOR, null);
-    autoAimPIDControllerBack = new ProfiledPIDController(Constants.Drive.BALANCED_THRESHOLD, Constants.Drive.AUTO_LOCK_TIME, Constants.Drive.AIM_VELOCITY_COMPENSATION_FUDGE_FACTOR, null);
+    autoAimPIDControllerFront = new ProfiledPIDController(Constants.DriveConstants.BALANCED_THRESHOLD, Constants.DriveConstants.AUTO_LOCK_TIME, Constants.DriveConstants.AIM_VELOCITY_COMPENSATION_FUDGE_FACTOR, null);
+    autoAimPIDControllerBack = new ProfiledPIDController(Constants.DriveConstants.BALANCED_THRESHOLD, Constants.DriveConstants.AUTO_LOCK_TIME, Constants.DriveConstants.AIM_VELOCITY_COMPENSATION_FUDGE_FACTOR, null);
     xVelocityFilter = new MedianFilter(1);
     yVelocityFilter = new MedianFilter(1);
 }
@@ -251,80 +246,30 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
  * @return A Hardware object containing all necessary devices for this subsystem
  */
 public static Hardware initializeHardware() {
-  NavX2 navx = new NavX2(Constants.DriveHardware.NAVX_ID);
+  NavX2 navx = new NavX2(Constants.DriveHardwareConstants.NAVX_ID);
 
-  RAWRSwerveModule lFrontModule = createSwerve(
-          Constants.DriveHardware.LEFT_FRONT_DRIVE_MOTOR_ID,
-          Constants.DriveHardware.LEFT_FRONT_ROTATE_MOTOR_ID,
+  RAWRSwerveModule lFrontModule = RAWRSwerveModule.createSwerve(
+          Constants.DriveHardwareConstants.LEFT_FRONT_DRIVE_MOTOR_ID,
+          Constants.DriveHardwareConstants.LEFT_FRONT_ROTATE_MOTOR_ID,
           SwerveModule.Location.LeftFront);
 
-  RAWRSwerveModule rFrontModule = createSwerve(
-          Constants.DriveHardware.RIGHT_FRONT_DRIVE_MOTOR_ID,
-          Constants.DriveHardware.RIGHT_FRONT_ROTATE_MOTOR_ID,
+  RAWRSwerveModule rFrontModule = RAWRSwerveModule.createSwerve(
+          Constants.DriveHardwareConstants.RIGHT_FRONT_DRIVE_MOTOR_ID,
+          Constants.DriveHardwareConstants.RIGHT_FRONT_ROTATE_MOTOR_ID,
           SwerveModule.Location.RightFront);
 
-  RAWRSwerveModule lRearModule = createSwerve(
-          Constants.DriveHardware.LEFT_REAR_DRIVE_MOTOR_ID,
-          Constants.DriveHardware.LEFT_REAR_ROTATE_MOTOR_ID,
+  RAWRSwerveModule lRearModule = RAWRSwerveModule.createSwerve(
+          Constants.DriveHardwareConstants.LEFT_REAR_DRIVE_MOTOR_ID,
+          Constants.DriveHardwareConstants.LEFT_REAR_ROTATE_MOTOR_ID,
           SwerveModule.Location.LeftRear);
 
-  RAWRSwerveModule rRearModule = createSwerve(
-          Constants.DriveHardware.RIGHT_REAR_DRIVE_MOTOR_ID,
-          Constants.DriveHardware.RIGHT_REAR_ROTATE_MOTOR_ID,
+  RAWRSwerveModule rRearModule = RAWRSwerveModule.createSwerve(
+          Constants.DriveHardwareConstants.RIGHT_REAR_DRIVE_MOTOR_ID,
+          Constants.DriveHardwareConstants.RIGHT_REAR_ROTATE_MOTOR_ID,
           SwerveModule.Location.RightRear);
 
     return new Hardware(navx, lFrontModule, rFrontModule, lRearModule, rRearModule);
 }
-
-
-public static final Map<SwerveModule.Location, Angle> ZERO_OFFSET = Map.ofEntries(
-  Map.entry(SwerveModule.Location.LeftFront, Units.Radians.of(Math.PI / 2)),
-  Map.entry(SwerveModule.Location.RightFront, Units.Radians.zero()),
-  Map.entry(SwerveModule.Location.LeftRear, Units.Radians.of(Math.PI)),
-  Map.entry(SwerveModule.Location.RightRear, Units.Radians.of(Math.PI / 2))
-);
-
-  /** Make a {@link REVSwerveModule}
-   * 
-   * @param driveMotor the drive motor (Ex: forward-backword)
-   * @param rotateMotor the rotate motor (Ex: left-right)
-   * @param location the location of the swerve module (Ex: front left)
-   * 
-   * @author Hudson Strub
-   * @since 2025
-   */
-  private static RAWRSwerveModule createSwerve(Spark.ID driveMotor, Spark.ID rotateMotor, SwerveModule.Location location){
-    
-    RAWRSwerveModule.Hardware hardware = new RAWRSwerveModule.Hardware(
-                  new Spark(driveMotor, Spark.MotorKind.NEO_VORTEX),
-                  new Spark(rotateMotor, Spark.MotorKind.NEO_550)
-          );
-  
-    
-    RAWRSwerveModule swerveModule = new RAWRSwerveModule(
-          hardware,
-          location,
-          SwerveModule.MountOrientation.STANDARD,
-          SwerveModule.MountOrientation.INVERTED,
-          Constants.SwerveConstants.GEAR_RATIO,
-          DriveWheel.create(
-            Distance.ofRelativeUnits(75, Units.Millimeter), 
-            Dimensionless.ofBaseUnits(0.15, Units.Value),
-            Dimensionless.ofBaseUnits(0.1, Units.Value)), // TODO: Replace with actual drive wheel configuration
-          ZERO_OFFSET.get(location),
-          PIDConstants.of(0, 0, 0,1,1), // Replace with actual PID constants
-          FFConstants.of(1,1,1,1),  // Replace with actual feed-forward constants
-          PIDConstants.of(4.5, 0, 1,0, 0), // The PID for the rotate Motor
-          FFConstants.of(1,1,1,1),  // Replace with actual feed-forward constants
-          Dimensionless.ofBaseUnits(Constants.Drive.DRIVE_SLIP_RATIO, Units.Value),
-          Mass.ofRelativeUnits(100, Units.Pounds), // Replace with actual mass value
-          Distance.ofBaseUnits(Constants.Drive.DRIVE_WHEELBASE, Units.Meter),
-          Distance.ofBaseUnits(Constants.Drive.DRIVE_TRACK_WIDTH, Units.Meter),
-          Time.ofBaseUnits(Constants.Drive.AUTO_LOCK_TIME, Units.Second));
-    
-    
-    return swerveModule;
-  }
 
   /**
    * Set swerve modules
@@ -335,7 +280,7 @@ public static final Map<SwerveModule.Location, Angle> ZERO_OFFSET = Map.ofEntrie
     rFrontModule.set(moduleStates);
     lRearModule.set(moduleStates);
     rRearModule.set(moduleStates);
-    Logger.recordOutput(getName() + Constants.Drive.DESIRED_SWERVE_STATE_LOG_ENTRY, moduleStates);
+    Logger.recordOutput(getName() + Constants.DriveConstants.DESIRED_SWERVE_STATE_LOG_ENTRY, moduleStates);
   }
 
   /**
@@ -349,7 +294,7 @@ public static final Map<SwerveModule.Location, Angle> ZERO_OFFSET = Map.ofEntrie
     rFrontModule.set(moduleStates);
     lRearModule.set(moduleStates);
     rRearModule.set(moduleStates);
-    Logger.recordOutput(getName() + Constants.Drive.DESIRED_SWERVE_STATE_LOG_ENTRY, moduleStates);
+    Logger.recordOutput(getName() + Constants.DriveConstants.DESIRED_SWERVE_STATE_LOG_ENTRY, moduleStates);
   }
 
   /**
@@ -457,8 +402,8 @@ public static final Map<SwerveModule.Location, Angle> ZERO_OFFSET = Map.ofEntrie
    * Log DriveSubsystem outputs
    */
   private void logOutputs() {
-    Logger.recordOutput(getName() + Constants.Drive.POSE_LOG_ENTRY, getPose());
-    Logger.recordOutput(getName() + Constants.Drive.ACTUAL_SWERVE_STATE_LOG_ENTRY, getModuleStates());
+    Logger.recordOutput(getName() + Constants.DriveConstants.POSE_LOG_ENTRY, getPose());
+    Logger.recordOutput(getName() + Constants.DriveConstants.ACTUAL_SWERVE_STATE_LOG_ENTRY, getModuleStates());
   }
 
   /**
@@ -514,7 +459,7 @@ public static final Map<SwerveModule.Location, Angle> ZERO_OFFSET = Map.ofEntrie
     }
 
     // Adjust point
-    point = point.plus(Constants.Drive.AIM_OFFSET);
+    point = point.plus(Constants.DriveConstants.AIM_OFFSET);
     // Get current pose
     Pose2d currentPose = getPose();
     // Angle to target point
@@ -528,7 +473,7 @@ public static final Map<SwerveModule.Location, Angle> ZERO_OFFSET = Map.ofEntrie
     // Parallel component of robot's motion to target vector
     Vector2D parallelRobotVector = targetVector.scalarMultiply(robotVector.dotProduct(targetVector) / targetVector.getNormSq());
     // Perpendicular component of robot's motion to target vector
-    Vector2D perpendicularRobotVector = robotVector.subtract(parallelRobotVector).scalarMultiply(velocityCorrection ?Constants.Drive. AIM_VELOCITY_COMPENSATION_FUDGE_FACTOR : 0.0);
+    Vector2D perpendicularRobotVector = robotVector.subtract(parallelRobotVector).scalarMultiply(velocityCorrection ?Constants.DriveConstants. AIM_VELOCITY_COMPENSATION_FUDGE_FACTOR : 0.0);
     // Adjust aim point using calculated vector
     Translation2d adjustedPoint = point.minus(new Translation2d(perpendicularRobotVector.getX(), perpendicularRobotVector.getY()));
     // Calculate new angle using adjusted point
@@ -894,8 +839,8 @@ public static final Map<SwerveModule.Location, Angle> ZERO_OFFSET = Map.ofEntrie
     return new PathConstraints(
       3.0,
       1.0,
-      Constants.Drive.DRIVE_ROTATE_VELOCITY.in(Units.RadiansPerSecond),
-      Constants.Drive.DRIVE_ROTATE_ACCELERATION.magnitude()
+      Constants.DriveConstants.DRIVE_ROTATE_VELOCITY.in(Units.RadiansPerSecond),
+      Constants.DriveConstants.DRIVE_ROTATE_ACCELERATION.magnitude()
     );
   }
 
@@ -920,8 +865,8 @@ public static final Map<SwerveModule.Location, Angle> ZERO_OFFSET = Map.ofEntrie
    * @return True if robot is tipping
    */
   public boolean isTipping() {
-    return Math.abs(getPitch().in(Units.Degrees)) > Constants.Drive.TIP_THRESHOLD ||
-           Math.abs(getRoll().in(Units.Degrees)) > Constants.Drive.TIP_THRESHOLD;
+    return Math.abs(getPitch().in(Units.Degrees)) > Constants.DriveConstants.TIP_THRESHOLD ||
+           Math.abs(getRoll().in(Units.Degrees)) > Constants.DriveConstants.TIP_THRESHOLD;
   }
 
   /**
@@ -929,8 +874,8 @@ public static final Map<SwerveModule.Location, Angle> ZERO_OFFSET = Map.ofEntrie
    * @return True if robot is (nearly) balanced
    */
   public boolean isBalanced() {
-    return Math.abs(getPitch().in(Units.Degrees)) < Constants.Drive.BALANCED_THRESHOLD &&
-           Math.abs(getRoll().in(Units.Degrees)) < Constants.Drive.BALANCED_THRESHOLD;
+    return Math.abs(getPitch().in(Units.Degrees)) < Constants.DriveConstants.BALANCED_THRESHOLD &&
+           Math.abs(getRoll().in(Units.Degrees)) < Constants.DriveConstants.BALANCED_THRESHOLD;
   }
 
   /**
@@ -938,7 +883,7 @@ public static final Map<SwerveModule.Location, Angle> ZERO_OFFSET = Map.ofEntrie
    * @return True if aimed
    */
   public boolean isAimed() {
-    return (autoAimPIDControllerFront.atGoal() || autoAimPIDControllerBack.atGoal()) && getRotateRate().lt(Constants.Drive.AIM_VELOCITY_THRESHOLD);
+    return (autoAimPIDControllerFront.atGoal() || autoAimPIDControllerBack.atGoal()) && getRotateRate().lt(Constants.DriveConstants.AIM_VELOCITY_THRESHOLD);
   }
 
   /**

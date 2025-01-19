@@ -6,11 +6,13 @@ package frc.robot;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Map;
 
 import org.lasarobotics.drive.TractionControlController;
 import org.lasarobotics.drive.swerve.DriveWheel;
 import org.lasarobotics.drive.swerve.SwerveModule;
 import org.lasarobotics.drive.swerve.SwerveModuleSim;
+import org.lasarobotics.drive.swerve.parent.REVSwerveModule;
 import org.lasarobotics.hardware.PurpleManager;
 import org.lasarobotics.hardware.revrobotics.Spark;
 import org.lasarobotics.hardware.revrobotics.Spark.MotorKind;
@@ -47,7 +49,7 @@ import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
-import frc.robot.Constants.Drive;
+import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.SwerveConstants;
 
 /** REV MAXSwerve module */
@@ -91,6 +93,57 @@ public class RAWRSwerveModule extends SwerveModule implements Sendable {
 
   private Instant m_autoLockTimer;
 
+  
+public static final Map<SwerveModule.Location, Angle> ZERO_OFFSET = Map.ofEntries(
+  Map.entry(SwerveModule.Location.LeftFront, Units.Radians.of(Math.PI / 2)),
+  Map.entry(SwerveModule.Location.RightFront, Units.Radians.zero()),
+  Map.entry(SwerveModule.Location.LeftRear, Units.Radians.of(Math.PI)),
+  Map.entry(SwerveModule.Location.RightRear, Units.Radians.of(Math.PI / 2))
+);
+
+
+  /** Make a {@link REVSwerveModule}
+   * 
+   * @param driveMotor the drive motor (Ex: forward-backword)
+   * @param rotateMotor the rotate motor (Ex: left-right)
+   * @param location the location of the swerve module (Ex: front left)
+   * 
+   * @author Hudson Strub
+   * @since 2025
+   */
+  public static RAWRSwerveModule createSwerve(Spark.ID driveMotor, Spark.ID rotateMotor, SwerveModule.Location location){
+    
+    RAWRSwerveModule.Hardware hardware = new RAWRSwerveModule.Hardware(
+                  new Spark(driveMotor, Spark.MotorKind.NEO_VORTEX),
+                  new Spark(rotateMotor, Spark.MotorKind.NEO_550)
+          );
+  
+    
+    RAWRSwerveModule swerveModule = new RAWRSwerveModule(
+          hardware,
+          location,
+          SwerveModule.MountOrientation.STANDARD,
+          SwerveModule.MountOrientation.INVERTED,
+          Constants.SwerveConstants.GEAR_RATIO,
+          DriveWheel.create(
+            Distance.ofRelativeUnits(75, Units.Millimeter), 
+            Dimensionless.ofBaseUnits(0.15, Units.Value),
+            Dimensionless.ofBaseUnits(0.1, Units.Value)), // TODO: Replace with actual drive wheel configuration
+          ZERO_OFFSET.get(location),
+          PIDConstants.of(0, 0, 0,1,1), // Replace with actual PID constants
+          FFConstants.of(1,1,1,1),  // Replace with actual feed-forward constants
+          PIDConstants.of(4.5, 0, 1,0, 0), // The PID for the rotate Motor
+          FFConstants.of(1,1,1,1),  // Replace with actual feed-forward constants
+          Dimensionless.ofBaseUnits(Constants.DriveConstants.DRIVE_SLIP_RATIO, Units.Value),
+          Mass.ofRelativeUnits(100, Units.Pounds), // Replace with actual mass value
+          Distance.ofBaseUnits(Constants.DriveConstants.DRIVE_WHEELBASE, Units.Meter),
+          Distance.ofBaseUnits(Constants.DriveConstants.DRIVE_TRACK_WIDTH, Units.Meter),
+          Time.ofBaseUnits(Constants.DriveConstants.AUTO_LOCK_TIME, Units.Second));
+    
+    
+    return swerveModule;
+  }
+
   /**
    * Create an instance of a REV swerve module
    * @param swerveHardware Hardware devices required by swerve module
@@ -110,7 +163,7 @@ public class RAWRSwerveModule extends SwerveModule implements Sendable {
    * @param trackWidth Robot track width
    * @param autoLockTime Time before automatically rotating module to locked position (10 seconds max)
    */
-  public RAWRSwerveModule(Hardware swerveHardware,
+  private RAWRSwerveModule(Hardware swerveHardware,
                          SwerveModule.Location location,
                          SwerveModule.MountOrientation motorOrientation,
                          SwerveModule.MountOrientation encoderOrientation,
@@ -131,7 +184,7 @@ public class RAWRSwerveModule extends SwerveModule implements Sendable {
       * (1 / (driveWheel.diameter.in(Units.Meters) * Math.PI));
     DRIVE_METERS_PER_TICK = 1 / DRIVE_TICKS_PER_METER;
     DRIVE_METERS_PER_ROTATION = DRIVE_METERS_PER_TICK * encoderTicksPerRotation;
-    DRIVE_MAX_LINEAR_SPEED = (swerveHardware.driveMotor.getKind().getMaxRPM() / 60) * DRIVE_METERS_PER_ROTATION * Drive.DRIVETRAIN_EFFICIENCY;
+    DRIVE_MAX_LINEAR_SPEED = (swerveHardware.driveMotor.getKind().getMaxRPM() / 60) * DRIVE_METERS_PER_ROTATION * DriveConstants.DRIVETRAIN_EFFICIENCY;
 
     // Set traction control controller
     super.setTractionControlController(new TractionControlController(driveWheel, slipRatio, mass, Units.MetersPerSecond.of(DRIVE_MAX_LINEAR_SPEED)));

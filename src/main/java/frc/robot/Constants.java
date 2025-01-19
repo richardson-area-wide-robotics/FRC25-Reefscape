@@ -21,6 +21,7 @@ import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Time;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 
 /**
@@ -43,10 +44,17 @@ public final class Constants {
    * <br> <br>
    * {@link HID#SECONDARY_CONTROLLER_PORT} is for the operator
    */
-  public static class HID {
-    public static final int PRIMARY_CONTROLLER_PORT = 0;
-    public static final int SECONDARY_CONTROLLER_PORT = 1;
-    public static final double CONTROLLER_DEADBAND = 0.1;
+  public static class HIDConstants {
+
+  public static final int PRIMARY_CONTROLLER_PORT = 0;
+  public static final int SECONDARY_CONTROLLER_PORT = 1;
+  public static final double CONTROLLER_DEADBAND = 0.1;
+
+  public static final CommandXboxController PRIMARY_CONTROLLER = new CommandXboxController(
+    PRIMARY_CONTROLLER_PORT);
+  public static final CommandXboxController OPERATOR_CONTROLLER = new CommandXboxController(
+    SECONDARY_CONTROLLER_PORT);
+
   }
 
   public static class SwerveConstants {
@@ -68,7 +76,7 @@ public final class Constants {
     
   }
 
-  public static class Drive {
+  public static class DriveConstants {
     // Drive specs
     public static final double DRIVETRAIN_EFFICIENCY = 0.90;
     public static final PIDConstants DRIVE_ROTATE_PID = PIDConstants.of(6.45, 0.0, 0.45, 0.0, 0.0);
@@ -119,7 +127,7 @@ public final class Constants {
    * @author PurpleLib
    * @since 2024
    */
-  public static class DriveHardware {
+  public static class DriveHardwareConstants {
     public static final NavX2.ID NAVX_ID = new NavX2.ID("DriveHardware/NavX2");
 
     public static final Spark.ID RIGHT_FRONT_DRIVE_MOTOR_ID = new Spark.ID("DriveHardware/Swerve/RightFront/Drive", 3);
@@ -133,7 +141,7 @@ public final class Constants {
   }
 
 
-  public static class SmartDashboard {
+  public static class SmartDashboardConstants {
     public static final String SMARTDASHBOARD_DEFAULT_TAB = "SmartDashboard";
     public static final String SMARTDASHBOARD_AUTO_MODE = "Auto Mode";
   }
