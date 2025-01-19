@@ -298,64 +298,48 @@ public static Hardware initializeHardware() {
   }
 
   /**
-   * Drive robot and apply traction control
-   * @param xRequest Desired X (forward) velocity
-   * @param yRequest Desired Y (sideways) velocity
-   * @param rotateRequest Desired rotate rate
-   * @param inertialVelocity Current robot inertial velocity
-   * @param controlCentricity Current robot rotate rate
-   */
-  private void drive(ControlCentricity controlCentricity,
-                     LinearVelocity xRequest,
-                     LinearVelocity yRequest,
-                     AngularVelocity rotateRequest,
-                     LinearVelocity inertialVelocity) {
-    // Get requested chassis speeds, correcting for second order kinematics
-    desiredChassisSpeeds = AdvancedSwerveKinematics.correctForDynamics(
-      new ChassisSpeeds(xRequest, yRequest, rotateRequest)
-    );
-
-    // Convert speeds to module states, correcting for 2nd order kinematics
-    SwerveModuleState[] moduleStates = advancedKinematics.toSwerveModuleStates(
-            desiredChassisSpeeds,
-      getPose().getRotation(),
-      controlCentricity
-    );
-
-    // Desaturate drive speeds
-    SwerveDriveKinematics.desaturateWheelSpeeds(moduleStates, DRIVE_MAX_LINEAR_SPEED);
-
-    // Set modules to calculated states, WITH traction control
-    setSwerveModules(moduleStates, inertialVelocity, Units.RadiansPerSecond.of(desiredChassisSpeeds.omegaRadiansPerSecond));
-  }
-
-  /**
-   * Drive robot without traction control
+   * Drive the robot (supports traction control) 
    *
-   * @param xRequest      Desired X (forward) velocity
-   * @param yRequest      Desired Y (sideways) velocity
-   * @param rotateRequest Desired rotate rate
+   * @param xRequest         Desired X (forward) velocity
+   * @param yRequest         Desired Y (sideways) velocity
+   * @param rotateRequest    Desired rotate rate
+   * @param controlCentricity Control centricity (ROBOT_CENTRIC by default if traction control is disabled)
+   * @param inertialVelocity Current robot inertial velocity (null if traction control is disabled)
+   * @param applyTractionControl Whether to apply traction control
    */
   private void drive(LinearVelocity xRequest,
-                     LinearVelocity yRequest,
-                     AngularVelocity rotateRequest) {
-    // Get requested chassis speeds, correcting for second order kinematics
-    desiredChassisSpeeds = AdvancedSwerveKinematics.correctForDynamics(
-      new ChassisSpeeds(xRequest, yRequest, rotateRequest)
-    );
+                    LinearVelocity yRequest,
+                    AngularVelocity rotateRequest,
+                    ControlCentricity controlCentricity,
+                    LinearVelocity inertialVelocity,
+                    boolean applyTractionControl) {
 
-    // Convert speeds to module states, correcting for 2nd order kinematics
-    SwerveModuleState[] moduleStates = advancedKinematics.toSwerveModuleStates(
-            desiredChassisSpeeds,
-      getPose().getRotation(),
-            ControlCentricity.ROBOT_CENTRIC
-    );
+      if(controlCentricity == null){
+        controlCentricity = ControlCentricity.ROBOT_CENTRIC; //TODO Does this make John NullPointerException?
+      }
+      
+      // Get requested chassis speeds, correcting for second order kinematics
+      desiredChassisSpeeds = AdvancedSwerveKinematics.correctForDynamics(
+          new ChassisSpeeds(xRequest, yRequest, rotateRequest)
+      );
 
-    // Desaturate drive speeds
-    SwerveDriveKinematics.desaturateWheelSpeeds(moduleStates, DRIVE_MAX_LINEAR_SPEED);
+      // Convert speeds to module states, correcting for 2nd order kinematics
+      SwerveModuleState[] moduleStates = advancedKinematics.toSwerveModuleStates(
+          desiredChassisSpeeds,
+          getPose().getRotation(),
+          controlCentricity
+      );
 
-    // Set modules to calculated states, WITHOUT traction control
-    setSwerveModules(moduleStates);
+      // Desaturate drive speeds
+      SwerveDriveKinematics.desaturateWheelSpeeds(moduleStates, DRIVE_MAX_LINEAR_SPEED);
+
+      // Set modules to calculated states, applying traction control if enabled
+      if (applyTractionControl) {
+          setSwerveModules(moduleStates, inertialVelocity,
+              Units.RadiansPerSecond.of(desiredChassisSpeeds.omegaRadiansPerSecond));
+      } else {
+          setSwerveModules(moduleStates);
+      }
   }
 
   /**
@@ -426,7 +410,7 @@ public static Hardware initializeHardware() {
     drive(
             DRIVE_MAX_LINEAR_SPEED.div(4).times(Math.cos(direction)),
       DRIVE_MAX_LINEAR_SPEED.div(4).times(Math.sin(direction)),
-      Units.DegreesPerSecond.of(0.0)
+      Units.DegreesPerSecond.of(0.0), null, null, false
     );
   }
 
@@ -449,11 +433,11 @@ public static Hardware initializeHardware() {
     if (point == null) {
       AngularVelocity rotateOutput = rotatePIDController.calculate(getAngle(), getRotateRate(), rotateRequest).unaryMinus();
       drive(
-        controlCentricity,
         velocityOutput.unaryMinus().times(Math.cos(moveDirection)),
         velocityOutput.unaryMinus().times(Math.sin(moveDirection)),
         rotateOutput,
-        getInertialVelocity()
+        controlCentricity,
+        getInertialVelocity(), true
       );
       return;
     }
@@ -490,11 +474,11 @@ public static Hardware initializeHardware() {
 
     // Drive robot accordingly
     drive(
-      controlCentricity,
       velocityOutput.unaryMinus().times(Math.cos(moveDirection)),
       velocityOutput.unaryMinus().times(Math.sin(moveDirection)),
       Units.DegreesPerSecond.of(rotateOutput),
-      getInertialVelocity()
+      controlCentricity,
+      getInertialVelocity(), true
     );
   }
 
@@ -537,11 +521,11 @@ public static Hardware initializeHardware() {
 
     // Drive robot
     drive(
-            controlCentricity,
       velocityOutput.unaryMinus().times(Math.cos(moveDirection)),
       velocityOutput.unaryMinus().times(Math.sin(moveDirection)),
       rotateOutput,
-      getInertialVelocity()
+      controlCentricity,
+      getInertialVelocity(), true
     );
   }
 
