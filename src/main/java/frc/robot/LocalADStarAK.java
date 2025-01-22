@@ -17,6 +17,8 @@ import org.littletonrobotics.junction.inputs.LoggableInputs;
 
 /**
  * AdvantageKit compatible pathfinding algorithm
+ * 
+ * @author PurpleLib
  */
 public class LocalADStarAK implements Pathfinder {
   private final ADStarIO io = new ADStarIO();

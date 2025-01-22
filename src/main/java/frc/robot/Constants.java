@@ -20,6 +20,8 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Time;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 
 /**
@@ -42,14 +44,41 @@ public final class Constants {
    * <br> <br>
    * {@link HID#SECONDARY_CONTROLLER_PORT} is for the operator
    */
-  public static class HID {
-    public static final int PRIMARY_CONTROLLER_PORT = 0;
-    public static final int SECONDARY_CONTROLLER_PORT = 1;
-    public static final double CONTROLLER_DEADBAND = 0.1;
+  public static class HIDConstants {
+
+  public static final int PRIMARY_CONTROLLER_PORT = 0;
+  public static final int SECONDARY_CONTROLLER_PORT = 1;
+  public static final double CONTROLLER_DEADBAND = 0.1;
+
+  public static final CommandXboxController PRIMARY_CONTROLLER = new CommandXboxController(
+    PRIMARY_CONTROLLER_PORT);
+  public static final CommandXboxController OPERATOR_CONTROLLER = new CommandXboxController(
+    SECONDARY_CONTROLLER_PORT);
+
   }
 
-  public static class Drive {
+  public static class SwerveConstants {
+    public static final Time DEFAULT_SIGNAL_PERIOD = Units.Milliseconds.of(10.0);
+
+    public static final double EPSILON = 5e-3;
+    /**In Amps, the max current a Drive Motor can use*/
+    public static final int DRIVE_MOTOR_CURRENT_LIMIT = 60;
+    /**In Amps, the max current a Rotate Motor can use*/
+    public static final int ROTATE_MOTOR_CURRENT_LIMIT = 20;
+
+    /**The Gear Ratio used for our swerve modules*/
+    public static final MAXSwerveModule.GearRatio GEAR_RATIO = MAXSwerveModule.GearRatio.L3;
+
+    // Log
+    public static final String ROTATE_ERROR_LOG_ENTRY = "/RotateError";
+    public static final String MAX_LINEAR_VELOCITY_LOG_ENTRY = "/MaxLinearVelocity";
+    public static final double MAX_AUTO_LOCK_TIME = 10.0;
+    
+  }
+
+  public static class DriveConstants {
     // Drive specs
+    public static final double DRIVETRAIN_EFFICIENCY = 0.90;
     public static final PIDConstants DRIVE_ROTATE_PID = PIDConstants.of(6.45, 0.0, 0.45, 0.0, 0.0);
     public static final double DRIVE_SLIP_RATIO = 0.05;
     public static final double DRIVE_TURN_SCALAR = 60.0;
@@ -57,7 +86,6 @@ public final class Constants {
     public static final double DRIVE_WHEELBASE = 0.5588;
     public static final double DRIVE_TRACK_WIDTH = 0.5588;
     public static final double AUTO_LOCK_TIME = 3.0;
-    public static final double DRIVE_CURRENT_LIMIT = 60.0;
     public static final AngularVelocity DRIVE_ROTATE_VELOCITY = Units.RadiansPerSecond.of(12 * Math.PI);
     public static final AngularVelocity AIM_VELOCITY_THRESHOLD = Units.DegreesPerSecond.of(5.0);
     public static final AngularAcceleration DRIVE_ROTATE_ACCELERATION = Units.RadiansPerSecond.of(4 * Math.PI).per(Units.Second);
@@ -77,23 +105,19 @@ public final class Constants {
     
     public static final ControlCentricity DRIVE_CONTROL_CENTRICITY = ControlCentricity.FIELD_CENTRIC;
 
-    private static final double[] DRIVE_THROTTLE_INPUT_CURVE_X = { 0.0, 0.100, 0.200, 0.300, 0.400, 0.500, 0.600, 0.700, 0.800, 0.900, 1.000 };
+    // Input Curves
+    private static final double[] m_DriveThrottleInputCurveX = { 0.0, 0.100, 0.200, 0.300, 0.400, 0.500, 0.600, 0.700, 0.800, 0.900, 1.000 };
+    private static final double[] m_DriveThrottleInputCurveY = { 0.0, 0.052, 0.207, 0.465, 0.827, 1.293, 1.862, 2.534, 3.310, 4.189, 5.172 };
+    private static final double[] m_DriveTurnInputCurveX = { 0.0, 0.100, 0.200, 0.300, 0.400, 0.500, 0.600, 0.700, 0.800, 0.900, 1.0 };
+    private static final double[] m_DriveTurnInputCurveY = { 0.0, 0.010, 0.050, 0.100, 0.150, 0.200, 0.250, 0.300, 0.400, 0.600, 1.0 };
 
-    private static final double[] DRIVE_THROTTLE_INPUT_CURVE_Y = { 0.0, 0.052, 0.207, 0.465, 0.827, 1.293, 1.862, 2.534, 3.310, 4.189, 5.172 };
-    
-    private static final double[] DRIVE_TURN_INPUT_CURVE_X = { 0.0, 0.100, 0.200, 0.300, 0.400, 0.500, 0.600, 0.700, 0.800, 0.900, 1.0 };
-    
-    private static final double[] DRIVE_TURN_INPUT_CURVE_Y = { 0.0, 0.010, 0.050, 0.100, 0.150, 0.200, 0.250, 0.300, 0.400, 0.600, 1.0 };
-
-    
-    
     private static final SplineInterpolator SPLINE_INTERPOLATOR = new SplineInterpolator();
-    public static final PolynomialSplineFunction DRIVE_THROTTLE_INPUT_CURVE = SPLINE_INTERPOLATOR
-        .interpolate(DRIVE_THROTTLE_INPUT_CURVE_X, DRIVE_THROTTLE_INPUT_CURVE_Y);
-    public static final PolynomialSplineFunction DRIVE_TURN_INPUT_CURVE = SPLINE_INTERPOLATOR
-        .interpolate(DRIVE_TURN_INPUT_CURVE_X, DRIVE_TURN_INPUT_CURVE_Y);
 
-    public static final MAXSwerveModule.GearRatio GEAR_RATIO = MAXSwerveModule.GearRatio.L3;
+
+    public static final PolynomialSplineFunction DRIVE_THROTTLE_INPUT_CURVE = SPLINE_INTERPOLATOR
+        .interpolate(m_DriveThrottleInputCurveX, m_DriveThrottleInputCurveY);
+    public static final PolynomialSplineFunction DRIVE_TURN_INPUT_CURVE = SPLINE_INTERPOLATOR
+        .interpolate(m_DriveTurnInputCurveX, m_DriveTurnInputCurveY);
   }
 
 
@@ -103,21 +127,21 @@ public final class Constants {
    * @author PurpleLib
    * @since 2024
    */
-  public static class DriveHardware {
+  public static class DriveHardwareConstants {
     public static final NavX2.ID NAVX_ID = new NavX2.ID("DriveHardware/NavX2");
-    public static final Spark.ID LEFT_FRONT_DRIVE_MOTOR_ID = new Spark.ID("DriveHardware/Swerve/LeftFront/Drive", 5);
-    public static final Spark.ID LEFT_FRONT_ROTATE_MOTOR_ID = new Spark.ID("DriveHardware/Swerve/LeftFront/Rotate", 6);
-    public static final Spark.ID RIGHT_FRONT_DRIVE_MOTOR_ID = new Spark.ID("DriveHardware/Swerve/RightFront/Drive", 3);
-    public static final Spark.ID RIGHT_FRONT_ROTATE_MOTOR_ID = new Spark.ID("DriveHardware/Swerve/RightFront/Rotate", 4);
-    public static final Spark.ID LEFT_REAR_DRIVE_MOTOR_ID = new Spark.ID("DriveHardware/Swerve/LeftRear/Drive", 7);
-    public static final Spark.ID LEFT_REAR_ROTATE_MOTOR_ID = new Spark.ID("DriveHardware/Swerve/LeftRear/Rotate", 8);
-    public static final Spark.ID RIGHT_REAR_DRIVE_MOTOR_ID = new Spark.ID("DriveHardware/Swerve/RightRear/Drive", 1);
-    public static final Spark.ID RIGHT_REAR_ROTATE_MOTOR_ID = new Spark.ID("DriveHardware/Swerve/RightRear/Rotate", 2);
-    //public static final LEDStrip.ID LED_STRIP_ID = new LEDStrip.ID("DriveHardware/LEDStrip", 0, 200);
+
+    public static final Spark.ID LEFT_FRONT_DRIVE_MOTOR_ID = new Spark.ID("DriveHardware/Swerve/LeftFront/Drive", 3);
+    public static final Spark.ID LEFT_FRONT_ROTATE_MOTOR_ID = new Spark.ID("DriveHardware/Swerve/LeftFront/Rotate", 4);
+    public static final Spark.ID RIGHT_FRONT_DRIVE_MOTOR_ID = new Spark.ID("DriveHardware/Swerve/RightFront/Drive", 5);
+    public static final Spark.ID RIGHT_FRONT_ROTATE_MOTOR_ID = new Spark.ID("DriveHardware/Swerve/RightFront/Rotate", 6);
+    public static final Spark.ID LEFT_REAR_DRIVE_MOTOR_ID = new Spark.ID("DriveHardware/Swerve/LeftRear/Drive", 1);
+    public static final Spark.ID LEFT_REAR_ROTATE_MOTOR_ID = new Spark.ID("DriveHardware/Swerve/LeftRear/Rotate", 2);
+    public static final Spark.ID RIGHT_REAR_DRIVE_MOTOR_ID = new Spark.ID("DriveHardware/Swerve/RightRear/Drive", 7);
+    public static final Spark.ID RIGHT_REAR_ROTATE_MOTOR_ID = new Spark.ID("DriveHardware/Swerve/RightRear/Rotate", 8);
   }
 
 
-  public static class SmartDashboard {
+  public static class SmartDashboardConstants {
     public static final String SMARTDASHBOARD_DEFAULT_TAB = "SmartDashboard";
     public static final String SMARTDASHBOARD_AUTO_MODE = "Auto Mode";
   }
