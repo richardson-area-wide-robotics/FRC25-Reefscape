@@ -9,6 +9,7 @@ Here are some resources we use frequently:
 * [PurpleLib Github](https://github.com/lasarobotics/PurpleLib)
 
 ## PathPlanner
+* [PathPlanner Docs](https://pathplanner.dev/home.html)
 * [PathPlannerLib Javadoc](https://pathplanner.dev/api/java/)
 
 ## Lombok
@@ -16,4 +17,4 @@ Here are some resources we use frequently:
 * [Lombok Website](https://projectlombok.org/features/)
 
 
-<b> This was last updated by Hudson on Jan 22, 2025</b>
+<b> This was last updated by Alan (at384752) on Jan 22, 2025</b>
