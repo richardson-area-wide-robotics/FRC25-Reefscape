@@ -16,8 +16,8 @@ public class RobotUtils  {
    * @author Hudson Strub
    * @since 2025
    */
-  public static void bindControl(Trigger control, Command command) {
-    control.onTrue(command);
+  public static void bindControl(Trigger control, Command command, Command stopCommand) {
+    control.whileTrue(command).whileFalse(stopCommand);
   }
 
 }
