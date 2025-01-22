@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.Constants.HIDConstants;
 import frc.robot.interfaces.IRobotContainer;
 import frc.robot.subsystems.drive.DriveSubsystem;
+import frc.robot.subsystems.shooter.KitBotShooter;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -31,6 +32,8 @@ public class RobotContainer implements IRobotContainer {
       Angle.ofRelativeUnits(Constants.DriveConstants.DRIVE_TURN_SCALAR, Units.Degree),
       Dimensionless.ofRelativeUnits(Constants.HIDConstants.CONTROLLER_DEADBAND, Units.Value),
       Time.ofRelativeUnits(Constants.DriveConstants.DRIVE_LOOKAHEAD, Units.Second));
+
+  public static final KitBotShooter KIT_BOT_SHOOTER = new KitBotShooter(9);
 
   private static SendableChooser<Command> automodeChooser = null; 
 
@@ -71,13 +74,17 @@ public class RobotContainer implements IRobotContainer {
 
   private static void configureBindings() {
     // Start - toggle traction control
-    RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.start(), DRIVE_SUBSYSTEM.toggleTractionControlCommand());
+    RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.start(), DRIVE_SUBSYSTEM.toggleTractionControlCommand(), Commands.none());
 
     // Left POV - Reset pose
-    RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.povLeft(), DRIVE_SUBSYSTEM.resetPoseCommand(Pose2d::new));
+    RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.povLeft(), DRIVE_SUBSYSTEM.resetPoseCommand(Pose2d::new), Commands.none());
 
     // Right Stick Button - Reset heading
-    RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.rightStick(), Commands.runOnce(DRIVE_SUBSYSTEM.navx::reset, DRIVE_SUBSYSTEM));
+    RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.rightStick(), Commands.runOnce(DRIVE_SUBSYSTEM.navx::reset, DRIVE_SUBSYSTEM), Commands.none());
+
+    // Right Trigger - Outtake
+    RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.rightTrigger(), KIT_BOT_SHOOTER.setSpeedCommand(1), KIT_BOT_SHOOTER.stopMotorCommand());
+
   }
 
 
