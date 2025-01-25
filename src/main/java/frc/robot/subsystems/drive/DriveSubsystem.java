@@ -49,7 +49,6 @@ import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
-import edu.wpi.first.units.measure.Mass;
 import edu.wpi.first.units.measure.MomentOfInertia;
 import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.units.Units;
@@ -316,7 +315,7 @@ public static Hardware initializeHardware() {
                     boolean applyTractionControl) {
 
       if(controlCentricity == null){
-        controlCentricity = ControlCentricity.ROBOT_CENTRIC; //TODO Does this make John NullPointerException?
+        controlCentricity = ControlCentricity.ROBOT_CENTRIC;
       }
       
       // Get requested chassis speeds, correcting for second order kinematics
