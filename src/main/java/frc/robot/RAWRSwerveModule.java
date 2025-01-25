@@ -79,7 +79,6 @@ public class RAWRSwerveModule extends SwerveModule implements Sendable {
   private SparkBaseConfig m_driveMotorConfig;
   private SparkBaseConfig m_rotateMotorConfig;
   private Rotation2d m_zeroOffset;
-  private static double drivePID_kF;
   
     private SwerveModule.Location m_location;
     private Rotation2d m_previousRotatePosition;
@@ -131,9 +130,9 @@ public class RAWRSwerveModule extends SwerveModule implements Sendable {
               Dimensionless.ofBaseUnits(0.15, Units.Value),
               Dimensionless.ofBaseUnits(0.1, Units.Value)), // TODO: Replace with actual drive wheel configuration
             ZERO_OFFSET.get(location),
-            PIDConstants.of(0.18, 0, 0.001, drivePID_kF, 0), // Replace with actual PID constants
+            PIDConstants.of(0.18, 0, 0.001, 0, 0), // Replace with actual PID constants
           FFConstants.of(1, 1, 1, 1),  // Replace with actual feed-forward constants
-          PIDConstants.of(2.1, 0, 0.2, 0, 0), // The PID for the rotate Motor
+          PIDConstants.of(1.0, 0, 0.001, 0, 0), // The PID for the rotate Motor
           FFConstants.of(1, 1, 1, 1),  // Replace with actual feed-forward constants
           Dimensionless.ofBaseUnits(DriveConstants.DRIVE_SLIP_RATIO, Units.Value),
           DriveConstants.ROBOT_MASS,
@@ -216,8 +215,6 @@ public class RAWRSwerveModule extends SwerveModule implements Sendable {
     m_driveConversionFactor = driveWheel.diameter.in(Units.Meters) * Math.PI / super.getGearRatio().getDriveRatio();
     m_driveMotorConfig.encoder.positionConversionFactor(m_driveConversionFactor);
     m_driveMotorConfig.encoder.velocityConversionFactor(m_driveConversionFactor / 60);
-
-    drivePID_kF = 1 / ((m_driveMotor.getKind().getMaxRPM() / 60) * m_driveConversionFactor);
 
     // Set rotate encoder config
     m_rotateConversionFactor = 2 * Math.PI;
