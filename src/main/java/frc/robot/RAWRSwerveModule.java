@@ -135,8 +135,8 @@ public class RAWRSwerveModule extends SwerveModule implements Sendable {
           FFConstants.of(1, 1, 1, 1),  // Replace with actual feed-forward constants
           PIDConstants.of(2.1, 0, 0.2, 0, 0), // The PID for the rotate Motor
           FFConstants.of(1, 1, 1, 1),  // Replace with actual feed-forward constants
-          Dimensionless.ofBaseUnits(Constants.DriveConstants.DRIVE_SLIP_RATIO, Units.Value),
-          Mass.ofRelativeUnits(100, Units.Pounds), // Replace with actual mass value
+          Dimensionless.ofBaseUnits(DriveConstants.DRIVE_SLIP_RATIO, Units.Value),
+          DriveConstants.ROBOT_MASS,
           Distance.ofBaseUnits(Constants.DriveConstants.DRIVE_WHEELBASE, Units.Meter),
           Distance.ofBaseUnits(Constants.DriveConstants.DRIVE_TRACK_WIDTH, Units.Meter),
           Time.ofBaseUnits(Constants.DriveConstants.AUTO_LOCK_TIME, Units.Second));

@@ -60,6 +60,7 @@ import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.RAWRSwerveModule;
+import frc.robot.Constants.DriveConstants;
 
 public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   @AllArgsConstructor
@@ -184,7 +185,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
 
       // Robot configuration for auto
       this.robotConfig = new RobotConfig(
-        Mass.ofRelativeUnits(100, Units.Pound),
+        DriveConstants.ROBOT_MASS,
         MomentOfInertia.ofRelativeUnits(6.883, Units.KilogramSquareMeters),
         moduleConfig,
         moduleOffset
