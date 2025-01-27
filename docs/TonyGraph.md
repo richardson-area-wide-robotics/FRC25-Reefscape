@@ -3,13 +3,11 @@
 graph LR;
     PDH{{Power Distribution Hub}};
     RoboRIO==>CoralSubsystem;
-    RoboRIO==>AlgeaSubsystem;
     RoboRIO==>ClimberSystem
 
     subgraph IntakeGroup
         direction LR
         CoralSubsystem((Coral Subsystem))==>Elevator;
-        AlgeaSubsystem((Algae Subsystem))==>IntakeOSystem;
         IntakeOSystem((Intake/Outake));
         subgraph CoralGroup
                 direction LR
@@ -101,11 +99,14 @@ subgraph SwerveGroup
     PDH==>|Slot 8|VortexBL
     PDH==>|Slot 9|RoboRIO
 
-    linkStyle 36,37,38,39,40,41,42,43,44 stroke-width:4px,fill:none,stroke:orange;
-    linkStyle 17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,35 stroke-width:4px,fill:none,stroke:red;
-    linkStyle 0,3,5,6,7,8,9,10,11,12 stroke-width:4px,fill:none,stroke:cyan;
-    linkStyle 2,13,14,15,16 stroke-width:4px,fill:none,stroke:lime;
-    linkStyle 34 stroke-width:4px,fill:none,stroke:purple;
+    linkStyle 34,35,36,37,38,39,41,42 stroke-width:4px,fill:none,stroke:orange;
+    linkStyle 15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,33 stroke-width:4px,fill:none,stroke:red; 
+    linkStyle 0,3,4,5,6,7,8,9,10 stroke-width:4px,fill:none,stroke:cyan;
+    linkStyle 1,11,12,13,14 stroke-width:4px,fill:none,stroke:lime; 
+    linkStyle 32 stroke-width:4px,fill:none,stroke:purple;
+
+
+    Funnel(Funnel)
 
 ```
 
