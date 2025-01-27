@@ -2,8 +2,8 @@
 
 graph LR;
     PDH{{Power Distribution Hub}};
-    RoboRIO==>CoralSubsystem;
-    RoboRIO==>ClimberSystem
+    RoboRIO==>|CAN Bus|CoralSubsystem;
+    RoboRIO==>|CAN Bus|ClimberSystem
 
     subgraph IntakeGroup
         direction LR
@@ -89,7 +89,7 @@ subgraph SwerveGroup
     
 
     RADIO[(RADIO FUNCTION : communicate between robot and drive station)]==>RoboRIO;
-    RoboRIO{{RoboRIO FUNCTION : Brain of the robot, controls all subsystems}}==>DriveTrain;
+    RoboRIO{{RoboRIO FUNCTION : Brain of the robot, controls all subsystems}}==>|CAN Bus|DriveTrain;
     
     PDH==>|Slot 1|MaxFR
     PDH==>|Slot 2|MaxFL
