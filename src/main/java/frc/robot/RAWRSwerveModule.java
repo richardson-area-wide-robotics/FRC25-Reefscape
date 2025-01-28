@@ -130,10 +130,10 @@ public class RAWRSwerveModule extends SwerveModule implements Sendable {
               Dimensionless.ofBaseUnits(0.15, Units.Value),
               Dimensionless.ofBaseUnits(0.1, Units.Value)), // TODO: Replace with actual drive wheel configuration
             ZERO_OFFSET.get(location),
-            PIDConstants.of(0.18, 0, 0.001, 0, 0), // Replace with actual PID constants
-          FFConstants.of(1, 1, 1, 1),  // Replace with actual feed-forward constants
-          PIDConstants.of(1.0, 0, 0.001, 0, 0), // The PID for the rotate Motor
-          FFConstants.of(1, 1, 1, 1),  // Replace with actual feed-forward constants
+            PIDConstants.of(0.18, 0, 0.001, 0.174, 0), // Replace with actual PID constants
+          FFConstants.of(0, 0, 0, 0),  // Replace with actual feed-forward constants
+          PIDConstants.of(2.1, 0, 0.2, 0, 0), // The PID for the rotate Motor
+          FFConstants.of(0, 0, 0, 0),  // Replace with actual feed-forward constants
           Dimensionless.ofBaseUnits(DriveConstants.DRIVE_SLIP_RATIO, Units.Value),
           DriveConstants.ROBOT_MASS,
           Distance.ofBaseUnits(Constants.DriveConstants.DRIVE_WHEELBASE, Units.Meter),
