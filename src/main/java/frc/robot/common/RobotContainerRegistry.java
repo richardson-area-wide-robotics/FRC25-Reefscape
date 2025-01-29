@@ -29,12 +29,12 @@ public class RobotContainerRegistry {
     }
 
     public static IRobotContainer createContainerForTeam(int teamNumber) {
-        // Try to fetch the container for the specific team
+        // Try to get the container for the specific team
         Class<?> containerClass = teamContainers.get(teamNumber);
 
         // If not found, use the default container
         if (containerClass == null) {
-            return RobotContainer.createContainer(); // Or return a fallback container if needed
+            return RobotContainer.createContainer(); 
         }
 
         try { //Create the container
@@ -43,7 +43,7 @@ public class RobotContainerRegistry {
             e.printStackTrace();
         }
 
-        return null; // or a default container if you prefer
+        return null; 
     }
 
     private static final String PACKAGE_NAME = "frc.robot";  // Replace with your package
