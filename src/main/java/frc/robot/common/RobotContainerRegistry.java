@@ -46,7 +46,7 @@ public class RobotContainerRegistry {
         return null; 
     }
 
-    private static final String PACKAGE_NAME = "frc.robot";  // Replace with your package
+    private static final String PACKAGE_NAME = "frc.robot";  
 
     private static List<Class<?>> getAllClasses() {
         List<Class<?>> classes = new ArrayList<>();
