@@ -24,6 +24,12 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.common.interfaces.IRobotContainer;
 
+
+/**
+ * "Starting point" of the robot, nothing in here should need to be touched.
+ * 
+ * This sets up the ExceptionHandler, PathPlanner, Logging, and then creates a IRobotContainer based off the team number  
+ */
 public class Robot extends LoggedRobot {
   private Command autonomousCommand;
 
