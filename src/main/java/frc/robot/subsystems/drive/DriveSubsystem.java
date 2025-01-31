@@ -43,6 +43,7 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
@@ -233,11 +234,14 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
         field.getObject("currentPath").setTrajectory(trajectory);
     });
 
-    // may or may not work Lol
-    autoAimPIDControllerFront = new ProfiledPIDController(Constants.DriveConstants.BALANCED_THRESHOLD, Constants.DriveConstants.AUTO_LOCK_TIME, Constants.DriveConstants.AIM_VELOCITY_COMPENSATION_FUDGE_FACTOR, null);
-    autoAimPIDControllerBack = new ProfiledPIDController(Constants.DriveConstants.BALANCED_THRESHOLD, Constants.DriveConstants.AUTO_LOCK_TIME, Constants.DriveConstants.AIM_VELOCITY_COMPENSATION_FUDGE_FACTOR, null);
-    xVelocityFilter = new MedianFilter(1);
-    yVelocityFilter = new MedianFilter(1);
+    this.autoAimPIDControllerFront = new ProfiledPIDController(10.0, 0.0, 0.5, new TrapezoidProfile.Constraints(2160.0, 4320.0), 0.02);
+    this.autoAimPIDControllerFront.enableContinuousInput(-180.0, +180.0);
+    this.autoAimPIDControllerFront.setTolerance(1.5);
+    this.autoAimPIDControllerBack = new ProfiledPIDController(10.0, 0.0, 0.5, new TrapezoidProfile.Constraints(2160.0, 4320.0), 0.02);
+    this.autoAimPIDControllerBack.enableContinuousInput(-180.0, +180.0);
+    this.autoAimPIDControllerBack.setTolerance(1.5);
+    this.xVelocityFilter = new MedianFilter(100);
+    this.yVelocityFilter = new MedianFilter(100);
 }
 
 /**
