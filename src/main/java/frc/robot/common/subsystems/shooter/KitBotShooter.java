@@ -1,4 +1,4 @@
-package frc.robot.subsystems.shooter;
+package frc.robot.common.subsystems.shooter;
 
 import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkMax;

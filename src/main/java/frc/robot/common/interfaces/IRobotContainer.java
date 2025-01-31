@@ -1,4 +1,4 @@
-package frc.robot.interfaces;
+package frc.robot.common.interfaces;
 
 import edu.wpi.first.wpilibj2.command.Command;
 

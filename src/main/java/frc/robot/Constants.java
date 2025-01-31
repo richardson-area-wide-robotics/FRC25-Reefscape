@@ -41,9 +41,10 @@ public final class Constants {
 
   /**
    * Constants for controllers
-   * {@link HID#PRIMARY_CONTROLLER_PORT} is for the driver,
+   * <br>
+   * {@link HIDConstants#PRIMARY_CONTROLLER_PORT} is for the driver,
    * <br> <br>
-   * {@link HID#SECONDARY_CONTROLLER_PORT} is for the operator
+   * {@link HIDConstants#SECONDARY_CONTROLLER_PORT} is for the operator
    */
   public static class HIDConstants {
 

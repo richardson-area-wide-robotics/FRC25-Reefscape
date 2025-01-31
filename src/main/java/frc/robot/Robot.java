@@ -4,6 +4,10 @@
 
 package frc.robot;
 
+import frc.robot.common.LocalADStarAK;
+import frc.robot.common.RobotContainerRegistry;
+import frc.robot.common.RobotExceptionHandler;
+import frc.robot.common.RobotUtils;
 import org.lasarobotics.utils.GlobalConstants;
 import org.lasarobotics.hardware.PurpleManager;
 import org.littletonrobotics.junction.LogFileUtil;
@@ -15,12 +19,17 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 import com.pathplanner.lib.pathfinding.Pathfinding;
 
-import edu.wpi.first.hal.HALUtil;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.interfaces.IRobotContainer;
+import frc.robot.common.interfaces.IRobotContainer;
 
+
+/**
+ * "Starting point" of the robot, nothing in here should need to be touched.
+ * 
+ * This sets up the ExceptionHandler, PathPlanner, Logging, and then creates a IRobotContainer based off the team number  
+ */
 public class Robot extends LoggedRobot {
   private Command autonomousCommand;
 
@@ -65,15 +74,8 @@ public class Robot extends LoggedRobot {
 
     // Start logging! No more data receivers, replay sources, or metadata values may be added.
     Logger.start();
-    int containerTeam = HALUtil.getTeamNumber();
-
-    switch (containerTeam) {
-        case 1745:
-        default:
-            robotContainer = RobotContainer.createContainer();
-            break;
-    }
-  }
+    robotContainer = RobotContainerRegistry.createContainerForTeam(RobotUtils.getTeamNumber());
+}
 
 
   @Override
