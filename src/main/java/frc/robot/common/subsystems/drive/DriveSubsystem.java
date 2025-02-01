@@ -288,12 +288,12 @@ public static Hardware initializeHardware() {
   }
 
   /**
-   * Drive the robot (supports traction control) 
+   * Drive the robot 
    *
    * @param xRequest         Desired X (forward) velocity
    * @param yRequest         Desired Y (sideways) velocity
    * @param rotateRequest    Desired rotate rate
-   * @param controlCentricity Control centricity (ROBOT_CENTRIC by default if traction control is disabled)
+   * @param controlCentricity Control centricity 
    * @param inertialVelocity Current robot inertial velocity (null if traction control is disabled)
    * @param applyTractionControl Whether to apply traction control
    */
@@ -303,7 +303,7 @@ public static Hardware initializeHardware() {
                     ControlCentricity controlCentricity,
                     LinearVelocity inertialVelocity) {
 
-      if(controlCentricity == null){
+      if (controlCentricity == null){
         controlCentricity = ControlCentricity.ROBOT_CENTRIC;
       }
       
