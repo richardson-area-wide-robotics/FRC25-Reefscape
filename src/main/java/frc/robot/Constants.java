@@ -50,7 +50,7 @@ public final class Constants {
 
   public static final int PRIMARY_CONTROLLER_PORT = 0;
   public static final int SECONDARY_CONTROLLER_PORT = 1;
-  public static final double CONTROLLER_DEADBAND = 0.1;
+  public static final double CONTROLLER_DEADBAND = 0.6;
 
   public static final CommandXboxController PRIMARY_CONTROLLER = new CommandXboxController(
     PRIMARY_CONTROLLER_PORT);
@@ -82,7 +82,7 @@ public final class Constants {
     // Drive specs
     public static final Mass ROBOT_MASS = Mass.ofRelativeUnits(40, Units.Pounds);
     public static final double DRIVETRAIN_EFFICIENCY = 0.90;
-    public static final PIDConstants DRIVE_ROTATE_PID = PIDConstants.of(6.45, 0.0, 0.45, 0.0, 0.0);
+    public static final PIDConstants DRIVE_ROTATE_PID = PIDConstants.of(4, 0.0, 0.05, 0.0, 0.0);
     public static final double DRIVE_SLIP_RATIO = 0.05;
     public static final double DRIVE_TURN_SCALAR = 60.0;
     public static final double DRIVE_LOOKAHEAD = 6;
