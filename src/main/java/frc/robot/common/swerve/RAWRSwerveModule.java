@@ -52,20 +52,17 @@ import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.SwerveConstants;
+import lombok.AllArgsConstructor;
 
 /** REV MAXSwerve module */
 public class RAWRSwerveModule extends SwerveModule implements Sendable {
   /**
    * REV swerve module hardware
    */
+  @AllArgsConstructor
   public static class Hardware {
-    public final Spark driveMotor;
-    public final Spark rotateMotor;
-
-    public Hardware(Spark driveMotor, Spark rotateMotor) {
-      this.driveMotor = driveMotor;
-      this.rotateMotor = rotateMotor;
-    }
+    Spark driveMotor;
+    Spark rotateMotor;
   }
 
   private final double DRIVE_TICKS_PER_METER;
