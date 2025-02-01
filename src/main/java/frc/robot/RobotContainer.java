@@ -91,11 +91,20 @@ public class RobotContainer implements IRobotContainer {
   }
 
 
-  /**
-   * Run simulation related methods
-   */
   @Override
   public void simulationPeriodic() {
+  }
+
+  @Override
+  public void disabledPeriodic() {
+  }
+
+  @Override
+  public void autonomousPeriodic() {
+  }
+  
+  @Override
+  public void teleopPeriodic() {
   }
 
   /**
