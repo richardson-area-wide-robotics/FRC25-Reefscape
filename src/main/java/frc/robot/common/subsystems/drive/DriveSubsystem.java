@@ -288,20 +288,6 @@ public static Hardware initializeHardware() {
   }
 
   /**
-   * Set swerve modules, automatically applying traction control
-   * @param moduleStates Array of calculated module states
-   * @param inertialVelocity Current inertial velocity
-   * @param rotateRate Desired robot rotate rate
-   */
-  private void setSwerveModules(SwerveModuleState[] moduleStates, LinearVelocity inertialVelocity, AngularVelocity rotateRate) {
-    lFrontModule.set(moduleStates);
-    rFrontModule.set(moduleStates);
-    lRearModule.set(moduleStates);
-    rRearModule.set(moduleStates);
-    Logger.recordOutput(getName() + Constants.DriveConstants.DESIRED_SWERVE_STATE_LOG_ENTRY, moduleStates);
-  }
-
-  /**
    * Drive the robot (supports traction control) 
    *
    * @param xRequest         Desired X (forward) velocity
@@ -315,8 +301,7 @@ public static Hardware initializeHardware() {
                     LinearVelocity yRequest,
                     AngularVelocity rotateRequest,
                     ControlCentricity controlCentricity,
-                    LinearVelocity inertialVelocity,
-                    boolean applyTractionControl) {
+                    LinearVelocity inertialVelocity) {
 
       if(controlCentricity == null){
         controlCentricity = ControlCentricity.ROBOT_CENTRIC;
@@ -338,12 +323,7 @@ public static Hardware initializeHardware() {
       SwerveDriveKinematics.desaturateWheelSpeeds(moduleStates, DRIVE_MAX_LINEAR_SPEED);
 
       // Set modules to calculated states, applying traction control if enabled
-      if (applyTractionControl) {
-          setSwerveModules(moduleStates, inertialVelocity,
-              Units.RadiansPerSecond.of(desiredChassisSpeeds.omegaRadiansPerSecond));
-      } else {
-          setSwerveModules(moduleStates);
-      }
+      setSwerveModules(moduleStates);
   }
 
   /**
@@ -414,7 +394,7 @@ public static Hardware initializeHardware() {
     drive(
             DRIVE_MAX_LINEAR_SPEED.div(4).times(Math.cos(direction)),
       DRIVE_MAX_LINEAR_SPEED.div(4).times(Math.sin(direction)),
-      Units.DegreesPerSecond.of(0.0), null, null, false
+      Units.DegreesPerSecond.of(0.0), null, null
     );
   }
 
@@ -441,7 +421,7 @@ public static Hardware initializeHardware() {
         velocityOutput.unaryMinus().times(Math.sin(moveDirection)),
         rotateOutput,
         controlCentricity,
-        getInertialVelocity(), true
+        getInertialVelocity()
       );
       return;
     }
@@ -482,7 +462,7 @@ public static Hardware initializeHardware() {
       velocityOutput.unaryMinus().times(Math.sin(moveDirection)),
       Units.DegreesPerSecond.of(rotateOutput),
       controlCentricity,
-      getInertialVelocity(), true
+      getInertialVelocity()
     );
   }
 
@@ -529,7 +509,7 @@ public static Hardware initializeHardware() {
       velocityOutput.unaryMinus().times(Math.sin(moveDirection)),
       rotateOutput,
       controlCentricity,
-      getInertialVelocity(), true
+      getInertialVelocity()
     );
   }
 

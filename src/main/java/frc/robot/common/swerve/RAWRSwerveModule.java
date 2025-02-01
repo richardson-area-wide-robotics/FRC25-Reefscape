@@ -137,8 +137,8 @@ public class RAWRSwerveModule extends SwerveModule implements Sendable {
           FFConstants.of(0, 0, 0, 0),  // Replace with actual feed-forward constants
           Dimensionless.ofBaseUnits(DriveConstants.DRIVE_SLIP_RATIO, Units.Value),
           DriveConstants.ROBOT_MASS,
-          Distance.ofBaseUnits(Constants.DriveConstants.DRIVE_WHEELBASE, Units.Meter),
-          Distance.ofBaseUnits(Constants.DriveConstants.DRIVE_TRACK_WIDTH, Units.Meter),
+          Distance.ofRelativeUnits(23, Units.Inches),
+          Distance.ofRelativeUnits(24.5, Units.Inches),
           Time.ofBaseUnits(Constants.DriveConstants.AUTO_LOCK_TIME, Units.Second));
     
     
