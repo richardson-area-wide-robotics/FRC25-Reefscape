@@ -85,7 +85,7 @@ public final class Constants {
     public static final PIDConstants DRIVE_ROTATE_PID = PIDConstants.of(4, 0.0, 0.05, 0.0, 0.0);
     public static final double DRIVE_SLIP_RATIO = 0.05;
     public static final double DRIVE_TURN_SCALAR = 60.0;
-    public static final double DRIVE_LOOKAHEAD = 6;
+    public static final double DRIVE_LOOKAHEAD = 0;
     public static final double DRIVE_WHEELBASE = 0.5588;
     public static final double DRIVE_TRACK_WIDTH = 0.5588;
     public static final double AUTO_LOCK_TIME = 3.0;

@@ -88,6 +88,8 @@ public class RobotContainer implements IRobotContainer {
     // Right Trigger - Outtake
     RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.rightTrigger(), KIT_BOT_SHOOTER.setSpeedCommand(1), KIT_BOT_SHOOTER.stopMotorCommand());
 
+    // Right POV - Toggle centricity
+    RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.povRight(), DRIVE_SUBSYSTEM.toggleCentricityCommand(), Commands.none());
   }
 
 
