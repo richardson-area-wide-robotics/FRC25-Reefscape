@@ -13,15 +13,18 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.Constants.HIDConstants;
-import frc.robot.interfaces.IRobotContainer;
-import frc.robot.subsystems.drive.DriveSubsystem;
-import frc.robot.subsystems.shooter.KitBotShooter;
+import frc.robot.common.RobotUtils;
+import frc.robot.common.annotations.Robot;
+import frc.robot.common.interfaces.IRobotContainer;
+import frc.robot.common.subsystems.drive.DriveSubsystem;
+import frc.robot.common.subsystems.shooter.KitBotShooter;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class RobotContainer implements IRobotContainer {
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@Robot(team = 1745) //Note: This class is also the defualt so it will be loaded on 8874
+public class RobotContainer implements IRobotContainer {
 
   public static final DriveSubsystem DRIVE_SUBSYSTEM = new DriveSubsystem(
       DriveSubsystem.initializeHardware(),
@@ -85,14 +88,25 @@ public class RobotContainer implements IRobotContainer {
     // Right Trigger - Outtake
     RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.rightTrigger(), KIT_BOT_SHOOTER.setSpeedCommand(1), KIT_BOT_SHOOTER.stopMotorCommand());
 
+    // Right POV - Toggle centricity
+    RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.povRight(), DRIVE_SUBSYSTEM.toggleCentricityCommand(), Commands.none());
   }
 
 
-  /**
-   * Run simulation related methods
-   */
   @Override
   public void simulationPeriodic() {
+  }
+
+  @Override
+  public void disabledPeriodic() {
+  }
+
+  @Override
+  public void autonomousPeriodic() {
+  }
+  
+  @Override
+  public void teleopPeriodic() {
   }
 
   /**

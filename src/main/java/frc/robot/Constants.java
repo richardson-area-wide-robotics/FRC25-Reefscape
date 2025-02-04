@@ -20,6 +20,7 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Mass;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
@@ -40,15 +41,16 @@ public final class Constants {
 
   /**
    * Constants for controllers
-   * {@link HID#PRIMARY_CONTROLLER_PORT} is for the driver,
+   * <br>
+   * {@link HIDConstants#PRIMARY_CONTROLLER_PORT} is for the driver,
    * <br> <br>
-   * {@link HID#SECONDARY_CONTROLLER_PORT} is for the operator
+   * {@link HIDConstants#SECONDARY_CONTROLLER_PORT} is for the operator
    */
   public static class HIDConstants {
 
   public static final int PRIMARY_CONTROLLER_PORT = 0;
   public static final int SECONDARY_CONTROLLER_PORT = 1;
-  public static final double CONTROLLER_DEADBAND = 0.1;
+  public static final double CONTROLLER_DEADBAND = 0.6;
 
   public static final CommandXboxController PRIMARY_CONTROLLER = new CommandXboxController(
     PRIMARY_CONTROLLER_PORT);
@@ -78,11 +80,12 @@ public final class Constants {
 
   public static class DriveConstants {
     // Drive specs
+    public static final Mass ROBOT_MASS = Mass.ofRelativeUnits(40, Units.Pounds);
     public static final double DRIVETRAIN_EFFICIENCY = 0.90;
-    public static final PIDConstants DRIVE_ROTATE_PID = PIDConstants.of(6.45, 0.0, 0.45, 0.0, 0.0);
+    public static final PIDConstants DRIVE_ROTATE_PID = PIDConstants.of(4, 0.0, 0.05, 0.0, 0.0);
     public static final double DRIVE_SLIP_RATIO = 0.05;
     public static final double DRIVE_TURN_SCALAR = 60.0;
-    public static final double DRIVE_LOOKAHEAD = 6;
+    public static final double DRIVE_LOOKAHEAD = 0;
     public static final double DRIVE_WHEELBASE = 0.5588;
     public static final double DRIVE_TRACK_WIDTH = 0.5588;
     public static final double AUTO_LOCK_TIME = 3.0;
@@ -132,10 +135,13 @@ public final class Constants {
 
     public static final Spark.ID LEFT_FRONT_DRIVE_MOTOR_ID = new Spark.ID("DriveHardware/Swerve/LeftFront/Drive", 3);
     public static final Spark.ID LEFT_FRONT_ROTATE_MOTOR_ID = new Spark.ID("DriveHardware/Swerve/LeftFront/Rotate", 4);
+
     public static final Spark.ID RIGHT_FRONT_DRIVE_MOTOR_ID = new Spark.ID("DriveHardware/Swerve/RightFront/Drive", 5);
     public static final Spark.ID RIGHT_FRONT_ROTATE_MOTOR_ID = new Spark.ID("DriveHardware/Swerve/RightFront/Rotate", 6);
+
     public static final Spark.ID LEFT_REAR_DRIVE_MOTOR_ID = new Spark.ID("DriveHardware/Swerve/LeftRear/Drive", 1);
     public static final Spark.ID LEFT_REAR_ROTATE_MOTOR_ID = new Spark.ID("DriveHardware/Swerve/LeftRear/Rotate", 2);
+    
     public static final Spark.ID RIGHT_REAR_DRIVE_MOTOR_ID = new Spark.ID("DriveHardware/Swerve/RightRear/Drive", 7);
     public static final Spark.ID RIGHT_REAR_ROTATE_MOTOR_ID = new Spark.ID("DriveHardware/Swerve/RightRear/Rotate", 8);
   }

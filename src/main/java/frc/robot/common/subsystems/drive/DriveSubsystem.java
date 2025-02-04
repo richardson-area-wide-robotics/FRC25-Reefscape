@@ -2,7 +2,7 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot.subsystems.drive;
+package frc.robot.common.subsystems.drive;
 
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
@@ -43,13 +43,13 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
-import edu.wpi.first.units.measure.Mass;
 import edu.wpi.first.units.measure.MomentOfInertia;
 import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.units.Units;
@@ -59,7 +59,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-import frc.robot.RAWRSwerveModule;
+import frc.robot.common.swerve.RAWRSwerveModule;
+import frc.robot.Constants.DriveConstants;
 
 public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   @AllArgsConstructor
@@ -184,7 +185,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
 
       // Robot configuration for auto
       this.robotConfig = new RobotConfig(
-        Mass.ofRelativeUnits(100, Units.Pound),
+        DriveConstants.ROBOT_MASS,
         MomentOfInertia.ofRelativeUnits(6.883, Units.KilogramSquareMeters),
         moduleConfig,
         moduleOffset
@@ -233,11 +234,14 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
         field.getObject("currentPath").setTrajectory(trajectory);
     });
 
-    // may or may not work Lol
-    autoAimPIDControllerFront = new ProfiledPIDController(Constants.DriveConstants.BALANCED_THRESHOLD, Constants.DriveConstants.AUTO_LOCK_TIME, Constants.DriveConstants.AIM_VELOCITY_COMPENSATION_FUDGE_FACTOR, null);
-    autoAimPIDControllerBack = new ProfiledPIDController(Constants.DriveConstants.BALANCED_THRESHOLD, Constants.DriveConstants.AUTO_LOCK_TIME, Constants.DriveConstants.AIM_VELOCITY_COMPENSATION_FUDGE_FACTOR, null);
-    xVelocityFilter = new MedianFilter(1);
-    yVelocityFilter = new MedianFilter(1);
+    this.autoAimPIDControllerFront = new ProfiledPIDController(10.0, 0.0, 0.5, new TrapezoidProfile.Constraints(2160.0, 4320.0), 0.02);
+    this.autoAimPIDControllerFront.enableContinuousInput(-180.0, +180.0);
+    this.autoAimPIDControllerFront.setTolerance(1.5);
+    this.autoAimPIDControllerBack = new ProfiledPIDController(10.0, 0.0, 0.5, new TrapezoidProfile.Constraints(2160.0, 4320.0), 0.02);
+    this.autoAimPIDControllerBack.enableContinuousInput(-180.0, +180.0);
+    this.autoAimPIDControllerBack.setTolerance(1.5);
+    this.xVelocityFilter = new MedianFilter(100);
+    this.yVelocityFilter = new MedianFilter(100);
 }
 
 /**
@@ -284,26 +288,12 @@ public static Hardware initializeHardware() {
   }
 
   /**
-   * Set swerve modules, automatically applying traction control
-   * @param moduleStates Array of calculated module states
-   * @param inertialVelocity Current inertial velocity
-   * @param rotateRate Desired robot rotate rate
-   */
-  private void setSwerveModules(SwerveModuleState[] moduleStates, LinearVelocity inertialVelocity, AngularVelocity rotateRate) {
-    lFrontModule.set(moduleStates);
-    rFrontModule.set(moduleStates);
-    lRearModule.set(moduleStates);
-    rRearModule.set(moduleStates);
-    Logger.recordOutput(getName() + Constants.DriveConstants.DESIRED_SWERVE_STATE_LOG_ENTRY, moduleStates);
-  }
-
-  /**
-   * Drive the robot (supports traction control) 
+   * Drive the robot 
    *
    * @param xRequest         Desired X (forward) velocity
    * @param yRequest         Desired Y (sideways) velocity
    * @param rotateRequest    Desired rotate rate
-   * @param controlCentricity Control centricity (ROBOT_CENTRIC by default if traction control is disabled)
+   * @param controlCentricity Control centricity 
    * @param inertialVelocity Current robot inertial velocity (null if traction control is disabled)
    * @param applyTractionControl Whether to apply traction control
    */
@@ -311,11 +301,10 @@ public static Hardware initializeHardware() {
                     LinearVelocity yRequest,
                     AngularVelocity rotateRequest,
                     ControlCentricity controlCentricity,
-                    LinearVelocity inertialVelocity,
-                    boolean applyTractionControl) {
+                    LinearVelocity inertialVelocity) {
 
-      if(controlCentricity == null){
-        controlCentricity = ControlCentricity.ROBOT_CENTRIC; //TODO Does this make John NullPointerException?
+      if (controlCentricity == null){
+        controlCentricity = ControlCentricity.ROBOT_CENTRIC;
       }
       
       // Get requested chassis speeds, correcting for second order kinematics
@@ -334,12 +323,7 @@ public static Hardware initializeHardware() {
       SwerveDriveKinematics.desaturateWheelSpeeds(moduleStates, DRIVE_MAX_LINEAR_SPEED);
 
       // Set modules to calculated states, applying traction control if enabled
-      if (applyTractionControl) {
-          setSwerveModules(moduleStates, inertialVelocity,
-              Units.RadiansPerSecond.of(desiredChassisSpeeds.omegaRadiansPerSecond));
-      } else {
-          setSwerveModules(moduleStates);
-      }
+      setSwerveModules(moduleStates);
   }
 
   /**
@@ -410,7 +394,7 @@ public static Hardware initializeHardware() {
     drive(
             DRIVE_MAX_LINEAR_SPEED.div(4).times(Math.cos(direction)),
       DRIVE_MAX_LINEAR_SPEED.div(4).times(Math.sin(direction)),
-      Units.DegreesPerSecond.of(0.0), null, null, false
+      Units.DegreesPerSecond.of(0.0), null, null
     );
   }
 
@@ -437,7 +421,7 @@ public static Hardware initializeHardware() {
         velocityOutput.unaryMinus().times(Math.sin(moveDirection)),
         rotateOutput,
         controlCentricity,
-        getInertialVelocity(), true
+        getInertialVelocity()
       );
       return;
     }
@@ -478,7 +462,7 @@ public static Hardware initializeHardware() {
       velocityOutput.unaryMinus().times(Math.sin(moveDirection)),
       Units.DegreesPerSecond.of(rotateOutput),
       controlCentricity,
-      getInertialVelocity(), true
+      getInertialVelocity()
     );
   }
 
@@ -525,7 +509,7 @@ public static Hardware initializeHardware() {
       velocityOutput.unaryMinus().times(Math.sin(moveDirection)),
       rotateOutput,
       controlCentricity,
-      getInertialVelocity(), true
+      getInertialVelocity()
     );
   }
 

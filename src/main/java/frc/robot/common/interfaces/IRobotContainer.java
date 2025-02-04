@@ -1,4 +1,4 @@
-package frc.robot.interfaces;
+package frc.robot.common.interfaces;
 
 import edu.wpi.first.wpilibj2.command.Command;
 
@@ -15,6 +15,18 @@ public interface IRobotContainer {
         throw new UnsupportedOperationException("createContainer must be implemented in the specific RobotContainer class");
     }
 
-    void simulationPeriodic();
+    /**Get the command to use during auto */
     Command getAutonomousCommand();
+
+    /**Ran periodicly during simulation */
+    void simulationPeriodic();
+
+    /**Ran periodicly when the robot is disabled. (Dont try it lmao) */
+    void disabledPeriodic();
+
+    /**Ran periodicly during auto */
+    void autonomousPeriodic();
+
+    /**Ran periodicly during teleop */
+    void teleopPeriodic();
 }

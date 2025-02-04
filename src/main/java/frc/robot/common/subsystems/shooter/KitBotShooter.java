@@ -1,9 +1,11 @@
-package frc.robot.subsystems.shooter;
+package frc.robot.common.subsystems.shooter;
 
 import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -17,6 +19,7 @@ public class KitBotShooter extends SubsystemBase {
 
     public KitBotShooter(int motorID) {
         motor = new SparkMax(motorID, MotorType.kBrushed);
+        config.idleMode(IdleMode.kCoast);
         motor.configure(config, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kPersistParameters);
     }
 

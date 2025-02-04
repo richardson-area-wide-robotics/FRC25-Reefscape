@@ -1,4 +1,4 @@
-package frc.robot;
+package frc.robot.common.swerve;
 
 // Copyright (c) LASA Robotics and other contributors
 // Open Source Software; you can modify and/or share it under the terms of
@@ -8,6 +8,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
 
+import frc.robot.Constants;
 import org.lasarobotics.drive.TractionControlController;
 import org.lasarobotics.drive.swerve.DriveWheel;
 import org.lasarobotics.drive.swerve.SwerveModule;
@@ -51,20 +52,17 @@ import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.SwerveConstants;
+import lombok.AllArgsConstructor;
 
 /** REV MAXSwerve module */
 public class RAWRSwerveModule extends SwerveModule implements Sendable {
   /**
    * REV swerve module hardware
    */
+  @AllArgsConstructor
   public static class Hardware {
-    public final Spark driveMotor;
-    public final Spark rotateMotor;
-
-    public Hardware(Spark driveMotor, Spark rotateMotor) {
-      this.driveMotor = driveMotor;
-      this.rotateMotor = rotateMotor;
-    }
+    Spark driveMotor;
+    Spark rotateMotor;
   }
 
   private final double DRIVE_TICKS_PER_METER;
@@ -79,65 +77,65 @@ public class RAWRSwerveModule extends SwerveModule implements Sendable {
   private SparkBaseConfig m_driveMotorConfig;
   private SparkBaseConfig m_rotateMotorConfig;
   private Rotation2d m_zeroOffset;
-
-  private SwerveModule.Location m_location;
-  private Rotation2d m_previousRotatePosition;
-
-  private volatile double m_simDrivePosition;
-  private volatile SwerveModulePosition m_simModulePosition;
-  private volatile SwerveModuleState m_desiredState;
-
-  private double m_driveConversionFactor;
-  private double m_rotateConversionFactor;
-  private double m_autoLockTime;
-
-  private Instant m_autoLockTimer;
-
   
-public static final Map<SwerveModule.Location, Angle> ZERO_OFFSET = Map.ofEntries(
-  Map.entry(SwerveModule.Location.LeftFront, Units.Radians.of(Math.PI / 2)),
-  Map.entry(SwerveModule.Location.RightFront, Units.Radians.zero()),
-  Map.entry(SwerveModule.Location.LeftRear, Units.Radians.of(Math.PI)),
-  Map.entry(SwerveModule.Location.RightRear, Units.Radians.of(Math.PI / 2))
-);
-
-
-  /** Make a {@link REVSwerveModule}
-   * 
-   * @param driveMotor the drive motor (Ex: forward-backword)
-   * @param rotateMotor the rotate motor (Ex: left-right)
-   * @param location the location of the swerve module (Ex: front left)
-   * 
-   * @author Hudson Strub
-   * @since 2025
-   */
-  public static RAWRSwerveModule createSwerve(Spark.ID driveMotor, Spark.ID rotateMotor, SwerveModule.Location location){
-    
-    RAWRSwerveModule.Hardware hardware = new RAWRSwerveModule.Hardware(
-                  new Spark(driveMotor, Spark.MotorKind.NEO_VORTEX),
-                  new Spark(rotateMotor, Spark.MotorKind.NEO_550)
-          );
+    private SwerveModule.Location m_location;
+    private Rotation2d m_previousRotatePosition;
+  
+    private volatile double m_simDrivePosition;
+    private volatile SwerveModulePosition m_simModulePosition;
+    private volatile SwerveModuleState m_desiredState;
+  
+    private double m_driveConversionFactor;
+    private double m_rotateConversionFactor;
+    private double m_autoLockTime;
+  
+    private Instant m_autoLockTimer;
   
     
-    RAWRSwerveModule swerveModule = new RAWRSwerveModule(
-          hardware,
-          location,
-          SwerveModule.MountOrientation.STANDARD,
-          SwerveModule.MountOrientation.INVERTED,
-          Constants.SwerveConstants.GEAR_RATIO,
-          DriveWheel.create(
-            Distance.ofRelativeUnits(75, Units.Millimeter), 
-            Dimensionless.ofBaseUnits(0.15, Units.Value),
-            Dimensionless.ofBaseUnits(0.1, Units.Value)), // TODO: Replace with actual drive wheel configuration
-          ZERO_OFFSET.get(location),
-          PIDConstants.of(0.15, 0, 0.1, 0, 0), // Replace with actual PID constants
-          FFConstants.of(1, 1, 1, 1),  // Replace with actual feed-forward constants
-          PIDConstants.of(4.5, 0, 1, 0, 0), // The PID for the rotate Motor
-          FFConstants.of(1, 1, 1, 1),  // Replace with actual feed-forward constants
-          Dimensionless.ofBaseUnits(Constants.DriveConstants.DRIVE_SLIP_RATIO, Units.Value),
-          Mass.ofRelativeUnits(100, Units.Pounds), // Replace with actual mass value
-          Distance.ofBaseUnits(Constants.DriveConstants.DRIVE_WHEELBASE, Units.Meter),
-          Distance.ofBaseUnits(Constants.DriveConstants.DRIVE_TRACK_WIDTH, Units.Meter),
+  public static final Map<SwerveModule.Location, Angle> ZERO_OFFSET = Map.ofEntries(
+    Map.entry(SwerveModule.Location.LeftFront, Units.Radians.of(Math.PI / 2)),
+    Map.entry(SwerveModule.Location.RightFront, Units.Radians.zero()),
+    Map.entry(SwerveModule.Location.LeftRear, Units.Radians.of(Math.PI)),
+    Map.entry(SwerveModule.Location.RightRear, Units.Radians.of(Math.PI / 2))
+  );
+  
+  
+    /** Make a {@link REVSwerveModule}
+     * 
+     * @param driveMotor the drive motor (Ex: forward-backword)
+     * @param rotateMotor the rotate motor (Ex: left-right)
+     * @param location the location of the swerve module (Ex: front left)
+     * 
+     * @author Hudson Strub
+     * @since 2025
+     */
+    public static RAWRSwerveModule createSwerve(Spark.ID driveMotor, Spark.ID rotateMotor, SwerveModule.Location location){
+      
+      RAWRSwerveModule.Hardware hardware = new RAWRSwerveModule.Hardware(
+                    new Spark(driveMotor, Spark.MotorKind.NEO_VORTEX),
+                    new Spark(rotateMotor, Spark.MotorKind.NEO_550)
+            );
+    
+      
+      RAWRSwerveModule swerveModule = new RAWRSwerveModule(
+            hardware,
+            location,
+            SwerveModule.MountOrientation.STANDARD,
+            SwerveModule.MountOrientation.INVERTED,
+            Constants.SwerveConstants.GEAR_RATIO,
+            DriveWheel.create(
+              Distance.ofRelativeUnits(75, Units.Millimeter), 
+              Dimensionless.ofBaseUnits(0.15, Units.Value),
+              Dimensionless.ofBaseUnits(0.1, Units.Value)), // TODO: Replace with actual drive wheel configuration
+            ZERO_OFFSET.get(location),
+            PIDConstants.of(0.18, 0, 0.001, 0.174, 0), // Replace with actual PID constants
+          FFConstants.of(0, 0, 0, 0),  // Replace with actual feed-forward constants
+          PIDConstants.of(2.1, 0, 0.2, 0, 0), // The PID for the rotate Motor
+          FFConstants.of(0, 0, 0, 0),  // Replace with actual feed-forward constants
+          Dimensionless.ofBaseUnits(DriveConstants.DRIVE_SLIP_RATIO, Units.Value),
+          DriveConstants.ROBOT_MASS,
+          Distance.ofRelativeUnits(23, Units.Inches),
+          Distance.ofRelativeUnits(24.5, Units.Inches),
           Time.ofBaseUnits(Constants.DriveConstants.AUTO_LOCK_TIME, Units.Second));
     
     
