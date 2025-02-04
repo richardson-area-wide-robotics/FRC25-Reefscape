@@ -86,7 +86,9 @@ public class Robot extends LoggedRobot {
 
   
   @Override
-  public void disabledPeriodic() {}
+  public void disabledPeriodic() {
+    robotContainer.disabledPeriodic();
+  }
 
   @Override
   public void autonomousInit() {
@@ -98,7 +100,9 @@ public class Robot extends LoggedRobot {
   }
 
   @Override
-  public void autonomousPeriodic() {}
+  public void autonomousPeriodic() {
+    robotContainer.autonomousPeriodic();
+  }
 
   @Override
   public void teleopInit() {
@@ -110,7 +114,9 @@ public class Robot extends LoggedRobot {
   }
 
   @Override
-  public void teleopPeriodic() {}
+  public void teleopPeriodic() {
+    robotContainer.teleopPeriodic();
+  }
 
   @Override
   public void simulationPeriodic() {
