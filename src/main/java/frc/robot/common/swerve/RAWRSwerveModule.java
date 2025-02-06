@@ -237,6 +237,9 @@ public class RAWRSwerveModule extends SwerveModule implements Sendable {
       drivePID.kF
     );
 
+    // Reset the Drive Encoder
+    resetDriveEncoder();
+
     // Set gains for rotate PID and enable wrapping
     m_rotateMotorConfig.closedLoop.pid(rotatePID.kP, rotatePID.kI, rotatePID.kD);
     m_rotateMotorConfig.closedLoop.positionWrappingEnabled(true);
@@ -267,9 +270,6 @@ public class RAWRSwerveModule extends SwerveModule implements Sendable {
     m_rotateMotorConfig.signals.analogPositionPeriodMs(20);
     m_rotateMotorConfig.signals.analogVelocityPeriodMs(20);
     m_rotateMotorConfig.signals.limitsPeriodMs(10);
-
-    // Reset encoder
-    resetDriveEncoder();
 
     // Configure motors with desired config
     m_driveMotor.configure(m_driveMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
