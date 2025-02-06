@@ -13,6 +13,7 @@ public class RobotUtils  {
    *
    * @param control The button to bind to.
    * @param command The command to execute when that button is pressed.
+   * @param stopCommand The command to execute when that button is *not* pressed
    *
    * @author Hudson Strub
    * @since 2025
