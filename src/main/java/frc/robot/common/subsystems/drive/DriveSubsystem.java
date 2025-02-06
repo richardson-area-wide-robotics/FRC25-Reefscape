@@ -17,7 +17,6 @@ import org.lasarobotics.drive.swerve.SwerveModule;
 import org.lasarobotics.drive.RotatePIDController;
 import org.lasarobotics.drive.ThrottleMap;
 import org.lasarobotics.hardware.kauailabs.NavX2;
-import org.lasarobotics.led.LEDStrip.Pattern;
 import org.lasarobotics.led.LEDSubsystem;
 import org.lasarobotics.utils.PIDConstants;
 import org.littletonrobotics.junction.Logger;
@@ -31,6 +30,7 @@ import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.math.geometry.Rotation2d;      // For handling rotations
 import edu.wpi.first.math.geometry.Translation2d;    // For handling 2D translations
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard; // For dashboard integration
+import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.units.measure.Dimensionless;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
@@ -54,6 +54,7 @@ import edu.wpi.first.units.measure.MomentOfInertia;
 import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.LEDPattern;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
@@ -109,7 +110,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   private final Field2d field;
   
     public final Command ANTI_TIP_COMMAND = new FunctionalCommand(
-      () -> LEDSubsystem.getInstance().startOverride(Pattern.RED_STROBE),
+      () -> LEDSubsystem.getInstance().startOverride(LEDPattern.solid(Color.kRed)),
             this::antiTip,
       (interrupted) -> {
         resetRotatePID();

@@ -41,9 +41,11 @@ import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Dimensionless;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.Frequency;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Mass;
 import edu.wpi.first.units.measure.Time;
+import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -539,5 +541,23 @@ public class RAWRSwerveModule extends SwerveModule implements Sendable {
   public void close() {
     m_driveMotor.close();
     m_rotateMotor.close();
+  }
+
+  @Override
+  public void setDriveSysID(Voltage volts) {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'setDriveSysID'");
+  }
+
+  @Override
+  public void setRotateSysID(Voltage volts) {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'setRotateSysID'");
+  }
+
+  @Override
+  public Frequency getUpdateRate() {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'getUpdateRate'");
   }
 }
