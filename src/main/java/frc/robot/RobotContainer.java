@@ -4,12 +4,16 @@
 
 package frc.robot;
 
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.commands.PathPlannerAuto;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Dimensionless;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.Constants.HIDConstants;
@@ -56,11 +60,13 @@ public class RobotContainer implements IRobotContainer {
       configureBindings();
   
       // Set up the auto chooser
-      //automodeChooser = AutoBuilder.buildAutoChooser();
-      // SmartDashboard.putData(Constants.SmartDashboard.SMARTDASHBOARD_AUTO_MODE, automodeChooser);
-  
+      DRIVE_SUBSYSTEM.configureAutoBuilder();
+      
       // Initialize autos
       initializeAutos();
+
+      automodeChooser = AutoBuilder.buildAutoChooser();
+      SmartDashboard.putData(Constants.SmartDashboardConstants.SMARTDASHBOARD_AUTO_MODE, automodeChooser);
 
       return new RobotContainer();
   }
@@ -70,7 +76,7 @@ public class RobotContainer implements IRobotContainer {
   }
 
   private static void initializeAutos() {
-    //PathPlannerAuto leaveAuto = new PathPlannerAuto("Leave");
+    PathPlannerAuto leaveAuto = new PathPlannerAuto("Leave");
     //PathPlannerAuto preLoad1 = new PathPlannerAuto("Preload + 1");
     //PathPlannerAuto preLoad3 = new PathPlannerAuto("Preload + 1");
   }
