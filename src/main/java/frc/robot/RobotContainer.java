@@ -59,14 +59,15 @@ public class RobotContainer implements IRobotContainer {
       // Bind buttons and triggers
       configureBindings();
   
-      // Set up the auto chooser
+      // Set up the auto builder
       DRIVE_SUBSYSTEM.configureAutoBuilder();
-      
-      // Initialize autos
-      initializeAutos();
 
+      // Set up the auto chooser
       automodeChooser = AutoBuilder.buildAutoChooser();
       SmartDashboard.putData(Constants.SmartDashboardConstants.SMARTDASHBOARD_AUTO_MODE, automodeChooser);
+
+      // Initialize autos
+      initializeAutos();
 
       return new RobotContainer();
   }
