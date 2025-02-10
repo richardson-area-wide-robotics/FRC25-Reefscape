@@ -54,6 +54,7 @@ import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.SwerveConstants;
+import frc.robot.common.RobotUtils;
 import lombok.AllArgsConstructor;
 
 /** REV MAXSwerve module */
@@ -135,7 +136,7 @@ public class RAWRSwerveModule extends SwerveModule implements Sendable {
           PIDConstants.of(2.1, 0, 0.2, 0, 0), // The PID for the rotate Motor
           FFConstants.of(0, 0, 0, 0),  // Replace with actual feed-forward constants
           Dimensionless.ofBaseUnits(DriveConstants.DRIVE_SLIP_RATIO, Units.Value),
-          DriveConstants.ROBOT_MASS,
+          Mass.ofRelativeUnits(RobotUtils.robotConfig.massKG, Units.Kilograms),
           Distance.ofRelativeUnits(23, Units.Inches),
           Distance.ofRelativeUnits(24.5, Units.Inches),
           Time.ofBaseUnits(Constants.DriveConstants.AUTO_LOCK_TIME, Units.Second));

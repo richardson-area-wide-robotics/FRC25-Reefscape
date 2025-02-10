@@ -11,6 +11,7 @@ import lombok.experimental.UtilityClass;
 public class RobotUtils  {
 
   public RobotConfig robotConfig;
+
   /**
    * Helper method to bind a control action to a command.
    *
@@ -36,6 +37,13 @@ public class RobotUtils  {
     return HALUtil.getTeamNumber();
   }
 
+
+   /**
+   * Load the robot config used for pathplanner, 
+   *
+   * @author Alan Trinh
+   * @since 2025
+   */
   public static void loadRobotConfig() {
     try {
         robotConfig = RobotConfig.fromGUISettings();

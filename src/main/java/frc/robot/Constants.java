@@ -20,7 +20,6 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.Mass;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
@@ -80,7 +79,6 @@ public final class Constants {
 
   public static class DriveConstants {
     // Drive specs
-    public static final Mass ROBOT_MASS = Mass.ofRelativeUnits(40, Units.Pounds);
     public static final double DRIVETRAIN_EFFICIENCY = 0.90;
     public static final PIDConstants DRIVE_ROTATE_PID = PIDConstants.of(4, 0.0, 0.05, 0.0, 0.0);
     public static final double DRIVE_SLIP_RATIO = 0.05;
