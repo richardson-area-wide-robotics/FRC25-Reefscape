@@ -17,20 +17,18 @@ import org.lasarobotics.drive.swerve.SwerveModule;
 import org.lasarobotics.drive.RotatePIDController;
 import org.lasarobotics.drive.ThrottleMap;
 import org.lasarobotics.hardware.kauailabs.NavX2;
-import org.lasarobotics.led.LEDStrip.Pattern;
 import org.lasarobotics.led.LEDSubsystem;
 import org.lasarobotics.utils.PIDConstants;
 import org.littletonrobotics.junction.Logger;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.config.ModuleConfig;
-import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.math.geometry.Rotation2d;      // For handling rotations
 import edu.wpi.first.math.geometry.Translation2d;    // For handling 2D translations
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard; // For dashboard integration
+import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.units.measure.Dimensionless;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
@@ -40,27 +38,24 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.Current;
-import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
-import edu.wpi.first.units.measure.MomentOfInertia;
 import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.LEDPattern;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.common.RobotUtils;
 import frc.robot.common.swerve.RAWRSwerveModule;
-import frc.robot.Constants.DriveConstants;
 
 public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   @AllArgsConstructor
@@ -86,13 +81,6 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   private final MedianFilter xVelocityFilter;
   private final MedianFilter yVelocityFilter;
   private final PPHolonomicDriveController pathFollowerConfig;
-  private final RobotConfig robotConfig;
-  private final ModuleConfig moduleConfig;
-  private final Translation2d lFrontOffset;
-  private final Translation2d rFrontOffset;
-  private final Translation2d lRearOffset;
-  private final Translation2d rRearOffset;
-  private final Translation2d[] moduleOffset;
 
   public final NavX2 navx;
   private final RAWRSwerveModule lFrontModule;
@@ -109,7 +97,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
   private final Field2d field;
   
     public final Command ANTI_TIP_COMMAND = new FunctionalCommand(
-      () -> LEDSubsystem.getInstance().startOverride(Pattern.RED_STROBE),
+      () -> LEDSubsystem.getInstance().startOverride(LEDPattern.solid(Color.kRed)),
             this::antiTip,
       (interrupted) -> {
         resetRotatePID();
@@ -163,32 +151,6 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
           new com.pathplanner.lib.config.PIDConstants(3.1, 0.0, 0.0),
           new com.pathplanner.lib.config.PIDConstants(5.0, 0.0, 0.1),
           DRIVE_MAX_LINEAR_SPEED.in(Units.MetersPerSecond)
-      );
-
-      // Set module offsets
-      // TODO: Change to actual module offsets
-      this.lFrontOffset = new Translation2d(0.273, 0.273);
-      this.rFrontOffset = new Translation2d(0.273, -0.273);
-      this.lRearOffset = new Translation2d(-0.273, 0.273);
-      this.rRearOffset = new Translation2d(-0.273, -0.273);
-      this.moduleOffset = new Translation2d[] {lFrontOffset, rFrontOffset, lRearOffset, rRearOffset};
-
-      // Module configuration
-      this.moduleConfig = new ModuleConfig(
-        Distance.ofRelativeUnits(37.5, Units.Millimeter),
-        DRIVE_MAX_LINEAR_SPEED,
-        1.0,
-        DCMotor.getNeoVortex(1),
-        Current.ofBaseUnits(60, Units.Amp),
-        1
-        );
-
-      // Robot configuration for auto
-      this.robotConfig = new RobotConfig(
-        DriveConstants.ROBOT_MASS,
-        MomentOfInertia.ofRelativeUnits(6.883, Units.KilogramSquareMeters),
-        moduleConfig,
-        moduleOffset
       );
   
       // NavX calibration
@@ -476,7 +438,7 @@ public static Hardware initializeHardware() {
             this::getChassisSpeeds,
             (speeds, feedforwards) -> autoDrive(speeds),
             pathFollowerConfig,
-            robotConfig,
+            RobotUtils.robotConfig,
             () -> {
               var alliance = DriverStation.getAlliance();
               if (alliance.isPresent()) {
