@@ -73,8 +73,8 @@ public class RobotContainer implements IRobotContainer {
       return new RobotContainer();
   }
 
-  private static void registerNamedCommands() {
-    NamedCommands.registerCommand("Outtake", Commands.deadline(Commands.waitSeconds(1), KIT_BOT_SHOOTER.setSpeedCommand(1)).andThen(KIT_BOT_SHOOTER.stopMotorCommand()));
+  private static void registerNamedCommands() { //TODO Ofc all of these will be remade 
+    NamedCommands.registerCommand("Outtake", RobotUtils.timedCommand(1, KIT_BOT_SHOOTER.setSpeedCommand(1), KIT_BOT_SHOOTER.stopMotorCommand()));
   }
 
   private static void initializeAutos() {

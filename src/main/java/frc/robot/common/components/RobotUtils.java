@@ -4,6 +4,7 @@ import com.pathplanner.lib.config.RobotConfig;
 
 import edu.wpi.first.hal.HALUtil;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import lombok.experimental.UtilityClass;
 
@@ -51,5 +52,21 @@ public class RobotUtils  {
       catch (Exception e) {
         throw new RuntimeException("Failed to load robot config from GUI settings");
       }
+  }
+
+
+  /**
+   * Run a command for a given ammount of time
+   * 
+   * @param seconds The ammout of time to run commandDuring for, in seconds
+   * @param commandDuring The command ran
+   * @param commandAfter The command ran after the time has passed (Ex: Stop motor)
+   * 
+   *
+   * @author Alan Trinh
+   * @since 2025
+   */
+  public static Command timedCommand(double seconds, Command commandDuring, Command commandAfter){
+    return Commands.deadline(Commands.waitSeconds(seconds), commandDuring).andThen(commandAfter);
   }
 }
