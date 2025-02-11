@@ -21,7 +21,7 @@ import frc.robot.Constants.HIDConstants;
 import frc.robot.common.components.RobotUtils;
 import frc.robot.common.annotations.Robot;
 import frc.robot.common.interfaces.IRobotContainer;
-import frc.robot.common.subsystems.drive.DriveSubsystem;
+import frc.robot.common.subsystems.drive.SwerveDriveSubsystem;
 import frc.robot.common.subsystems.shooter.KitBotShooter;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -31,8 +31,8 @@ import lombok.NoArgsConstructor;
 @Robot(team = 1745) //Note: This class is also the defualt so it will be loaded on 8874
 public class RobotContainer implements IRobotContainer {
 
-  public static final DriveSubsystem DRIVE_SUBSYSTEM = new DriveSubsystem(
-      DriveSubsystem.initializeHardware(),
+  public static final SwerveDriveSubsystem DRIVE_SUBSYSTEM = new SwerveDriveSubsystem(
+      SwerveDriveSubsystem.initializeHardware(),
       Constants.DriveConstants.DRIVE_ROTATE_PID,
       Constants.DriveConstants.DRIVE_CONTROL_CENTRICITY,
       Constants.DriveConstants.DRIVE_THROTTLE_INPUT_CURVE,

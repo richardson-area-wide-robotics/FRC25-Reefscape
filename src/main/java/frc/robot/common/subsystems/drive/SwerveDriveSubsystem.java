@@ -57,7 +57,16 @@ import frc.robot.Constants;
 import frc.robot.common.components.RobotUtils;
 import frc.robot.common.swerve.RAWRSwerveModule;
 
-public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
+/**
+ * Drive Subsystem for Swerve Drive bots with 4 motors in each corner
+ *
+ * @author PurpleLib
+ * @author Alan Trinh
+ * @author Hudson Strub
+ *
+ * @since 2025
+ */
+public class SwerveDriveSubsystem extends SubsystemBase implements AutoCloseable {
   @AllArgsConstructor
   public static class Hardware {
       NavX2 navx;
@@ -110,7 +119,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     );
 
     /**
-   * DriveSubsystem constructor for managing a swerve drivetrain.
+   * SwerveDriveSubsystem constructor for managing a swerve drivetrain.
    *
    * @param drivetrainHardware Hardware devices required by drivetrain.
    * @param pidf PID constants for the drive system.
@@ -121,14 +130,15 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    * @param deadband Deadband for controller input [+0.001, +0.2].
    * @param lookAhead Rotate PID lookahead, in number of loops.
    */
-  public DriveSubsystem(Hardware drivetrainHardware, PIDConstants pidf, ControlCentricity controlCentricity,
-                        PolynomialSplineFunction throttleInputCurve, PolynomialSplineFunction turnInputCurve,
-                        Angle turnScalar, Dimensionless deadband, Time lookAhead) {
+  public SwerveDriveSubsystem(Hardware drivetrainHardware, PIDConstants pidf, ControlCentricity controlCentricity,
+                              PolynomialSplineFunction throttleInputCurve, PolynomialSplineFunction turnInputCurve,
+                              Angle turnScalar, Dimensionless deadband, Time lookAhead) {
   
       // Initialize subsystem name
       setSubsystem(this.getClass().getSimpleName());
   
       // Drivetrain hardware setup
+      // TODO I dont like this, its weird, can we just use this.drivetrainHardware = drivetrainHardware and get the modules with that?
       this.navx = drivetrainHardware.navx;
       this.lFrontModule = drivetrainHardware.lFrontModule;
       this.rFrontModule = drivetrainHardware.rFrontModule;
@@ -329,7 +339,7 @@ public static Hardware initializeHardware() {
   }
 
   /**
-   * Log DriveSubsystem outputs
+   * Log SwerveDriveSubsystem outputs
    */
   private void logOutputs() {
     Logger.recordOutput(getName() + Constants.DriveConstants.POSE_LOG_ENTRY, getPose());
@@ -754,7 +764,7 @@ public static Hardware initializeHardware() {
   }
 
   /**
-   * Reset DriveSubsystem turn PID
+   * Reset SwerveDriveSubsystem turn PID
    */
   public void resetRotatePID() {
     rotatePIDController.setSetpoint(getAngle());
