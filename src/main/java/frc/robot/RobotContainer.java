@@ -74,8 +74,7 @@ public class RobotContainer implements IRobotContainer {
   }
 
   private static void registerNamedCommands() {
-    NamedCommands.registerCommand("Outtake", KIT_BOT_SHOOTER.setSpeedCommand(1));
-    NamedCommands.registerCommand("None", Commands.none());
+    NamedCommands.registerCommand("Outtake", Commands.deadline(Commands.waitSeconds(1), KIT_BOT_SHOOTER.setSpeedCommand(1)).andThen(KIT_BOT_SHOOTER.stopMotorCommand()));
   }
 
   private static void initializeAutos() {
