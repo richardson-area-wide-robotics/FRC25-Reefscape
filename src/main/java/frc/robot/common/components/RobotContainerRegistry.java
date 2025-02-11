@@ -1,4 +1,4 @@
-package frc.robot.common;
+package frc.robot.common.components;
 
 import frc.robot.RobotContainer;
 import frc.robot.common.annotations.Robot;

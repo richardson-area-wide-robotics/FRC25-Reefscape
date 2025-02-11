@@ -54,7 +54,7 @@ import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.SwerveConstants;
-import frc.robot.common.RobotUtils;
+import frc.robot.common.components.RobotUtils;
 import lombok.AllArgsConstructor;
 
 /** REV MAXSwerve module */

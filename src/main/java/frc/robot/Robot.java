@@ -5,9 +5,9 @@
 package frc.robot;
 
 import frc.robot.common.LocalADStarAK;
-import frc.robot.common.RobotContainerRegistry;
-import frc.robot.common.RobotExceptionHandler;
-import frc.robot.common.RobotUtils;
+import frc.robot.common.components.RobotContainerRegistry;
+import frc.robot.common.components.RobotExceptionHandler;
+import frc.robot.common.components.RobotUtils;
 import org.lasarobotics.utils.GlobalConstants;
 import org.lasarobotics.hardware.PurpleManager;
 import org.littletonrobotics.junction.LogFileUtil;

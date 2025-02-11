@@ -1,4 +1,4 @@
-package frc.robot.common;
+package frc.robot.common.components;
 
 import com.pathplanner.lib.config.RobotConfig;
 

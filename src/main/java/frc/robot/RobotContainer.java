@@ -18,7 +18,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.Constants.HIDConstants;
-import frc.robot.common.RobotUtils;
+import frc.robot.common.components.RobotUtils;
 import frc.robot.common.annotations.Robot;
 import frc.robot.common.interfaces.IRobotContainer;
 import frc.robot.common.subsystems.drive.DriveSubsystem;
