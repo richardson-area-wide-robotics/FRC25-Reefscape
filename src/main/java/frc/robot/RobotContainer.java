@@ -41,7 +41,7 @@ public class RobotContainer implements IRobotContainer {
       Dimensionless.ofRelativeUnits(Constants.HIDConstants.CONTROLLER_DEADBAND, Units.Value),
       Time.ofRelativeUnits(Constants.DriveConstants.DRIVE_LOOKAHEAD, Units.Second));
 
-  public static final KitBotShooter KIT_BOT_SHOOTER = new KitBotShooter(9);
+  public static final KitBotShooter KIT_BOT_SHOOTER = new KitBotShooter(9); //TODO Elavator Subsytem
 
   private static SendableChooser<Command> automodeChooser = null; 
 

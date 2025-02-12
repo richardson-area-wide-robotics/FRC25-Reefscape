@@ -1,5 +1,6 @@
 package frc.robot.common.components;
 
+import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
@@ -18,12 +19,11 @@ import lombok.NoArgsConstructor;
  * @author Hudson Strub
  * @since 2025
  */
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class SingleMotorSubsystem extends SubsystemBase {
-    public SparkMax motor;
+    public SparkFlex motor;
 
     public SingleMotorSubsystem(int motorID) {
-        motor = EasyMotor.createEasySparkMax(motorID, MotorType.kBrushed, IdleMode.kCoast);
+        motor = EasyMotor.createEasySparkFlex(motorID, MotorType.kBrushless, IdleMode.kCoast);
     }
 
     /**
