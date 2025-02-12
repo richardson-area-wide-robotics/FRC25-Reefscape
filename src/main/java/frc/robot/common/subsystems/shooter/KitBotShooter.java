@@ -1,8 +1,6 @@
 package frc.robot.common.subsystems.shooter;
 
 import frc.robot.common.components.SingleMotorSubsystem;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
 
 public class KitBotShooter extends SingleMotorSubsystem {
     //The majority of our robot is single motor stuff without much else,
