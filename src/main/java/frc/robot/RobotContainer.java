@@ -20,6 +20,7 @@ import frc.robot.Constants.HIDConstants;
 import frc.robot.common.components.RobotUtils;
 import frc.robot.common.annotations.Robot;
 import frc.robot.common.interfaces.IRobotContainer;
+import frc.robot.common.subsystems.DeepClimbSubsystem;
 import frc.robot.common.subsystems.ElevatorSubsystem;
 import frc.robot.common.subsystems.drive.SwerveDriveSubsystem;
 import lombok.AccessLevel;
@@ -41,6 +42,8 @@ public class RobotContainer implements IRobotContainer {
       Time.ofRelativeUnits(Constants.DriveConstants.DRIVE_LOOKAHEAD, Units.Second));
 
   public static final ElevatorSubsystem ELEVATOR_SUBSYSTEM = new ElevatorSubsystem(9);
+  public static final DeepClimbSubsystem DEEP_CLIMB_SUBSYSTEM = new DeepClimbSubsystem(13, 14);
+
 
 
   private static SendableChooser<Command> automodeChooser = null; 
@@ -100,6 +103,11 @@ public class RobotContainer implements IRobotContainer {
 
     // Left Trigger - Down
     RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.leftTrigger(), ELEVATOR_SUBSYSTEM.down(), ELEVATOR_SUBSYSTEM.stop());
+
+    RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.povDown(), DEEP_CLIMB_SUBSYSTEM.down(), DEEP_CLIMB_SUBSYSTEM.stop());
+  
+    RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.povUp(), DEEP_CLIMB_SUBSYSTEM.up(), DEEP_CLIMB_SUBSYSTEM.stop());
+
   }
 
 
