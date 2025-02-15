@@ -56,9 +56,9 @@ public class RobotUtils  {
 
 
   /**
-   * Run a command for a given ammount of time
+   * Run a command for a given amount of time
    * 
-   * @param seconds The ammout of time to run commandDuring for, in seconds
+   * @param seconds The amount of time to run commandDuring for, in seconds
    * @param commandDuring The command ran
    * @param commandAfter The command ran after the time has passed (Ex: Stop motor)
    * 
