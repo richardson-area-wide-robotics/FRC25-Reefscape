@@ -52,4 +52,30 @@ public class EasyMotor {
         return motor;
     }
 
+
+    /** Make a {@link SparkFlex} that follows another motor
+     *
+     * @param motorID The CAN Bus ID for this motor
+     * @param followMotorID The motor to follow
+     * @param inverted Is the motor inverted?
+     * @param motorType The type of the motor, Brushless etc
+     * @param idleMode The idle mode of the motor, Break etc
+     *
+     * @author Hudson Strub
+     * @since 2025
+     */
+    public SparkFlex createEasySparkFlex(int motorID, int followMotorID, boolean inverted,  SparkLowLevel.MotorType motorType, SparkBaseConfig.IdleMode idleMode){
+        SparkFlexConfig config = new SparkFlexConfig();
+        SparkFlex motor;
+
+        motor = new SparkFlex(motorID, motorType);
+        config.idleMode(idleMode);
+        config.follow(followMotorID);
+        config.inverted(inverted);
+
+        motor.configure(config, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kPersistParameters);
+
+        return motor;
+    }
+
 }
