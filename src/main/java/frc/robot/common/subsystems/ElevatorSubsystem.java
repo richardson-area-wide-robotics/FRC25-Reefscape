@@ -17,10 +17,10 @@ public class ElevatorSubsystem extends SubsystemBase {
     }
 
     public Command up() {
-        return Commands.run(() -> motor.set(1), this); //TODO This might be too fast?
+        return Commands.run(() -> motor.set(0.3), this); //TODO This might be too fast?
     }
     public Command down() {
-        return Commands.run(() -> motor.set(-0.4), this);
+        return Commands.run(() -> motor.set(-0.3), this);
     }
     public Command stop(){
         return Commands.run(() -> motor.set(0), this);
