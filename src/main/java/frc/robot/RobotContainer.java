@@ -93,7 +93,7 @@ public class RobotContainer implements IRobotContainer {
     RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.povLeft(), DRIVE_SUBSYSTEM.resetPoseCommand(Pose2d::new), Commands.none());
 
     // Right Stick Button - Reset heading
-    RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.rightStick(), Commands.runOnce(DRIVE_SUBSYSTEM.navx::reset, DRIVE_SUBSYSTEM), Commands.none());
+    RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.rightStick(), Commands.runOnce(DRIVE_SUBSYSTEM.drivetrainHardware.navx::reset, DRIVE_SUBSYSTEM), Commands.none());
 
     // Right POV - Toggle centricity
     RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.povRight(), DRIVE_SUBSYSTEM.toggleCentricityCommand(), Commands.none());
@@ -104,8 +104,10 @@ public class RobotContainer implements IRobotContainer {
     // Left Trigger - Down
     RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.leftTrigger(), ELEVATOR_SUBSYSTEM.down(), ELEVATOR_SUBSYSTEM.stop());
 
+    // POV Down - Move Climber down
     RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.povDown(), DEEP_CLIMB_SUBSYSTEM.down(), DEEP_CLIMB_SUBSYSTEM.stop());
   
+    // POV Up - Move Climber up
     RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.povUp(), DEEP_CLIMB_SUBSYSTEM.up(), DEEP_CLIMB_SUBSYSTEM.stop());
 
   }

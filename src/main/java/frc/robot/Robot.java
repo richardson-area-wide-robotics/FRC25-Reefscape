@@ -110,7 +110,7 @@ public class Robot extends LoggedRobot {
     if (autonomousCommand != null) {
       autonomousCommand.cancel();
     }
-    RobotContainer.DRIVE_SUBSYSTEM.navx.reset();
+    RobotContainer.DRIVE_SUBSYSTEM.drivetrainHardware.navx.reset();
 
   }
 
