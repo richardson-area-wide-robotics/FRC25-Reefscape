@@ -9,7 +9,7 @@ graph LR;
         direction LR
         Intake((Intake)) ==> Funnel
         CoralSubsystem((Coral Subsystem))==> Elevator;
-        IntakeOSystem((Intake/Outake));
+        IntakeOSystem((Outake));
         Funnel(Funnel) ==> CoralSubsystem
         subgraph CoralGroup
                 direction LR
@@ -101,14 +101,21 @@ subgraph SwerveGroup
     PDH==>|Slot 8|VortexBL
     PDH==>|Slot 9|RoboRIO
 
-    linkStyle 22,23,24,25,26,27,28,29,30,31,32,33,36,37,38,39,40,41,42,43,44 stroke-width:4px,fill:none,stroke:orange;
+
+    PDH ==> FunnelMotor
+    FunnelPivot((Funnel Pivot))
+    FunnelMotor((Funnel Motor)) ==> FunnelPivot ==> Funnel;
+    DeepClimbMotor1((Deep Motor 1))
+    DeepClimbMotor2((Deep Motor 2))
+    ElavatorMotor((Elevator Motor))
+
+
+    linkStyle 22,23,24,25,26,27,28,29,30,31,32,33,36,37,38,39,40,41,42,43,44,45 stroke-width:4px,fill:none,stroke:orange;
     linkStyle 17,18,19,20,21 stroke-width:4px,fill:none,stroke:red; 
-    linkStyle 2,3,4,5,6,7,8,9,10,11,12 stroke-width:4px,fill:none,stroke:cyan;
+    linkStyle 2,3,4,5,6,7,8,9,10,11,12,46,47 stroke-width:4px,fill:none,stroke:cyan;
     linkStyle 13,14,15,16 stroke-width:4px,fill:none,stroke:lime; 
     linkStyle 0,1,34,35 stroke-width:4px,fill:none,stroke:purple;
 
-
-
 ```
 
-<b> This was last updated by Anthony on Jan 27, 2025</b>
+<b> This was last updated by Anthony on Feb 18, 2025</b>
