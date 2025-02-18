@@ -43,7 +43,7 @@ public class RobotContainer implements IRobotContainer {
 
   public static final KitBotShooter KIT_BOT_SHOOTER = new KitBotShooter(9);
 
-  private static SendableChooser<Command> automodeChooser = null; 
+  private static SendableChooser<Command> automodeChooser; 
 
   public static RobotContainer createContainer(){
         // Set drive command
@@ -55,7 +55,6 @@ public class RobotContainer implements IRobotContainer {
   
       // Register named commands
       registerNamedCommands();
-  
   
       // Bind buttons and triggers
       configureBindings();

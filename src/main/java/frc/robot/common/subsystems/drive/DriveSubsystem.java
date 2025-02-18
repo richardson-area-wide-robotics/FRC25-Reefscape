@@ -266,7 +266,7 @@ public static Hardware initializeHardware() {
                     LinearVelocity inertialVelocity) {
 
       if (controlCentricity == null){
-        controlCentricity = ControlCentricity.ROBOT_CENTRIC;
+        controlCentricity = ControlCentricity.FIELD_CENTRIC;
       }
       
       // Get requested chassis speeds, correcting for second order kinematics
@@ -343,6 +343,7 @@ public static Hardware initializeHardware() {
     field.setRobotPose(getPose());
     SmartDashboard.putBoolean("TC", isTractionControlEnabled);
     SmartDashboard.putBoolean("FC", controlCentricity.equals(ControlCentricity.FIELD_CENTRIC));
+    SmartDashboard.putNumber("Gyro Angle", navx.getYaw().magnitude());
   }
 
   /**
