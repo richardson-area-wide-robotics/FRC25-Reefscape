@@ -41,21 +41,21 @@ public class Robot extends LoggedRobot {
   private IRobotContainer robotContainer;
   public Robot() {
     super();
-
-    PurpleManager.initialize(
-      this,
-      AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape),
-      Path.of("/media/sda1"),
-      BuildConstants.MAVEN_NAME,
-      BuildConstants.GIT_SHA,
-      BuildConstants.BUILD_DATE,
-      true
-    );
   }
 
   @Override
   @SuppressWarnings("resource")
   public void robotInit() {
+    PurpleManager.initialize(
+      this,
+      AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape),
+      Path.of("/Users/Public/Documents/FRC/Log Files/DSLogs/"),
+      BuildConstants.MAVEN_NAME,
+      BuildConstants.GIT_SHA,
+      BuildConstants.BUILD_DATE,
+      true
+    );
+
     Thread.setDefaultUncaughtExceptionHandler(new RobotExceptionHandler());
 
     // AdvantageKit Logging
@@ -67,8 +67,8 @@ public class Robot extends LoggedRobot {
 
     if (isReal()) {
         // If robot is real, log to USB drive and publish data to NetworkTables
-        // Logger.addDataReceiver(new WPILOGWriter("/media/sda1/"));
-        // Logger.addDataReceiver(new NT4Publisher());
+        Logger.addDataReceiver(new WPILOGWriter("/Users/Public/Documents/FRC/Log Files/WPILogs/"));
+        Logger.addDataReceiver(new NT4Publisher());
         new PowerDistribution();
         // Battery Tracking
     } else {
