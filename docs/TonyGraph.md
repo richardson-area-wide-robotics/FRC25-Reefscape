@@ -4,16 +4,21 @@ graph LR;
     PDH{{Power Distribution Hub}};
     RoboRIO==>|CAN Bus|CoralSubsystem;
     RoboRIO==>|CAN Bus|ClimberSystem
+    PDH ==> FunnelMotor
+
 
     subgraph IntakeGroup
         direction LR
-        Intake((Intake)) ==> Funnel
+        FunnelPivot((Funnel Pivot))
+        FunnelMotor((Funnel Motor)) ==> FunnelPivot ==> Funnel;
         CoralSubsystem((Coral Subsystem))==> Elevator;
         IntakeOSystem((Outake));
         Funnel(Funnel) ==> CoralSubsystem
         subgraph CoralGroup
                 direction LR
-                Elevator(Elevator) ==> ElevatorUp;
+                Elevator(Elevator);
+                Elevator ==> ElavatorMotor
+                ElavatorMotor((Elevator Motor)) ==> ElevatorUp
                 ElevatorUp(Elevator Up) ==> ElevatorDown;
                 ElevatorDown(ElevatorDown) ==> ElevatorStop;
                 ElevatorStop(Elevator Stop) ==> ElevatorL1;
@@ -27,12 +32,16 @@ graph LR;
     subgraph ClimberGroup
         direction LR
         ClimberSystem(Climber);
+        DeepClimbMotor1((Deep Motor 1)) ==> DeepClimbMotor2
+        DeepClimbMotor2((Deep Motor 2)) ==> DeepClimbMotor1
+        ClimberSystem ==> DeepClimbMotor1
         DeployClimber(Deploy Climber);
-        ClimberSystem==>DeployClimber;
+        DeepClimbMotor1 ==> DeployClimber;
+        DeepClimbMotor2 ==> DeployClimber;
         DeployClimber ==> CageHug;
         CageHug(hug cage);
         CageHug ==> FUNCCLIMBER1;
-        FUNCCLIMBER1[/Climb up/]==>FUNCCLIMBER2
+        FUNCCLIMBER1[/Climb up/] ==> FUNCCLIMBER2
         FUNCCLIMBER2[/Climb down/]
     end
 
@@ -102,20 +111,15 @@ subgraph SwerveGroup
     PDH==>|Slot 9|RoboRIO
 
 
-    PDH ==> FunnelMotor
-    FunnelPivot((Funnel Pivot))
-    FunnelMotor((Funnel Motor)) ==> FunnelPivot ==> Funnel;
-    DeepClimbMotor1((Deep Motor 1))
-    DeepClimbMotor2((Deep Motor 2))
-    ElavatorMotor((Elevator Motor))
+    
 
 
-    linkStyle 22,23,24,25,26,27,28,29,30,31,32,33,36,37,38,39,40,41,42,43,44,45 stroke-width:4px,fill:none,stroke:orange;
-    linkStyle 17,18,19,20,21 stroke-width:4px,fill:none,stroke:red; 
-    linkStyle 2,3,4,5,6,7,8,9,10,11,12,46,47 stroke-width:4px,fill:none,stroke:cyan;
-    linkStyle 13,14,15,16 stroke-width:4px,fill:none,stroke:lime; 
-    linkStyle 0,1,34,35 stroke-width:4px,fill:none,stroke:purple;
+    linkStyle 2,43,44,45,46,47,48,49,50,51 stroke-width:4px,fill:none,stroke:orange;
+    linkStyle 24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40 stroke-width:4px,fill:none,stroke:red; 
+    linkStyle 3,4,5,6,7,8,9,10,11,12,13,14,15 stroke-width:4px,fill:none,stroke:cyan;
+    linkStyle 16,17,18,19,20,21,22,23 stroke-width:4px,fill:none,stroke:lime; 
+    linkStyle 0,1,41,42 stroke-width:4px,fill:none,stroke:purple;
 
 ```
 
-<b> This was last updated by Anthony on Feb 18, 2025</b>
+<b> This was last updated by Anthony on Feb 19, 2025</b>
