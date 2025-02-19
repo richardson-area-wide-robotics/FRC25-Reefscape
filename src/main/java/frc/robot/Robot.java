@@ -48,7 +48,7 @@ public class Robot extends LoggedRobot {
   public void robotInit() {
     PurpleManager.initialize(
       this,
-      AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape),
+      AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField),
       Path.of("/Users/Public/Documents/FRC/Log Files/DSLogs/"),
       BuildConstants.MAVEN_NAME,
       BuildConstants.GIT_SHA,
