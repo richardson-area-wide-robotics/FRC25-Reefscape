@@ -9,6 +9,9 @@ import frc.robot.common.components.RobotContainerRegistry;
 import frc.robot.common.components.RobotExceptionHandler;
 import frc.robot.common.components.RobotUtils;
 import org.lasarobotics.utils.GlobalConstants;
+
+import java.nio.file.Path;
+
 import org.lasarobotics.hardware.PurpleManager;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
@@ -19,6 +22,8 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 import com.pathplanner.lib.pathfinding.Pathfinding;
 
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -36,6 +41,16 @@ public class Robot extends LoggedRobot {
   private IRobotContainer robotContainer;
   public Robot() {
     super();
+
+    PurpleManager.initialize(
+      this,
+      AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape),
+      Path.of("/media/sda1"),
+      BuildConstants.MAVEN_NAME,
+      BuildConstants.GIT_SHA,
+      BuildConstants.BUILD_DATE,
+      true
+    );
   }
 
   @Override

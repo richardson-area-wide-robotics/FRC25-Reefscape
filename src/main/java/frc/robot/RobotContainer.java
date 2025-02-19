@@ -47,6 +47,7 @@ public class RobotContainer implements IRobotContainer {
 
   public static RobotContainer createContainer(){
         // Set drive command
+        // LeftY is the xRequest and LeftX is the yRequest for some reason
         DRIVE_SUBSYSTEM.setDefaultCommand(
           DRIVE_SUBSYSTEM.driveCommand(
             HIDConstants.PRIMARY_CONTROLLER::getLeftY,
