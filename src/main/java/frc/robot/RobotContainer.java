@@ -96,7 +96,7 @@ public class RobotContainer implements IRobotContainer {
     RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.povLeft(), DRIVE_SUBSYSTEM.resetPoseCommand(Pose2d::new), Commands.none());
 
     // Right Stick Button - Reset heading
-    RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.rightStick(), Commands.runOnce(DRIVE_SUBSYSTEM.drivetrainHardware.navx::reset, DRIVE_SUBSYSTEM), Commands.none());
+    RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.rightStick(), Commands.runOnce(DRIVE_SUBSYSTEM.DRIVETRAIN_HARDWARE.navx::reset, DRIVE_SUBSYSTEM), Commands.none());
 
     // Right POV - Toggle centricity
     RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.povRight(), DRIVE_SUBSYSTEM.toggleCentricityCommand(), Commands.none());
