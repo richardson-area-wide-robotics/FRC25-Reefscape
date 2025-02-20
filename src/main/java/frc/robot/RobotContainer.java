@@ -22,6 +22,7 @@ import frc.robot.common.annotations.Robot;
 import frc.robot.common.interfaces.IRobotContainer;
 import frc.robot.common.subsystems.DeepClimbSubsystem;
 import frc.robot.common.subsystems.ElevatorSubsystem;
+import frc.robot.common.subsystems.ScoringSubsystem;
 import frc.robot.common.subsystems.drive.SwerveDriveSubsystem;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -43,6 +44,8 @@ public class RobotContainer implements IRobotContainer {
 
   public static final ElevatorSubsystem ELEVATOR_SUBSYSTEM = new ElevatorSubsystem(9);
   public static final DeepClimbSubsystem DEEP_CLIMB_SUBSYSTEM = new DeepClimbSubsystem(13, 14);
+  public static final ScoringSubsystem SCORING_SUBSYSTEM = new ScoringSubsystem(15, 16);
+
 
 
 
@@ -109,6 +112,12 @@ public class RobotContainer implements IRobotContainer {
   
     // POV Up - Move Climber up
     RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.povUp(), DEEP_CLIMB_SUBSYSTEM.up(), DEEP_CLIMB_SUBSYSTEM.stop());
+
+    // POV Left - Move Drawbridge up
+    RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.povLeft(), SCORING_SUBSYSTEM.drawBridgeUp(), SCORING_SUBSYSTEM.drawBridgeStop());
+
+    // POV Right - Move Drawbridge down
+    RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.povRight(), SCORING_SUBSYSTEM.drawBridgeDown(), SCORING_SUBSYSTEM.drawBridgeStop());
 
   }
 
