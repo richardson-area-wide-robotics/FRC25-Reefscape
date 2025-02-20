@@ -73,24 +73,24 @@ public class RAWRSwerveModule extends SwerveModule implements Sendable {
   private final double DRIVE_METERS_PER_ROTATION;
   private final double DRIVE_MAX_LINEAR_SPEED;
 
-  private Spark m_driveMotor;
-  private Spark m_rotateMotor;
-  private SwerveModuleSim m_moduleSim;
+  private final Spark m_driveMotor;
+  private final Spark m_rotateMotor;
+  private final SwerveModuleSim m_moduleSim;
   private SimpleMotorFeedforward m_driveFF;
-  private SparkBaseConfig m_driveMotorConfig;
-  private SparkBaseConfig m_rotateMotorConfig;
-  private Rotation2d m_zeroOffset;
+  private final SparkBaseConfig m_driveMotorConfig;
+  private final SparkBaseConfig m_rotateMotorConfig;
+  private final Rotation2d m_zeroOffset;
   
-    private SwerveModule.Location m_location;
+    private final SwerveModule.Location m_location;
     private Rotation2d m_previousRotatePosition;
   
     private volatile double m_simDrivePosition;
     private volatile SwerveModulePosition m_simModulePosition;
     private volatile SwerveModuleState m_desiredState;
   
-    private double m_driveConversionFactor;
-    private double m_rotateConversionFactor;
-    private double m_autoLockTime;
+    private final double m_driveConversionFactor;
+    private final double m_rotateConversionFactor;
+    private final double m_autoLockTime;
   
     private Instant m_autoLockTimer;
   
@@ -279,32 +279,6 @@ public class RAWRSwerveModule extends SwerveModule implements Sendable {
     // Add callbacks to PurpleManager
     PurpleManager.addCallback(() -> periodic());
     PurpleManager.addCallbackSim(() -> simulationPeriodic());
-  }
-
-
-  /**
-   * Initialize hardware devices for MAXSwerve module
-   * @param driveMotorID Drive motor ID
-   * @param rotateMotorID Rotate motor ID
-   * @param driveMotorKind Kind of drive motor
-   * @return Hardware object containing all necessary objects for a REV swerve module
-   * @throws IllegalArgumentException If specified drive motor is not supported
-   */
-  public static Hardware initializeHardware(Spark.ID driveMotorID,
-                                            Spark.ID rotateMotorID,
-                                            MotorKind driveMotorKind,
-                                            MotorKind rotateMotorKind) {
-    if (driveMotorKind != MotorKind.NEO && driveMotorKind != MotorKind.NEO_VORTEX)
-      throw new IllegalArgumentException("Drive motor MUST be a NEO or a NEO Vortex!");
-    if (rotateMotorKind != MotorKind.NEO && rotateMotorKind != MotorKind.NEO_VORTEX && rotateMotorKind != MotorKind.NEO_550)
-      throw new IllegalArgumentException("Rotate motor MUST be a NEO 550, NEO, or NEO Vortex!");
-    var frequency = RobotBase.isReal() ? SwerveConstants.DEFAULT_SIGNAL_PERIOD.asFrequency() : GlobalConstants.ROBOT_LOOP_HZ;
-    Hardware swerveModuleHardware = new Hardware(
-      new Spark(driveMotorID, driveMotorKind, frequency),
-      new Spark(rotateMotorID, rotateMotorKind, frequency)
-    );
-
-    return swerveModuleHardware;
   }
 
   /**

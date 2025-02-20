@@ -1,22 +1,26 @@
-package frc.robot.common.subsystems.shooter;
+package frc.robot.common.components;
 
-import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.common.components.EasyMotor;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class KitBotShooter extends SubsystemBase {
-    SparkMax motor;
 
-    public KitBotShooter(int motorID) {
-        motor = EasyMotor.createEasySparkMax(motorID, MotorType.kBrushed, IdleMode.kCoast);
+/**
+ * A basic subsystem that only uses one motor
+ * Provides methods for speed/stopping motors
+ *
+ * @author Hudson Strub
+ * @since 2025
+ */
+public class SingleMotorSubsystem extends SubsystemBase {
+    public SparkFlex motor;
+
+    public SingleMotorSubsystem(int motorID) {
+        motor = EasyMotor.createEasySparkFlex(motorID, MotorType.kBrushless, IdleMode.kCoast);
     }
 
     /**

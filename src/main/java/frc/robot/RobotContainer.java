@@ -5,7 +5,6 @@
 package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -21,8 +20,9 @@ import frc.robot.Constants.HIDConstants;
 import frc.robot.common.components.RobotUtils;
 import frc.robot.common.annotations.Robot;
 import frc.robot.common.interfaces.IRobotContainer;
+import frc.robot.common.subsystems.DeepClimbSubsystem;
+import frc.robot.common.subsystems.ElevatorSubsystem;
 import frc.robot.common.subsystems.drive.SwerveDriveSubsystem;
-import frc.robot.common.subsystems.shooter.KitBotShooter;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -41,7 +41,10 @@ public class RobotContainer implements IRobotContainer {
       Dimensionless.ofRelativeUnits(Constants.HIDConstants.CONTROLLER_DEADBAND, Units.Value),
       Time.ofRelativeUnits(Constants.DriveConstants.DRIVE_LOOKAHEAD, Units.Second));
 
-  public static final KitBotShooter KIT_BOT_SHOOTER = new KitBotShooter(9);
+  public static final ElevatorSubsystem ELEVATOR_SUBSYSTEM = new ElevatorSubsystem(9);
+  public static final DeepClimbSubsystem DEEP_CLIMB_SUBSYSTEM = new DeepClimbSubsystem(13, 14);
+
+
 
   private static SendableChooser<Command> automodeChooser; 
 
@@ -74,7 +77,6 @@ public class RobotContainer implements IRobotContainer {
   }
 
   private static void registerNamedCommands() {
-    NamedCommands.registerCommand("Outtake", Commands.deadline(Commands.waitSeconds(1), KIT_BOT_SHOOTER.setSpeedCommand(1)).andThen(KIT_BOT_SHOOTER.stopMotorCommand()));
   }
 
   private static void initializeAutos() {
@@ -91,13 +93,23 @@ public class RobotContainer implements IRobotContainer {
     RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.povLeft(), DRIVE_SUBSYSTEM.resetPoseCommand(Pose2d::new), Commands.none());
 
     // Right Stick Button - Reset heading
-    RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.rightStick(), Commands.runOnce(DRIVE_SUBSYSTEM.navx::reset, DRIVE_SUBSYSTEM), Commands.none());
-
-    // Right Trigger - Outtake
-    RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.rightTrigger(), KIT_BOT_SHOOTER.setSpeedCommand(1), KIT_BOT_SHOOTER.stopMotorCommand());
+    RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.rightStick(), Commands.runOnce(DRIVE_SUBSYSTEM.drivetrainHardware.navx::reset, DRIVE_SUBSYSTEM), Commands.none());
 
     // Right POV - Toggle centricity
     RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.povRight(), DRIVE_SUBSYSTEM.toggleCentricityCommand(), Commands.none());
+
+    // Right Trigger - Up
+    RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.rightTrigger(), ELEVATOR_SUBSYSTEM.up(), ELEVATOR_SUBSYSTEM.stop());
+
+    // Left Trigger - Down
+    RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.leftTrigger(), ELEVATOR_SUBSYSTEM.down(), ELEVATOR_SUBSYSTEM.stop());
+
+    // POV Down - Move Climber down
+    RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.povDown(), DEEP_CLIMB_SUBSYSTEM.down(), DEEP_CLIMB_SUBSYSTEM.stop());
+  
+    // POV Up - Move Climber up
+    RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.povUp(), DEEP_CLIMB_SUBSYSTEM.up(), DEEP_CLIMB_SUBSYSTEM.stop());
+
   }
 
 
