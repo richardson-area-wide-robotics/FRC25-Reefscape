@@ -57,7 +57,7 @@ import frc.robot.Constants;
 import frc.robot.common.components.RobotUtils;
 import frc.robot.common.swerve.RAWRSwerveModule;
 
-public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
+public class SwerveDriveSubsystem extends SubsystemBase implements AutoCloseable {
   @AllArgsConstructor
   public static class Hardware {
       NavX2 navx;
@@ -121,7 +121,7 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    * @param deadband Deadband for controller input [+0.001, +0.2].
    * @param lookAhead Rotate PID lookahead, in number of loops.
    */
-  public DriveSubsystem(Hardware drivetrainHardware, PIDConstants pidf, ControlCentricity controlCentricity,
+  public SwerveDriveSubsystem(Hardware drivetrainHardware, PIDConstants pidf, ControlCentricity controlCentricity,
                         PolynomialSplineFunction throttleInputCurve, PolynomialSplineFunction turnInputCurve,
                         Angle turnScalar, Dimensionless deadband, Time lookAhead) {
   
