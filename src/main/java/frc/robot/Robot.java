@@ -9,6 +9,9 @@ import frc.robot.common.components.RobotContainerRegistry;
 import frc.robot.common.components.RobotExceptionHandler;
 import frc.robot.common.components.RobotUtils;
 import org.lasarobotics.utils.GlobalConstants;
+
+import java.nio.file.Path;
+
 import org.lasarobotics.hardware.PurpleManager;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
@@ -19,6 +22,8 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 import com.pathplanner.lib.pathfinding.Pathfinding;
 
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -41,6 +46,16 @@ public class Robot extends LoggedRobot {
   @Override
   @SuppressWarnings("resource")
   public void robotInit() {
+    PurpleManager.initialize(
+      this,
+      AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField),
+      Path.of("/Users/Public/Documents/FRC/Log Files/DSLogs/"),
+      BuildConstants.MAVEN_NAME,
+      BuildConstants.GIT_SHA,
+      BuildConstants.BUILD_DATE,
+      true
+    );
+
     Thread.setDefaultUncaughtExceptionHandler(new RobotExceptionHandler());
 
     // AdvantageKit Logging
@@ -52,8 +67,8 @@ public class Robot extends LoggedRobot {
 
     if (isReal()) {
         // If robot is real, log to USB drive and publish data to NetworkTables
-        // Logger.addDataReceiver(new WPILOGWriter("/media/sda1/"));
-        // Logger.addDataReceiver(new NT4Publisher());
+        Logger.addDataReceiver(new WPILOGWriter("/Users/Public/Documents/FRC/Log Files/WPILogs/"));
+        Logger.addDataReceiver(new NT4Publisher());
         new PowerDistribution();
         // Battery Tracking
     } else {

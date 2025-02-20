@@ -46,10 +46,11 @@ public class RobotContainer implements IRobotContainer {
 
 
 
-  private static SendableChooser<Command> automodeChooser = null; 
+  private static SendableChooser<Command> automodeChooser; 
 
   public static RobotContainer createContainer(){
         // Set drive command
+        // LeftY is the xRequest and LeftX is the yRequest for some reason
         DRIVE_SUBSYSTEM.setDefaultCommand(
           DRIVE_SUBSYSTEM.driveCommand(
             HIDConstants.PRIMARY_CONTROLLER::getLeftY,
@@ -58,7 +59,6 @@ public class RobotContainer implements IRobotContainer {
   
       // Register named commands
       registerNamedCommands();
-  
   
       // Bind buttons and triggers
       configureBindings();

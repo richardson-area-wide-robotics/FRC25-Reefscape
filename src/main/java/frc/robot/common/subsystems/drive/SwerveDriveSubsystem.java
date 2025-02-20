@@ -48,6 +48,14 @@ import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.LEDPattern;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.FunctionalCommand;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
+import frc.robot.common.components.RobotUtils;
+import frc.robot.common.swerve.RAWRSwerveModule;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -55,6 +63,9 @@ import frc.robot.Constants;
 import frc.robot.common.components.RobotUtils;
 import frc.robot.common.components.SwerveHardware;
 import frc.robot.common.swerve.RAWRSwerveModule;
+
+public class SwerveDriveSubsystem extends SubsystemBase implements AutoCloseable {
+
 
 /**
  * Drive Subsystem for Swerve Drive bots with 4 motors in each corner
@@ -85,11 +96,7 @@ public class SwerveDriveSubsystem extends SubsystemBase implements AutoCloseable
   private final MedianFilter yVelocityFilter;
   private final PPHolonomicDriveController pathFollowerConfig;
 
-  private ControlCentricity controlCentricity;
-  private ChassisSpeeds desiredChassisSpeeds;
-  private Pose2d m_previousPose;
-  private Rotation2d currentHeading;
-  private final Field2d field;
+
 
   /**
    * SwerveDriveSubsystem constructor for managing a swerve drivetrain.
@@ -243,7 +250,7 @@ public static SwerveHardware initializeHardware() {
                     LinearVelocity inertialVelocity) {
 
       if (controlCentricity == null){
-        controlCentricity = ControlCentricity.ROBOT_CENTRIC;
+        controlCentricity = ControlCentricity.FIELD_CENTRIC;
       }
       
       // Get requested chassis speeds, correcting for second order kinematics
@@ -451,7 +458,6 @@ public static SwerveHardware initializeHardware() {
     );
   }
 
-
   /**
    * Reset pose estimator
    * @param pose Pose to set robot to
@@ -473,6 +479,7 @@ public static SwerveHardware initializeHardware() {
     )).mutableCopy();
     drivetrainHardware.navx.getInputs().velocityY = (Units.MetersPerSecond.of(
       yVelocityFilter.calculate(drivetrainHardware.navx.getInputs().velocityY.in(Units.MetersPerSecond))
+
     )).mutableCopy();
 
     updatePose();
@@ -783,6 +790,7 @@ public static SwerveHardware initializeHardware() {
    */
   public Rotation2d getRotation2d() {
     return drivetrainHardware.navx.getInputs().rotation2d;
+
   }
 
   @Override
@@ -792,5 +800,6 @@ public static SwerveHardware initializeHardware() {
     drivetrainHardware.rFrontModule.close();
     drivetrainHardware.lRearModule.close();
     drivetrainHardware.rRearModule.close();
+
   }
 }
