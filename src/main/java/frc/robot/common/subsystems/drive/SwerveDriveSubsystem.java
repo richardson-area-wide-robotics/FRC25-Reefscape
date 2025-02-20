@@ -56,16 +56,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.common.components.RobotUtils;
 import frc.robot.common.swerve.RAWRSwerveModule;
-import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants;
-import frc.robot.common.components.RobotUtils;
 import frc.robot.common.components.SwerveHardware;
-import frc.robot.common.swerve.RAWRSwerveModule;
-
-public class SwerveDriveSubsystem extends SubsystemBase implements AutoCloseable {
-
 
 /**
  * Drive Subsystem for Swerve Drive bots with 4 motors in each corner
