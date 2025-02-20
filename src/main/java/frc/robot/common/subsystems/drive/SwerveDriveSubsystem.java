@@ -7,7 +7,6 @@ package frc.robot.common.subsystems.drive;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
@@ -17,7 +16,6 @@ import org.lasarobotics.drive.swerve.SwerveModule;
 import org.lasarobotics.drive.RotatePIDController;
 import org.lasarobotics.drive.ThrottleMap;
 import org.lasarobotics.hardware.kauailabs.NavX2;
-import org.lasarobotics.led.LEDSubsystem;
 import org.lasarobotics.utils.PIDConstants;
 import org.littletonrobotics.junction.Logger;
 
@@ -28,7 +26,6 @@ import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.math.geometry.Rotation2d;      // For handling rotations
 import edu.wpi.first.math.geometry.Translation2d;    // For handling 2D translations
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard; // For dashboard integration
-import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.units.measure.Dimensionless;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
@@ -48,10 +45,8 @@ import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.LEDPattern;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.common.components.RobotUtils;
@@ -86,6 +81,13 @@ public class SwerveDriveSubsystem extends SubsystemBase implements AutoCloseable
   private final MedianFilter xVelocityFilter;
   private final MedianFilter yVelocityFilter;
   private final PPHolonomicDriveController pathFollowerConfig;
+
+  private ControlCentricity controlCentricity;
+  private ChassisSpeeds desiredChassisSpeeds;
+  private boolean isTractionControlEnabled = true;
+  private Pose2d m_previousPose;
+  private Rotation2d currentHeading;
+  private final Field2d field;
 
 
 
