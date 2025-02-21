@@ -28,4 +28,12 @@ public class ScoringSubsystem extends SubsystemBase {
     public Command drawBridgeStop(){
         return Commands.run(() -> drawbridgeMotor.set(0), this);
     }
+
+    public Command outtakeStop(){
+        return Commands.run(() -> outtakeMotor.set(0), this);
+    }
+
+    public Command outtake(){
+        return Commands.run(() -> outtakeMotor.set(0.3), this);
+    }
 }

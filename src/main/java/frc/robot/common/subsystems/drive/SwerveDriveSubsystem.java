@@ -45,6 +45,7 @@ import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -762,7 +763,9 @@ public static SwerveHardware initializeHardware() {
    * @return Current heading of the robot in degrees
    */
   public Angle getAngle() {
-    return DRIVETRAIN_HARDWARE.navx.getInputs().yawAngle;
+    System.out.println("NAVX ANGLE: " + DRIVETRAIN_HARDWARE.navx.getYaw().magnitude());
+
+    return DRIVETRAIN_HARDWARE.navx.getYaw();
   }
 
   /**

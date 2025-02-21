@@ -40,21 +40,27 @@ public class Robot extends LoggedRobot {
 
   private IRobotContainer robotContainer;
   public Robot() {
-    super();
+    try{
+      PurpleManager.initialize( //PurpleSwerve runs this here, tho javadoc says to do it in robotInit() 
+        this,
+        AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField),
+        Path.of("/media/sda1"),
+        BuildConstants.MAVEN_NAME,
+        BuildConstants.GIT_SHA,
+        BuildConstants.BUILD_DATE,
+        false
+      );
+    }
+    catch (Exception e){
+      System.out.println("Error loading PurpleManager" + e.getMessage() + e.getCause());
+    }
   }
 
   @Override
   @SuppressWarnings("resource")
   public void robotInit() {
-    PurpleManager.initialize(
-      this,
-      AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField),
-      Path.of("/Users/Public/Documents/FRC/Log Files/DSLogs/"),
-      BuildConstants.MAVEN_NAME,
-      BuildConstants.GIT_SHA,
-      BuildConstants.BUILD_DATE,
-      true
-    );
+
+    
 
     Thread.setDefaultUncaughtExceptionHandler(new RobotExceptionHandler());
 
@@ -69,8 +75,6 @@ public class Robot extends LoggedRobot {
         // If robot is real, log to USB drive and publish data to NetworkTables
         Logger.addDataReceiver(new WPILOGWriter("/Users/Public/Documents/FRC/Log Files/WPILogs/"));
         Logger.addDataReceiver(new NT4Publisher());
-        new PowerDistribution();
-        // Battery Tracking
     } else {
         // Else just publish to NetworkTables for simulation or replay log file if var is set
         String replay = System.getenv(GlobalConstants.REPLAY_ENVIRONMENT_VAR);
@@ -118,6 +122,8 @@ public class Robot extends LoggedRobot {
   @Override
   public void autonomousPeriodic() {
     robotContainer.autonomousPeriodic();
+    PurpleManager.update();
+
   }
 
   @Override
@@ -132,6 +138,8 @@ public class Robot extends LoggedRobot {
   @Override
   public void teleopPeriodic() {
     robotContainer.teleopPeriodic();
+    PurpleManager.update();
+
   }
 
   @Override
@@ -145,6 +153,9 @@ public class Robot extends LoggedRobot {
   }
 
   @Override
-  public void testPeriodic() {}
+  public void testPeriodic() {
+    PurpleManager.update();
+  }
+
 
 }

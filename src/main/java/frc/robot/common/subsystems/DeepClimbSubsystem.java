@@ -29,9 +29,4 @@ public class DeepClimbSubsystem extends SubsystemBase {
     public Command stop(){
         return Commands.run(() -> motor.set(0), this);
     }
-
-    @Override
-    public void periodic() {
-        System.out.println(motor.getOutputCurrent());
-    }
 }
