@@ -254,7 +254,7 @@ public static SwerveHardware initializeHardware() {
       // Convert speeds to module states, correcting for 2nd order kinematics
       SwerveModuleState[] moduleStates = advancedKinematics.toSwerveModuleStates(
           desiredChassisSpeeds,
-          getPose().getRotation(),
+          getRotation2d(),
           controlCentricity
       );
 
@@ -499,7 +499,7 @@ public static SwerveHardware initializeHardware() {
     // Convert speeds to module states, correcting for 2nd order kinematics
     SwerveModuleState[] moduleStates = advancedKinematics.toSwerveModuleStates(
             desiredChassisSpeeds,
-      getPose().getRotation(),
+      getRotation2d(),
       ControlCentricity.ROBOT_CENTRIC
     );
 
@@ -514,12 +514,12 @@ public static SwerveHardware initializeHardware() {
 
     // Update auto-aim controllers
     AUTO_AIM_PID_CONTROLLER_FRONT.calculate(
-      getPose().getRotation().getDegrees(),
-      getPose().getRotation().getDegrees()
+      getRotation2d().getDegrees(),
+      getRotation2d().getDegrees()
     );
     AUTO_AIM_PID_CONTROLLER_BACK.calculate(
-      getPose().getRotation().plus(Rotation2d.fromRadians(Math.PI)).getDegrees(),
-      getPose().getRotation().plus(Rotation2d.fromRadians(Math.PI)).getDegrees()
+      getRotation2d().plus(Rotation2d.fromRadians(Math.PI)).getDegrees(),
+      getRotation2d().plus(Rotation2d.fromRadians(Math.PI)).getDegrees()
     );
   }
 

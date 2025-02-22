@@ -6,6 +6,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.common.components.EasyMotor;
+import frc.robot.common.components.RobotUtils;
 
 public class ElevatorSubsystem extends SubsystemBase {
 
@@ -13,7 +14,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     private final RelativeEncoder encoder;
 
     private static final double BOTTOM_POSITION = 0.0;
-    private static final double L1_POSITION = 0.2;
+    private static final double L1_POSITION =  10;
     private static final double L2_POSITION = 40.0;
     private static final double L3_POSITION = 40.0;
 
@@ -37,34 +38,19 @@ public class ElevatorSubsystem extends SubsystemBase {
         return Commands.run(() -> motor.set(0.03), this);
     }
 
-    // Command to move to a specific position
-    public Command moveToPosition(double targetPosition) {
-        return run(() -> {
-            double currentPosition = encoder.getPosition();
-            double error = targetPosition - currentPosition;
-            double speed = Math.copySign(0.3, error); // Move up or down based on the error
-            
-            if (Math.abs(error) > TOLERANCE) {
-                motor.set(speed);
-            } else {
-                motor.set(0.0);
-            }
-        }).until(() -> Math.abs(encoder.getPosition() - targetPosition) < TOLERANCE);
-    }
-
     public Command goToBottom() {
-        return moveToPosition(BOTTOM_POSITION);
+        return RobotUtils.moveToPosition(motor, BOTTOM_POSITION, TOLERANCE);
     }
 
     public Command goLevelOne() {
-        return moveToPosition(L1_POSITION);
+        return RobotUtils.moveToPosition(motor, L1_POSITION, TOLERANCE);
     }
 
     public Command goLevelTwo() {
-        return moveToPosition(L2_POSITION);
+        return RobotUtils.moveToPosition(motor, L2_POSITION, TOLERANCE);
     }
 
     public Command goLevelThree() {
-        return moveToPosition(L3_POSITION);
+        return RobotUtils.moveToPosition(motor, L3_POSITION, TOLERANCE);
     }
 }

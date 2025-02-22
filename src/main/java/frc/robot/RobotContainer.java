@@ -125,6 +125,7 @@ public class RobotContainer implements IRobotContainer {
     // Y - Go two bottom
     RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.y(), ELEVATOR_SUBSYSTEM.goToBottom(), SCORING_SUBSYSTEM.outtakeStop());
 
+    RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.b(), ELEVATOR_SUBSYSTEM.goLevelOne(), SCORING_SUBSYSTEM.outtakeStop());
   }
 
 
