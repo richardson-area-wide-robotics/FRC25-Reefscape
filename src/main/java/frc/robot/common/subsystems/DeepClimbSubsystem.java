@@ -16,7 +16,7 @@ public class DeepClimbSubsystem extends SubsystemBase {
 
     public DeepClimbSubsystem(int motorID, int motor2ID) {
         motor = EasyMotor.createEasySparkFlex(motorID, SparkLowLevel.MotorType.kBrushless, SparkBaseConfig.IdleMode.kCoast);
-        motor2 = EasyMotor.createEasySparkFlex(motor2ID, SparkLowLevel.MotorType.kBrushless, SparkBaseConfig.IdleMode.kCoast);
+        motor2 = EasyMotor.createEasySparkFlex(motor2ID, motorID, true, SparkLowLevel.MotorType.kBrushless, SparkBaseConfig.IdleMode.kCoast);
 
     }
 
@@ -24,7 +24,7 @@ public class DeepClimbSubsystem extends SubsystemBase {
         return Commands.run(() -> motor.set(0.3), this).andThen(() -> motor2.set(-0.3), this); //TODO This might be too fast?
     }
     public Command down() {
-        return Commands.run(() -> motor.set(-0.3), this);
+        return Commands.run(() -> motor.set(-0.3), this).andThen(() -> motor2.set(0.3), this);
     }
     public Command stop(){
         return Commands.run(() -> motor.set(0), this);

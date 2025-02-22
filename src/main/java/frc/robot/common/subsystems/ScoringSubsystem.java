@@ -20,10 +20,10 @@ public class ScoringSubsystem extends SubsystemBase {
     }
 
     public Command drawBridgeUp() {
-        return Commands.run(() -> drawbridgeMotor.set(0.3), this); //TODO This might be too fast?
+        return Commands.run(() -> drawbridgeMotor.set(0.1), this);
     }
     public Command drawBridgeDown() {
-        return Commands.run(() -> drawbridgeMotor.set(-0.3), this);
+        return Commands.run(() -> drawbridgeMotor.set(-0.1), this);
     }
     public Command drawBridgeStop(){
         return Commands.run(() -> drawbridgeMotor.set(0), this);

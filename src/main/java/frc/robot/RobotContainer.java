@@ -98,8 +98,8 @@ public class RobotContainer implements IRobotContainer {
     // Right Stick Button - Reset heading
     RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.rightStick(), Commands.runOnce(DRIVE_SUBSYSTEM.DRIVETRAIN_HARDWARE.navx::reset, DRIVE_SUBSYSTEM), Commands.none());
 
-    // Right POV - Toggle centricity
-    RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.povRight(), DRIVE_SUBSYSTEM.toggleCentricityCommand(), Commands.none());
+    // X - Toggle centricity
+    RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.x(), DRIVE_SUBSYSTEM.toggleCentricityCommand(), Commands.none());
 
     // Right Trigger - Up
     RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.rightTrigger(), ELEVATOR_SUBSYSTEM.up(), ELEVATOR_SUBSYSTEM.stop());

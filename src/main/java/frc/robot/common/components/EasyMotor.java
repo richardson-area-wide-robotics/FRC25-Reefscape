@@ -70,8 +70,7 @@ public class EasyMotor {
 
         motor = new SparkFlex(motorID, motorType);
         config.idleMode(idleMode);
-        config.follow(followMotorID);
-        config.inverted(inverted);
+        config.follow(followMotorID, inverted);
 
         motor.configure(config, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kPersistParameters);
 
