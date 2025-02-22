@@ -39,6 +39,12 @@ public class Robot extends LoggedRobot {
 
   private IRobotContainer robotContainer;
   public Robot() {
+super();
+  }
+
+  @Override
+  @SuppressWarnings("resource")
+  public void robotInit() {
     try{
       PurpleManager.initialize( //PurpleSwerve runs this here, tho javadoc says to do it in robotInit() 
         this,
@@ -53,12 +59,6 @@ public class Robot extends LoggedRobot {
     catch (Exception e){
       System.out.println("Error loading PurpleManager" + e.getMessage() + e.getCause());
     }
-  }
-
-  @Override
-  @SuppressWarnings("resource")
-  public void robotInit() {
-
     
 
     Thread.setDefaultUncaughtExceptionHandler(new RobotExceptionHandler());
@@ -72,7 +72,7 @@ public class Robot extends LoggedRobot {
 
     if (isReal()) {
         // If robot is real, log to USB drive and publish data to NetworkTables
-        Logger.addDataReceiver(new WPILOGWriter("/media/sda1/"));
+        Logger.addDataReceiver(new WPILOGWriter("/Users/Public/Documents/FRC/Log Files/WPILogs/"));
         Logger.addDataReceiver(new NT4Publisher());
     } else {
         // Else just publish to NetworkTables for simulation or replay log file if var is set
@@ -131,7 +131,6 @@ public class Robot extends LoggedRobot {
       autonomousCommand.cancel();
     }
     RobotContainer.DRIVE_SUBSYSTEM.DRIVETRAIN_HARDWARE.navx.reset();
-
   }
 
   @Override
@@ -153,7 +152,7 @@ public class Robot extends LoggedRobot {
 
   @Override
   public void testPeriodic() {
-    PurpleManager.update();
+    //PurpleManager.update();
   }
 
 

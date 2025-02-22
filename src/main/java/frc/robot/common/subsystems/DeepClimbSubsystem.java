@@ -20,11 +20,11 @@ public class DeepClimbSubsystem extends SubsystemBase {
 
     }
 
-    public Command up() {
-        return Commands.run(() -> motor.set(0.3), this).andThen(() -> motor2.set(-0.3), this); //TODO This might be too fast?
+    public Command in() {
+        return Commands.run(() -> motor.set(0.3), this);
     }
-    public Command down() {
-        return Commands.run(() -> motor.set(-0.3), this).andThen(() -> motor2.set(0.3), this);
+    public Command out() {
+        return Commands.run(() -> motor.set(-0.3), this);
     }
     public Command stop(){
         return Commands.run(() -> motor.set(0), this);
