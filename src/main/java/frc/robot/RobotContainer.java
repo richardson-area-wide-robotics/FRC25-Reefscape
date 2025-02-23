@@ -113,11 +113,11 @@ public class RobotContainer implements IRobotContainer {
     // POV Up - Move Climber in
     RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.povUp(), DEEP_CLIMB_SUBSYSTEM.in(), DEEP_CLIMB_SUBSYSTEM.stop());
 
-    // POV Left - Move Drawbridge up
-    RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.povLeft(), SCORING_SUBSYSTEM.drawBridgeUp(), SCORING_SUBSYSTEM.drawBridgeStop());
+    // POV Right - Move Drawbridge up
+    RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.povRight(), SCORING_SUBSYSTEM.drawBridgeUp(), SCORING_SUBSYSTEM.drawBridgeStop());
 
-    // POV Right - Move Drawbridge down
-    RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.povRight(), SCORING_SUBSYSTEM.drawBridgeDown(), SCORING_SUBSYSTEM.drawBridgeStop());
+    // POV Left - Move Drawbridge down
+    RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.povLeft(), SCORING_SUBSYSTEM.drawBridgeDown(), SCORING_SUBSYSTEM.drawBridgeStop());
 
     // A - Shoot
     RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.a(), SCORING_SUBSYSTEM.outtake(), SCORING_SUBSYSTEM.outtakeStop());
@@ -125,7 +125,9 @@ public class RobotContainer implements IRobotContainer {
     // Y - Go two bottom
     RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.y(), ELEVATOR_SUBSYSTEM.goToBottom(), SCORING_SUBSYSTEM.outtakeStop());
 
-    RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.b(), ELEVATOR_SUBSYSTEM.goLevelOne(), SCORING_SUBSYSTEM.outtakeStop());
+    RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.leftBumper(), SCORING_SUBSYSTEM.intake(), SCORING_SUBSYSTEM.outtakeStop());
+
+
   }
 
 

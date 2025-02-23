@@ -28,7 +28,7 @@ public class ScoringSubsystem extends SubsystemBase {
         return Commands.run(() -> drawbridgeMotor.set(-0.09), this);
     }
     public Command drawBridgeStop(){
-        return Commands.run(() -> drawbridgeMotor.set(0), this);
+        return Commands.run(() -> drawbridgeMotor.set(0.02), this);
     }
 
     public Command outtakeStop(){
@@ -37,6 +37,10 @@ public class ScoringSubsystem extends SubsystemBase {
 
     public Command outtake(){
         return Commands.run(() -> outtakeMotor.set(0.3), this);
+    }
+
+    public Command intake(){
+        return Commands.run(() -> outtakeMotor.set(-0.3), this);
     }
 }
 //
