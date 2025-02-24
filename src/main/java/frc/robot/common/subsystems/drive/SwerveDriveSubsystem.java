@@ -7,7 +7,6 @@ package frc.robot.common.subsystems.drive;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
@@ -17,7 +16,6 @@ import org.lasarobotics.drive.swerve.SwerveModule;
 import org.lasarobotics.drive.RotatePIDController;
 import org.lasarobotics.drive.ThrottleMap;
 import org.lasarobotics.hardware.kauailabs.NavX2;
-import org.lasarobotics.led.LEDSubsystem;
 import org.lasarobotics.utils.PIDConstants;
 import org.littletonrobotics.junction.Logger;
 
@@ -28,7 +26,6 @@ import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.math.geometry.Rotation2d;      // For handling rotations
 import edu.wpi.first.math.geometry.Translation2d;    // For handling 2D translations
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard; // For dashboard integration
-import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.units.measure.Dimensionless;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
@@ -48,69 +45,55 @@ import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.LEDPattern;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.common.components.RobotUtils;
+import frc.robot.common.swerve.FunnyNavX2;
 import frc.robot.common.swerve.RAWRSwerveModule;
+import frc.robot.common.components.SwerveHardware;
 
-public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
-  @AllArgsConstructor
-  public static class Hardware {
-      NavX2 navx;
-      RAWRSwerveModule lFrontModule;
-      RAWRSwerveModule rFrontModule;
-      RAWRSwerveModule lRearModule;
-      RAWRSwerveModule rRearModule;
-  }
+/**
+ * Drive Subsystem for Swerve Drive bots with 4 motors in each corner
+ *
+ * @author PurpleLib
+ * @author Alan Trinh
+ * @author Hudson Strub
+ *
+ * @since 2025
+ */
+public class SwerveDriveSubsystem extends SubsystemBase implements AutoCloseable {
 
-  private final ThrottleMap throttleMap;
-  private final RotatePIDController rotatePIDController;
+
+  public final SwerveHardware DRIVETRAIN_HARDWARE;
+
+  private final ThrottleMap THROTTLE_MAP;
+  private final RotatePIDController ROTATE_PID_CONTROLLER;
   @Getter
-  private final SwerveDriveKinematics kinematics;
-  private final SwerveDrivePoseEstimator poseEstimator;
+  private final SwerveDriveKinematics KINEMATICS;
+  private final SwerveDrivePoseEstimator POSE_ESTIMATOR;
 
   public final LinearVelocity DRIVE_MAX_LINEAR_SPEED;
   public final LinearAcceleration DRIVE_AUTO_ACCELERATION;
   private AdvancedSwerveKinematics advancedKinematics;
-  private final ProfiledPIDController autoAimPIDControllerFront;
-  private final ProfiledPIDController autoAimPIDControllerBack;
-  private final MedianFilter xVelocityFilter;
-  private final MedianFilter yVelocityFilter;
-  private final PPHolonomicDriveController pathFollowerConfig;
-
-  public final NavX2 navx;
-  private final RAWRSwerveModule lFrontModule;
-  private final RAWRSwerveModule rFrontModule;
-  private final RAWRSwerveModule lRearModule;
-  private final RAWRSwerveModule rRearModule;
-
+  private final ProfiledPIDController AUTO_AIM_PID_CONTROLLER_FRONT;
+  private final ProfiledPIDController AUTO_AIM_PID_CONTROLLER_BACK;
+  private final MedianFilter X_VELOCITY_FILTER;
+  private final MedianFilter Y_VELOCITY_FILTER;
+  private final PPHolonomicDriveController PATH_FOLLOWER_CONFIG;
 
   private ControlCentricity controlCentricity;
   private ChassisSpeeds desiredChassisSpeeds;
   private boolean isTractionControlEnabled = true;
   private Pose2d m_previousPose;
   private Rotation2d currentHeading;
-  private final Field2d field;
-  
-    public final Command ANTI_TIP_COMMAND = new FunctionalCommand(
-      () -> LEDSubsystem.getInstance().startOverride(LEDPattern.solid(Color.kRed)),
-            this::antiTip,
-      (interrupted) -> {
-        resetRotatePID();
-        stop();
-        lock();
-        LEDSubsystem.getInstance().endOverride();
-      },
-      this::isBalanced,
-      this
-    );
+  private final Field2d FIELD;
 
-    /**
-   * DriveSubsystem constructor for managing a swerve drivetrain.
+
+
+  /**
+   * SwerveDriveSubsystem constructor for managing a swerve drivetrain.
    *
    * @param drivetrainHardware Hardware devices required by drivetrain.
    * @param pidf PID constants for the drive system.
@@ -121,57 +104,53 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
    * @param deadband Deadband for controller input [+0.001, +0.2].
    * @param lookAhead Rotate PID lookahead, in number of loops.
    */
-  public DriveSubsystem(Hardware drivetrainHardware, PIDConstants pidf, ControlCentricity controlCentricity,
-                        PolynomialSplineFunction throttleInputCurve, PolynomialSplineFunction turnInputCurve,
-                        Angle turnScalar, Dimensionless deadband, Time lookAhead) {
+  public SwerveDriveSubsystem(SwerveHardware drivetrainHardware, PIDConstants pidf, ControlCentricity controlCentricity,
+                              PolynomialSplineFunction throttleInputCurve, PolynomialSplineFunction turnInputCurve,
+                              Angle turnScalar, Dimensionless deadband, Time lookAhead) {
   
       // Initialize subsystem name
       setSubsystem(this.getClass().getSimpleName());
-  
-      // Drivetrain hardware setup
-      this.navx = drivetrainHardware.navx;
-      this.lFrontModule = drivetrainHardware.lFrontModule;
-      this.rFrontModule = drivetrainHardware.rFrontModule;
-      this.lRearModule = drivetrainHardware.lRearModule;
-      this.rRearModule = drivetrainHardware.rRearModule;
-  
+    
+      this.DRIVETRAIN_HARDWARE = drivetrainHardware;
+
       // Drivetrain constants
-      DRIVE_MAX_LINEAR_SPEED = drivetrainHardware.lFrontModule.getMaxLinearVelocity();
+      DRIVE_MAX_LINEAR_SPEED = DRIVETRAIN_HARDWARE.lFrontModule.getMaxLinearVelocity();
       DRIVE_AUTO_ACCELERATION = DRIVE_MAX_LINEAR_SPEED
           .per(Units.Second)
           .minus(Units.MetersPerSecondPerSecond.of(1.0));
   
       // Input curves and controllers
       this.controlCentricity = controlCentricity;
-      this.throttleMap = new ThrottleMap(throttleInputCurve, DRIVE_MAX_LINEAR_SPEED, deadband);
-      this.rotatePIDController = new RotatePIDController(turnInputCurve, pidf, turnScalar, deadband, lookAhead);
+      this.THROTTLE_MAP = new ThrottleMap(throttleInputCurve, DRIVE_MAX_LINEAR_SPEED, deadband);
+      this.ROTATE_PID_CONTROLLER = new RotatePIDController(turnInputCurve, pidf, turnScalar, deadband, lookAhead);
   
       // Path follower configuration
-      this.pathFollowerConfig = new PPHolonomicDriveController(
+      this.PATH_FOLLOWER_CONFIG = new PPHolonomicDriveController(
           new com.pathplanner.lib.config.PIDConstants(3.1, 0.0, 0.0),
           new com.pathplanner.lib.config.PIDConstants(5.0, 0.0, 0.1),
           DRIVE_MAX_LINEAR_SPEED.in(Units.MetersPerSecond)
       );
   
       // NavX calibration
-      while (navx.isCalibrating()) stop();
-      navx.reset();
+      while (DRIVETRAIN_HARDWARE.navx.isCalibrating()) DRIVETRAIN_HARDWARE.stop();
+
+      DRIVETRAIN_HARDWARE.navx.reset();
   
       // Swerve drive kinematics and pose estimator
-      kinematics = new SwerveDriveKinematics(
-          lFrontModule.getModuleCoordinate(),
-          rFrontModule.getModuleCoordinate(),
-          lRearModule.getModuleCoordinate(),
-          rRearModule.getModuleCoordinate()
+      KINEMATICS = new SwerveDriveKinematics(
+          DRIVETRAIN_HARDWARE.lFrontModule.getModuleCoordinate(),
+          DRIVETRAIN_HARDWARE.rFrontModule.getModuleCoordinate(),
+          DRIVETRAIN_HARDWARE.lRearModule.getModuleCoordinate(),
+          DRIVETRAIN_HARDWARE.rRearModule.getModuleCoordinate()
       );
   
-      advancedKinematics = new AdvancedSwerveKinematics(lFrontModule.getModuleCoordinate(),
-                                                        rFrontModule.getModuleCoordinate(),
-                                                        lRearModule.getModuleCoordinate(),
-                                                        rRearModule.getModuleCoordinate());
+      advancedKinematics = new AdvancedSwerveKinematics(DRIVETRAIN_HARDWARE.lFrontModule.getModuleCoordinate(),
+                                                        DRIVETRAIN_HARDWARE.rFrontModule.getModuleCoordinate(),
+                                                        DRIVETRAIN_HARDWARE.lRearModule.getModuleCoordinate(),
+                                                        DRIVETRAIN_HARDWARE.rRearModule.getModuleCoordinate());
 
-    poseEstimator = new SwerveDrivePoseEstimator(
-        kinematics,
+    POSE_ESTIMATOR = new SwerveDrivePoseEstimator(
+        KINEMATICS,
         getRotation2d(),
         getModulePositions(),
         new Pose2d(),
@@ -183,8 +162,8 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
     desiredChassisSpeeds = new ChassisSpeeds();
 
     // Field2d visualization
-    field = new Field2d();
-    SmartDashboard.putData(field);
+    FIELD = new Field2d();
+    SmartDashboard.putData(FIELD);
 
     // Path logging for PathPlanner
     PathPlannerLogging.setLogActivePathCallback((poses) -> {
@@ -193,17 +172,17 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
             poses,
             new TrajectoryConfig(DRIVE_MAX_LINEAR_SPEED, DRIVE_AUTO_ACCELERATION)
         );
-        field.getObject("currentPath").setTrajectory(trajectory);
+        FIELD.getObject("currentPath").setTrajectory(trajectory);
     });
 
-    this.autoAimPIDControllerFront = new ProfiledPIDController(10.0, 0.0, 0.5, new TrapezoidProfile.Constraints(2160.0, 4320.0), 0.02);
-    this.autoAimPIDControllerFront.enableContinuousInput(-180.0, +180.0);
-    this.autoAimPIDControllerFront.setTolerance(1.5);
-    this.autoAimPIDControllerBack = new ProfiledPIDController(10.0, 0.0, 0.5, new TrapezoidProfile.Constraints(2160.0, 4320.0), 0.02);
-    this.autoAimPIDControllerBack.enableContinuousInput(-180.0, +180.0);
-    this.autoAimPIDControllerBack.setTolerance(1.5);
-    this.xVelocityFilter = new MedianFilter(100);
-    this.yVelocityFilter = new MedianFilter(100);
+    this.AUTO_AIM_PID_CONTROLLER_FRONT = new ProfiledPIDController(10.0, 0.0, 0.5, new TrapezoidProfile.Constraints(2160.0, 4320.0), 0.02);
+    this.AUTO_AIM_PID_CONTROLLER_FRONT.enableContinuousInput(-180.0, +180.0);
+    this.AUTO_AIM_PID_CONTROLLER_FRONT.setTolerance(1.5);
+    this.AUTO_AIM_PID_CONTROLLER_BACK = new ProfiledPIDController(10.0, 0.0, 0.5, new TrapezoidProfile.Constraints(2160.0, 4320.0), 0.02);
+    this.AUTO_AIM_PID_CONTROLLER_BACK.enableContinuousInput(-180.0, +180.0);
+    this.AUTO_AIM_PID_CONTROLLER_BACK.setTolerance(1.5);
+    this.X_VELOCITY_FILTER = new MedianFilter(100);
+    this.Y_VELOCITY_FILTER = new MedianFilter(100);
 }
 
 /**
@@ -211,8 +190,8 @@ public class DriveSubsystem extends SubsystemBase implements AutoCloseable {
  * 
  * @return A Hardware object containing all necessary devices for this subsystem
  */
-public static Hardware initializeHardware() {
-  NavX2 navx = new NavX2(Constants.DriveHardwareConstants.NAVX_ID);
+public static SwerveHardware initializeHardware() {
+  FunnyNavX2 navx = new FunnyNavX2(Constants.DriveHardwareConstants.NAVX_ID);
 
   RAWRSwerveModule lFrontModule = RAWRSwerveModule.createSwerve(
           Constants.DriveHardwareConstants.LEFT_FRONT_DRIVE_MOTOR_ID,
@@ -234,7 +213,7 @@ public static Hardware initializeHardware() {
           Constants.DriveHardwareConstants.RIGHT_REAR_ROTATE_MOTOR_ID,
           SwerveModule.Location.RightRear);
 
-    return new Hardware(navx, lFrontModule, rFrontModule, lRearModule, rRearModule);
+    return new SwerveHardware(navx, lFrontModule, rFrontModule, lRearModule, rRearModule);
 }
 
   /**
@@ -242,10 +221,10 @@ public static Hardware initializeHardware() {
    * @param moduleStates Array of calculated module states
    */
   private void setSwerveModules(SwerveModuleState[] moduleStates) {
-    lFrontModule.set(moduleStates);
-    rFrontModule.set(moduleStates);
-    lRearModule.set(moduleStates);
-    rRearModule.set(moduleStates);
+    DRIVETRAIN_HARDWARE.lFrontModule.set(moduleStates);
+    DRIVETRAIN_HARDWARE.rFrontModule.set(moduleStates);
+    DRIVETRAIN_HARDWARE.lRearModule.set(moduleStates);
+    DRIVETRAIN_HARDWARE.rRearModule.set(moduleStates);
     Logger.recordOutput(getName() + Constants.DriveConstants.DESIRED_SWERVE_STATE_LOG_ENTRY, moduleStates);
   }
 
@@ -257,7 +236,6 @@ public static Hardware initializeHardware() {
    * @param rotateRequest    Desired rotate rate
    * @param controlCentricity Control centricity 
    * @param inertialVelocity Current robot inertial velocity (null if traction control is disabled)
-   * @param applyTractionControl Whether to apply traction control
    */
   private void drive(LinearVelocity xRequest,
                     LinearVelocity yRequest,
@@ -266,7 +244,7 @@ public static Hardware initializeHardware() {
                     LinearVelocity inertialVelocity) {
 
       if (controlCentricity == null){
-        controlCentricity = ControlCentricity.ROBOT_CENTRIC;
+        controlCentricity = ControlCentricity.FIELD_CENTRIC;
       }
       
       // Get requested chassis speeds, correcting for second order kinematics
@@ -277,7 +255,7 @@ public static Hardware initializeHardware() {
       // Convert speeds to module states, correcting for 2nd order kinematics
       SwerveModuleState[] moduleStates = advancedKinematics.toSwerveModuleStates(
           desiredChassisSpeeds,
-          getPose().getRotation(),
+          getRotation2d(),
           controlCentricity
       );
 
@@ -294,10 +272,10 @@ public static Hardware initializeHardware() {
    */
   private SwerveModuleState[] getModuleStates() {
      return new SwerveModuleState[] {
-      lFrontModule.getState(),
-      rFrontModule.getState(),
-      lRearModule.getState(),
-      rRearModule.getState()
+      DRIVETRAIN_HARDWARE.lFrontModule.getState(),
+      DRIVETRAIN_HARDWARE.rFrontModule.getState(),
+      DRIVETRAIN_HARDWARE.lRearModule.getState(),
+      DRIVETRAIN_HARDWARE.rRearModule.getState()
     };
   }
 
@@ -307,10 +285,10 @@ public static Hardware initializeHardware() {
    */
   private SwerveModulePosition[] getModulePositions() {
     return new SwerveModulePosition[] {
-      lFrontModule.getPosition(),
-      rFrontModule.getPosition(),
-      lRearModule.getPosition(),
-      rRearModule.getPosition()
+      DRIVETRAIN_HARDWARE.lFrontModule.getPosition(),
+      DRIVETRAIN_HARDWARE.rFrontModule.getPosition(),
+      DRIVETRAIN_HARDWARE.lRearModule.getPosition(),
+      DRIVETRAIN_HARDWARE.rRearModule.getPosition()
     };
   }
 
@@ -322,14 +300,14 @@ public static Hardware initializeHardware() {
     m_previousPose = getPose();
 
     // Update pose based on odometry
-    poseEstimator.update(getRotation2d(), getModulePositions());
+    POSE_ESTIMATOR.update(getRotation2d(), getModulePositions());
 
     // Update current heading
     currentHeading = new Rotation2d(getPose().getX() - m_previousPose.getX(), getPose().getY() - m_previousPose.getY());
   }
 
   /**
-   * Log DriveSubsystem outputs
+   * Log SwerveDriveSubsystem outputs
    */
   private void logOutputs() {
     Logger.recordOutput(getName() + Constants.DriveConstants.POSE_LOG_ENTRY, getPose());
@@ -340,8 +318,7 @@ public static Hardware initializeHardware() {
    * SmartDashboard indicators
    */
   private void smartDashboard() {
-    field.setRobotPose(getPose());
-    SmartDashboard.putBoolean("TC", isTractionControlEnabled);
+    FIELD.setRobotPose(getPose());
     SmartDashboard.putBoolean("FC", controlCentricity.equals(ControlCentricity.FIELD_CENTRIC));
   }
 
@@ -373,11 +350,11 @@ public static Hardware initializeHardware() {
     // Calculate desired robot velocity
     double moveRequest = Math.hypot(xRequest, yRequest);
     double moveDirection = Math.atan2(yRequest, xRequest);
-    LinearVelocity velocityOutput = throttleMap.throttleLookup(moveRequest);
+    LinearVelocity velocityOutput = THROTTLE_MAP.throttleLookup(moveRequest);
 
     // Drive normally and return if invalid point
     if (point == null) {
-      AngularVelocity rotateOutput = rotatePIDController.calculate(getAngle(), getRotateRate(), rotateRequest).unaryMinus();
+      AngularVelocity rotateOutput = ROTATE_PID_CONTROLLER.calculate(getAngle(), getRotateRate(), rotateRequest).unaryMinus();
       drive(
         velocityOutput.unaryMinus().times(Math.cos(moveDirection)),
         velocityOutput.unaryMinus().times(Math.sin(moveDirection)),
@@ -410,8 +387,8 @@ public static Hardware initializeHardware() {
     Rotation2d adjustedAngle = new Rotation2d(adjustedPoint.getX() - currentPose.getX(), adjustedPoint.getY() - currentPose.getY());
     // Calculate necessary rotate rate
     double rotateOutput = reversed
-      ? autoAimPIDControllerBack.calculate(currentPose.getRotation().plus(Rotation2d.fromRadians(Math.PI)).getDegrees(), adjustedAngle.getDegrees())
-      : autoAimPIDControllerFront.calculate(currentPose.getRotation().getDegrees(), adjustedAngle.getDegrees());
+      ? AUTO_AIM_PID_CONTROLLER_BACK.calculate(currentPose.getRotation().plus(Rotation2d.fromRadians(Math.PI)).getDegrees(), adjustedAngle.getDegrees())
+      : AUTO_AIM_PID_CONTROLLER_FRONT.calculate(currentPose.getRotation().getDegrees(), adjustedAngle.getDegrees());
 
     // Log aim point
     Logger.recordOutput(getName() + "/AimPoint", new Pose2d(aimPoint, new Rotation2d()));
@@ -437,7 +414,7 @@ public static Hardware initializeHardware() {
             this::resetPose,
             this::getChassisSpeeds,
             (speeds, feedforwards) -> autoDrive(speeds),
-            pathFollowerConfig,
+            PATH_FOLLOWER_CONFIG,
             RobotUtils.robotConfig,
             () -> {
               var alliance = DriverStation.getAlliance();
@@ -462,8 +439,8 @@ public static Hardware initializeHardware() {
     double moveDirection = Math.atan2(yRequest, xRequest);
 
     // Get throttle and rotate output
-    LinearVelocity velocityOutput = throttleMap.throttleLookup(moveRequest);
-    AngularVelocity rotateOutput = rotatePIDController.calculate(getAngle(), getRotateRate(), rotateRequest).unaryMinus();
+    LinearVelocity velocityOutput = THROTTLE_MAP.throttleLookup(moveRequest);
+    AngularVelocity rotateOutput = ROTATE_PID_CONTROLLER.calculate(getAngle(), getRotateRate(), rotateRequest).unaryMinus();
 
     // Drive robot
     drive(
@@ -476,64 +453,11 @@ public static Hardware initializeHardware() {
   }
 
   /**
-   * Lock swerve modules
-   */
-  private void lock() {
-    lFrontModule.lock();
-    rFrontModule.lock();
-    lRearModule.lock();
-    rRearModule.lock();
-  }
-
-  /**
-   * Stop robot
-   */
-  private void stop() {
-    lFrontModule.stop();
-    rFrontModule.stop();
-    lRearModule.stop();
-    rRearModule.stop();
-  }
-
-  /**
-   * Toggle traction control
-   */
-  private void toggleTractionControl() {
-    isTractionControlEnabled = !isTractionControlEnabled;
-    lFrontModule.toggleTractionControl();
-    rFrontModule.toggleTractionControl();
-    lRearModule.toggleTractionControl();
-    rRearModule.toggleTractionControl();
-  }
-
-  /**
-   * Enable traction control
-   */
-  private void enableTractionControl() {
-    isTractionControlEnabled = true;
-    lFrontModule.enableTractionControl();
-    rFrontModule.enableTractionControl();
-    lRearModule.enableTractionControl();
-    rRearModule.enableTractionControl();
-  }
-
-  /**
-   * Disable traction control
-   */
-  private void disableTractionControl() {
-    isTractionControlEnabled = false;
-    lFrontModule.disableTractionControl();
-    rFrontModule.disableTractionControl();
-    lRearModule.disableTractionControl();
-    rRearModule.disableTractionControl();
-  }
-
-  /**
    * Reset pose estimator
    * @param pose Pose to set robot to
    */
   private void resetPose(Pose2d pose) {
-    poseEstimator.resetPosition(
+    POSE_ESTIMATOR.resetPosition(
       getRotation2d(),
       getModulePositions(),
       pose
@@ -543,13 +467,19 @@ public static Hardware initializeHardware() {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
+    DRIVETRAIN_HARDWARE.navx.updateInputs();
+
+
     // Filter inertial velocity
-    navx.getInputs().velocityX = (Units.MetersPerSecond.of(
-      xVelocityFilter.calculate(navx.getInputs().velocityX.in(Units.MetersPerSecond))
+    DRIVETRAIN_HARDWARE.navx.getInputs().velocityX = (Units.MetersPerSecond.of(
+      X_VELOCITY_FILTER.calculate(DRIVETRAIN_HARDWARE.navx.getInputs().velocityX.in(Units.MetersPerSecond))
     )).mutableCopy();
-    navx.getInputs().velocityY = (Units.MetersPerSecond.of(
-      yVelocityFilter.calculate(navx.getInputs().velocityY.in(Units.MetersPerSecond))
+    DRIVETRAIN_HARDWARE.navx.getInputs().velocityY = (Units.MetersPerSecond.of(
+      Y_VELOCITY_FILTER.calculate(DRIVETRAIN_HARDWARE.navx.getInputs().velocityY.in(Units.MetersPerSecond))
+
     )).mutableCopy();
+
+    
 
     updatePose();
     smartDashboard();
@@ -575,7 +505,7 @@ public static Hardware initializeHardware() {
     // Convert speeds to module states, correcting for 2nd order kinematics
     SwerveModuleState[] moduleStates = advancedKinematics.toSwerveModuleStates(
             desiredChassisSpeeds,
-      getPose().getRotation(),
+      getRotation2d(),
       ControlCentricity.ROBOT_CENTRIC
     );
 
@@ -586,16 +516,16 @@ public static Hardware initializeHardware() {
     setSwerveModules(moduleStates);
 
     // Update turn PID
-    rotatePIDController.calculate(getAngle(), getRotateRate(), 0.0);
+    ROTATE_PID_CONTROLLER.calculate(getAngle(), getRotateRate(), 0.0);
 
     // Update auto-aim controllers
-    autoAimPIDControllerFront.calculate(
-      getPose().getRotation().getDegrees(),
-      getPose().getRotation().getDegrees()
+    AUTO_AIM_PID_CONTROLLER_FRONT.calculate(
+      getRotation2d().getDegrees(),
+      getRotation2d().getDegrees()
     );
-    autoAimPIDControllerBack.calculate(
-      getPose().getRotation().plus(Rotation2d.fromRadians(Math.PI)).getDegrees(),
-      getPose().getRotation().plus(Rotation2d.fromRadians(Math.PI)).getDegrees()
+    AUTO_AIM_PID_CONTROLLER_BACK.calculate(
+      getRotation2d().plus(Rotation2d.fromRadians(Math.PI)).getDegrees(),
+      getRotation2d().plus(Rotation2d.fromRadians(Math.PI)).getDegrees()
     );
   }
 
@@ -674,20 +604,12 @@ public static Hardware initializeHardware() {
   }
 
   /**
-   * Lock swerve modules
-   * @return Command to lock swerve modules
-   */
-  public Command lockCommand() {
-    return runOnce(this::lock);
-  }
-
-  /**
    * Stop robot
    * @return Command to stop robot
    */
   public Command stopCommand() {
     return runOnce(() -> {
-      stop();
+      DRIVETRAIN_HARDWARE.stop();
       resetRotatePID();
     });
   }
@@ -697,8 +619,7 @@ public static Hardware initializeHardware() {
    * @return Command to toggle traction control
    */
   public Command toggleTractionControlCommand() {
-    return runOnce(this::toggleTractionControl);
-  }
+    return runOnce(() -> DRIVETRAIN_HARDWARE.toggleTractionControl());  }
 
   /**
    * Toggles between field and robot oriented drive control
@@ -713,16 +634,14 @@ public static Hardware initializeHardware() {
    * @return Command to enable traction control
    */
   public Command enableTractionControlCommand() {
-    return runOnce(this::enableTractionControl);
-  }
+    return runOnce(() -> DRIVETRAIN_HARDWARE.enableTractionControl());  }
 
   /**
    * Disable traction control
    * @return Command to disable traction control
    */
   public Command disableTractionControlCommand() {
-    return runOnce(this::disableTractionControl);
-  }
+    return runOnce(() -> DRIVETRAIN_HARDWARE.disableTractionControl());  }
 
   /**
    * Reset pose estimator
@@ -754,11 +673,11 @@ public static Hardware initializeHardware() {
   }
 
   /**
-   * Reset DriveSubsystem turn PID
+   * Reset SwerveDriveSubsystem turn PID
    */
   public void resetRotatePID() {
-    rotatePIDController.setSetpoint(getAngle());
-    rotatePIDController.reset();
+    ROTATE_PID_CONTROLLER.setSetpoint(getAngle());
+    ROTATE_PID_CONTROLLER.reset();
   }
 
     /**
@@ -779,7 +698,7 @@ public static Hardware initializeHardware() {
    * @return Robot relative speeds
    */
   public ChassisSpeeds getChassisSpeeds() {
-    return kinematics.toChassisSpeeds(getModuleStates());
+    return KINEMATICS.toChassisSpeeds(getModuleStates());
   }
 
   /**
@@ -787,7 +706,7 @@ public static Hardware initializeHardware() {
    * @return Currently estimated robot pose
    */
   public Pose2d getPose() {
-    return poseEstimator.getEstimatedPosition();
+    return POSE_ESTIMATOR.getEstimatedPosition();
   }
 
   /**
@@ -813,7 +732,7 @@ public static Hardware initializeHardware() {
    * @return True if aimed
    */
   public boolean isAimed() {
-    return (autoAimPIDControllerFront.atGoal() || autoAimPIDControllerBack.atGoal()) && getRotateRate().lt(Constants.DriveConstants.AIM_VELOCITY_THRESHOLD);
+    return (AUTO_AIM_PID_CONTROLLER_FRONT.atGoal() || AUTO_AIM_PID_CONTROLLER_BACK.atGoal()) && getRotateRate().lt(Constants.DriveConstants.AIM_VELOCITY_THRESHOLD);
   }
 
   /**
@@ -822,7 +741,7 @@ public static Hardware initializeHardware() {
    */
   public LinearVelocity getInertialVelocity() {
     return Units.MetersPerSecond.of(
-      Math.hypot(navx.getInputs().velocityX.in(Units.MetersPerSecond), navx.getInputs().velocityY.in(Units.MetersPerSecond))
+      Math.hypot(DRIVETRAIN_HARDWARE.navx.getInputs().velocityX.in(Units.MetersPerSecond), DRIVETRAIN_HARDWARE.navx.getInputs().velocityY.in(Units.MetersPerSecond))
     );
   }
 
@@ -832,7 +751,7 @@ public static Hardware initializeHardware() {
    */
   public Angle getPitch() {
     // Robot pitch axis is navX pitch axis
-    return navx.getInputs().pitchAngle;
+    return DRIVETRAIN_HARDWARE.navx.getInputs().pitchAngle;
   }
 
   /**
@@ -841,7 +760,7 @@ public static Hardware initializeHardware() {
    */
   public Angle getRoll() {
     // Robot roll axis is navX roll axis
-    return navx.getInputs().rollAngle;
+    return DRIVETRAIN_HARDWARE.navx.getInputs().rollAngle;
   }
 
   /**
@@ -849,7 +768,9 @@ public static Hardware initializeHardware() {
    * @return Current heading of the robot in degrees
    */
   public Angle getAngle() {
-    return navx.getInputs().yawAngle;
+    //System.out.println("NAVX ANGLE: " + DRIVETRAIN_HARDWARE.navx.getYaw().magnitude());
+
+    return DRIVETRAIN_HARDWARE.navx.getYaw();
   }
 
   /**
@@ -857,7 +778,7 @@ public static Hardware initializeHardware() {
    * @return Current rotate rate of robot
    */
   public AngularVelocity getRotateRate() {
-    return navx.getInputs().yawRate;
+    return DRIVETRAIN_HARDWARE.navx.getInputs().yawRate;
   }
 
   /**
@@ -869,15 +790,17 @@ public static Hardware initializeHardware() {
    * @return Current heading of the robot as a Rotation2d.
    */
   public Rotation2d getRotation2d() {
-    return navx.getInputs().rotation2d;
+    return DRIVETRAIN_HARDWARE.navx.getInputs().rotation2d;
+
   }
 
   @Override
   public void close() {
-    navx.close();
-    lFrontModule.close();
-    rFrontModule.close();
-    lRearModule.close();
-    rRearModule.close();
+    DRIVETRAIN_HARDWARE.navx.close();
+    DRIVETRAIN_HARDWARE.lFrontModule.close();
+    DRIVETRAIN_HARDWARE.rFrontModule.close();
+    DRIVETRAIN_HARDWARE.lRearModule.close();
+    DRIVETRAIN_HARDWARE.rRearModule.close();
+
   }
 }

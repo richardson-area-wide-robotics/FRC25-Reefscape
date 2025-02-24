@@ -5,7 +5,6 @@
 package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -21,8 +20,10 @@ import frc.robot.Constants.HIDConstants;
 import frc.robot.common.components.RobotUtils;
 import frc.robot.common.annotations.Robot;
 import frc.robot.common.interfaces.IRobotContainer;
-import frc.robot.common.subsystems.drive.DriveSubsystem;
-import frc.robot.common.subsystems.shooter.KitBotShooter;
+import frc.robot.common.subsystems.DeepClimbSubsystem;
+import frc.robot.common.subsystems.ElevatorSubsystem;
+import frc.robot.common.subsystems.ScoringSubsystem;
+import frc.robot.common.subsystems.drive.SwerveDriveSubsystem;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -31,8 +32,8 @@ import lombok.NoArgsConstructor;
 @Robot(team = 1745) //Note: This class is also the defualt so it will be loaded on 8874
 public class RobotContainer implements IRobotContainer {
 
-  public static final DriveSubsystem DRIVE_SUBSYSTEM = new DriveSubsystem(
-      DriveSubsystem.initializeHardware(),
+  public static final SwerveDriveSubsystem DRIVE_SUBSYSTEM = new SwerveDriveSubsystem(
+      SwerveDriveSubsystem.initializeHardware(),
       Constants.DriveConstants.DRIVE_ROTATE_PID,
       Constants.DriveConstants.DRIVE_CONTROL_CENTRICITY,
       Constants.DriveConstants.DRIVE_THROTTLE_INPUT_CURVE,
@@ -41,12 +42,18 @@ public class RobotContainer implements IRobotContainer {
       Dimensionless.ofRelativeUnits(Constants.HIDConstants.CONTROLLER_DEADBAND, Units.Value),
       Time.ofRelativeUnits(Constants.DriveConstants.DRIVE_LOOKAHEAD, Units.Second));
 
-  public static final KitBotShooter KIT_BOT_SHOOTER = new KitBotShooter(9);
+  public static final ElevatorSubsystem ELEVATOR_SUBSYSTEM = new ElevatorSubsystem(9);
+  public static final DeepClimbSubsystem DEEP_CLIMB_SUBSYSTEM = new DeepClimbSubsystem(13, 14);
+  public static final ScoringSubsystem SCORING_SUBSYSTEM = new ScoringSubsystem(15, 16);
 
-  private static SendableChooser<Command> automodeChooser = null; 
+
+
+
+  private static SendableChooser<Command> automodeChooser; 
 
   public static RobotContainer createContainer(){
         // Set drive command
+        // LeftY is the xRequest and LeftX is the yRequest for some reason
         DRIVE_SUBSYSTEM.setDefaultCommand(
           DRIVE_SUBSYSTEM.driveCommand(
             HIDConstants.PRIMARY_CONTROLLER::getLeftY,
@@ -55,7 +62,6 @@ public class RobotContainer implements IRobotContainer {
   
       // Register named commands
       registerNamedCommands();
-  
   
       // Bind buttons and triggers
       configureBindings();
@@ -74,7 +80,6 @@ public class RobotContainer implements IRobotContainer {
   }
 
   private static void registerNamedCommands() {
-    NamedCommands.registerCommand("Outtake", Commands.deadline(Commands.waitSeconds(1), KIT_BOT_SHOOTER.setSpeedCommand(1)).andThen(KIT_BOT_SHOOTER.stopMotorCommand()));
   }
 
   private static void initializeAutos() {
@@ -91,13 +96,38 @@ public class RobotContainer implements IRobotContainer {
     RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.povLeft(), DRIVE_SUBSYSTEM.resetPoseCommand(Pose2d::new), Commands.none());
 
     // Right Stick Button - Reset heading
-    RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.rightStick(), Commands.runOnce(DRIVE_SUBSYSTEM.navx::reset, DRIVE_SUBSYSTEM), Commands.none());
+    RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.rightStick(), Commands.runOnce(DRIVE_SUBSYSTEM.DRIVETRAIN_HARDWARE.navx::reset, DRIVE_SUBSYSTEM), Commands.none());
 
-    // Right Trigger - Outtake
-    RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.rightTrigger(), KIT_BOT_SHOOTER.setSpeedCommand(1), KIT_BOT_SHOOTER.stopMotorCommand());
+    // X - Toggle centricity
+    RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.x(), DRIVE_SUBSYSTEM.toggleCentricityCommand(), Commands.none());
 
-    // Right POV - Toggle centricity
-    RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.povRight(), DRIVE_SUBSYSTEM.toggleCentricityCommand(), Commands.none());
+    // Right Trigger - Up
+    RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.rightTrigger(), ELEVATOR_SUBSYSTEM.up(), ELEVATOR_SUBSYSTEM.stop());
+
+    // Left Trigger - Down
+    RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.leftTrigger(), ELEVATOR_SUBSYSTEM.down(), ELEVATOR_SUBSYSTEM.stop());
+
+    // POV Down - Move Climber out
+    RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.povDown(), DEEP_CLIMB_SUBSYSTEM.out(), DEEP_CLIMB_SUBSYSTEM.stop());
+  
+    // POV Up - Move Climber in
+    RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.povUp(), DEEP_CLIMB_SUBSYSTEM.in(), DEEP_CLIMB_SUBSYSTEM.stop());
+
+    // POV Right - Move Drawbridge up
+    RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.povRight(), SCORING_SUBSYSTEM.drawBridgeUp(), SCORING_SUBSYSTEM.drawBridgeStop());
+
+    // POV Left - Move Drawbridge down
+    RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.povLeft(), SCORING_SUBSYSTEM.drawBridgeDown(), SCORING_SUBSYSTEM.drawBridgeStop());
+
+    // A - Shoot
+    RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.a(), SCORING_SUBSYSTEM.outtake(), SCORING_SUBSYSTEM.outtakeStop());
+    
+    // Y - Go two bottom
+    RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.y(), ELEVATOR_SUBSYSTEM.goToBottom(), SCORING_SUBSYSTEM.outtakeStop());
+
+    RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.leftBumper(), SCORING_SUBSYSTEM.intake(), SCORING_SUBSYSTEM.outtakeStop());
+
+
   }
 
 

@@ -1,9 +1,13 @@
 package frc.robot.common.components;
 
 import com.pathplanner.lib.config.RobotConfig;
+import com.revrobotics.RelativeEncoder;
+import com.revrobotics.spark.SparkBase;
+import com.revrobotics.spark.SparkFlex;
 
 import edu.wpi.first.hal.HALUtil;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import lombok.experimental.UtilityClass;
 
@@ -52,4 +56,44 @@ public class RobotUtils  {
         throw new RuntimeException("Failed to load robot config from GUI settings");
       }
   }
+
+
+  /**
+   * Run a command for a given amount of time
+   * 
+   * @param seconds The amount of time to run commandDuring for, in seconds
+   * @param commandDuring The command ran
+   * @param commandAfter The command ran after the time has passed (Ex: Stop motor)
+   * 
+   *
+   * @author Alan Trinh
+   * @since 2025
+   */
+  public static Command timedCommand(double seconds, Command commandDuring, Command commandAfter){
+    return Commands.deadline(Commands.waitSeconds(seconds), commandDuring).andThen(commandAfter);
+  }
+
+
+   /**
+   * Move a motor to a relative positon 
+
+   * @author Hudson Strub
+   * @since 2025
+   */
+  public Command moveToPosition(SparkFlex motor, double targetPosition, double tolerance) {
+    RelativeEncoder encoder = motor.getEncoder();
+
+    return Commands.run(() -> {
+        double currentPosition = encoder.getPosition();
+        double error = targetPosition - currentPosition;
+        double speed = Math.copySign(0.3, error); // Move up or down based on the error
+        
+        if (Math.abs(error) > tolerance) {
+            motor.set(speed);
+        } else {
+            motor.set(0.0);
+        }
+    }).until(() -> Math.abs(encoder.getPosition() - targetPosition) < tolerance);
+}
+
 }
