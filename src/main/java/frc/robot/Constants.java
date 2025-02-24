@@ -8,7 +8,6 @@ import org.apache.commons.math3.analysis.interpolation.SplineInterpolator;
 import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
 import org.lasarobotics.drive.swerve.AdvancedSwerveKinematics.ControlCentricity;
 import org.lasarobotics.drive.swerve.child.MAXSwerveModule;
-import org.lasarobotics.hardware.kauailabs.NavX2;
 import org.lasarobotics.hardware.revrobotics.Spark;
 import org.lasarobotics.utils.PIDConstants;
 
@@ -22,7 +21,7 @@ import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.common.swerve.FunnyNavX2;
+import frc.robot.common.swerve.RAWRNavX2;
 
 
 /**
@@ -130,7 +129,7 @@ public final class Constants {
    * @since 2024
    */
   public static class DriveHardwareConstants {
-    public static final FunnyNavX2.ID NAVX_ID = new FunnyNavX2.ID("DriveHardware/NavX2");
+    public static final RAWRNavX2.ID NAVX_ID = new RAWRNavX2.ID("DriveHardware/NavX2");
 
     public static final Spark.ID LEFT_FRONT_DRIVE_MOTOR_ID = new Spark.ID("DriveHardware/Swerve/LeftFront/Drive", 5);
     public static final Spark.ID LEFT_FRONT_ROTATE_MOTOR_ID = new Spark.ID("DriveHardware/Swerve/LeftFront/Rotate", 6);
