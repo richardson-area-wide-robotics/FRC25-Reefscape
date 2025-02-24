@@ -50,6 +50,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.common.components.RobotUtils;
+import frc.robot.common.swerve.FunnyNavX2;
 import frc.robot.common.swerve.RAWRSwerveModule;
 import frc.robot.common.components.SwerveHardware;
 
@@ -190,7 +191,7 @@ public class SwerveDriveSubsystem extends SubsystemBase implements AutoCloseable
  * @return A Hardware object containing all necessary devices for this subsystem
  */
 public static SwerveHardware initializeHardware() {
-  NavX2 navx = new NavX2(Constants.DriveHardwareConstants.NAVX_ID);
+  FunnyNavX2 navx = new FunnyNavX2(Constants.DriveHardwareConstants.NAVX_ID);
 
   RAWRSwerveModule lFrontModule = RAWRSwerveModule.createSwerve(
           Constants.DriveHardwareConstants.LEFT_FRONT_DRIVE_MOTOR_ID,
