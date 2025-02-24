@@ -467,6 +467,9 @@ public static SwerveHardware initializeHardware() {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
+    DRIVETRAIN_HARDWARE.navx.updateInputs();
+
+
     // Filter inertial velocity
     DRIVETRAIN_HARDWARE.navx.getInputs().velocityX = (Units.MetersPerSecond.of(
       X_VELOCITY_FILTER.calculate(DRIVETRAIN_HARDWARE.navx.getInputs().velocityX.in(Units.MetersPerSecond))
@@ -475,6 +478,8 @@ public static SwerveHardware initializeHardware() {
       Y_VELOCITY_FILTER.calculate(DRIVETRAIN_HARDWARE.navx.getInputs().velocityY.in(Units.MetersPerSecond))
 
     )).mutableCopy();
+
+    
 
     updatePose();
     smartDashboard();
