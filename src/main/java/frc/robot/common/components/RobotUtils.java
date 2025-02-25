@@ -3,6 +3,7 @@ package frc.robot.common.components;
 import com.pathplanner.lib.config.RobotConfig;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkBase;
+import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkFlex;
 
 import edu.wpi.first.hal.HALUtil;
@@ -80,20 +81,10 @@ public class RobotUtils  {
    * @author Hudson Strub
    * @since 2025
    */
-  public Command moveToPosition(SparkFlex motor, double targetPosition, double tolerance) {
-    RelativeEncoder encoder = motor.getEncoder();
+  public void moveToPosition(SparkFlex motor, double targetPosition) {
 
-    return Commands.run(() -> {
-        double currentPosition = encoder.getPosition();
-        double error = targetPosition - currentPosition;
-        double speed = Math.copySign(0.3, error); // Move up or down based on the error
-        
-        if (Math.abs(error) > tolerance) {
-            motor.set(speed);
-        } else {
-            motor.set(0.0);
-        }
-    }).until(() -> Math.abs(encoder.getPosition() - targetPosition) < tolerance);
+    // Set the target position using the built-in PID controller
+    motor.getClosedLoopController().setReference(targetPosition, ControlType.kPosition);
 }
 
 }
