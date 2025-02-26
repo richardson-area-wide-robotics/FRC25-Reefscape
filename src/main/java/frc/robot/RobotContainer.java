@@ -5,6 +5,7 @@
 package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -80,12 +81,12 @@ public class RobotContainer implements IRobotContainer {
   }
 
   private static void registerNamedCommands() {
+    NamedCommands.registerCommand("Outtake", RobotUtils.timedCommand(1, SCORING_SUBSYSTEM.outtake(), SCORING_SUBSYSTEM.outtakeStop()));
+    NamedCommands.registerCommand("Elevator L3", RobotUtils.timedCommand(2, ELEVATOR_SUBSYSTEM.up(), ELEVATOR_SUBSYSTEM.stop()));
   }
 
   private static void initializeAutos() {
     PathPlannerAuto leaveAuto = new PathPlannerAuto("Leave");
-    //PathPlannerAuto preLoad1 = new PathPlannerAuto("Preload + 1");
-    //PathPlannerAuto preLoad3 = new PathPlannerAuto("Preload + 1");
   }
 
   private static void configureBindings() {
@@ -122,13 +123,14 @@ public class RobotContainer implements IRobotContainer {
     // A - Shoot
     RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.a(), SCORING_SUBSYSTEM.outtake(), SCORING_SUBSYSTEM.outtakeStop());
     
-    // Y - Go two bottom
-    RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.y(), ELEVATOR_SUBSYSTEM.goToBottom(), SCORING_SUBSYSTEM.outtakeStop());
-
-    RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.rightBumper(), ELEVATOR_SUBSYSTEM.goLevelTwo(), SCORING_SUBSYSTEM.outtakeStop());
-
-
     RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.leftBumper(), SCORING_SUBSYSTEM.intake(), SCORING_SUBSYSTEM.outtakeStop());
+
+
+    RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.y(), ELEVATOR_SUBSYSTEM.goLevelOne(), ELEVATOR_SUBSYSTEM.stop());
+    RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.x(), ELEVATOR_SUBSYSTEM.goLevelTwo(), ELEVATOR_SUBSYSTEM.stop());
+    RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.a(), ELEVATOR_SUBSYSTEM.goLevelThree(), ELEVATOR_SUBSYSTEM.stop());
+    RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.b(), ELEVATOR_SUBSYSTEM.goToBottom(), ELEVATOR_SUBSYSTEM.stop());
+
 
 
   }

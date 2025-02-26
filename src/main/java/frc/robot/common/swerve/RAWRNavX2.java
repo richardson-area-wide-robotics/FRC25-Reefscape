@@ -38,7 +38,7 @@ import edu.wpi.first.wpilibj.simulation.SimDeviceSim;
 
 /** NavX2 */
 @SuppressWarnings("unused")
-public class FunnyNavX2 extends LoggableHardware implements IMU {
+public class RAWRNavX2 extends LoggableHardware implements IMU {
   /** NavX2 ID */
   public static class ID {
     public final String name;
@@ -93,7 +93,7 @@ public class FunnyNavX2 extends LoggableHardware implements IMU {
    * Create a NavX2 object with built-in logging
    * @param id NavX2 ID
    */
-  public FunnyNavX2(ID id) {
+  public RAWRNavX2(ID id) {
     this.m_name = id.name;
     this.m_navx = new AHRS(NavXComType.kMXP_SPI, NavXUpdateRate.k200Hz);
     this.m_inputs = new NavX2InputsAutoLogged();
