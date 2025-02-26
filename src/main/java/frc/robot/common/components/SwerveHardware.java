@@ -1,13 +1,13 @@
 package frc.robot.common.components;
 
 
-import frc.robot.common.swerve.FunnyNavX2;
+import frc.robot.common.swerve.RAWRNavX2;
 import frc.robot.common.swerve.RAWRSwerveModule;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
 public class SwerveHardware {
-    public final FunnyNavX2 navx;
+    public final RAWRNavX2 navx;
     public final RAWRSwerveModule lFrontModule;
     public final RAWRSwerveModule rFrontModule;
     public final RAWRSwerveModule lRearModule;
