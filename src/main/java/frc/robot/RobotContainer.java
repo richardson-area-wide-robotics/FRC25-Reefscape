@@ -123,10 +123,14 @@ public class RobotContainer implements IRobotContainer {
     // A - Shoot
     RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.a(), SCORING_SUBSYSTEM.outtake(), SCORING_SUBSYSTEM.outtakeStop());
     
-    // Y - Go two bottom
-    RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.y(), ELEVATOR_SUBSYSTEM.goToBottom(), SCORING_SUBSYSTEM.outtakeStop());
-
     RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.leftBumper(), SCORING_SUBSYSTEM.intake(), SCORING_SUBSYSTEM.outtakeStop());
+
+
+    RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.y(), ELEVATOR_SUBSYSTEM.goLevelOne(), ELEVATOR_SUBSYSTEM.stop());
+    RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.x(), ELEVATOR_SUBSYSTEM.goLevelTwo(), ELEVATOR_SUBSYSTEM.stop());
+    RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.a(), ELEVATOR_SUBSYSTEM.goLevelThree(), ELEVATOR_SUBSYSTEM.stop());
+    RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.b(), ELEVATOR_SUBSYSTEM.goToBottom(), ELEVATOR_SUBSYSTEM.stop());
+
 
 
   }
