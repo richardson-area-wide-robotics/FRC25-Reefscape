@@ -82,7 +82,11 @@ public class RobotContainer implements IRobotContainer {
 
   private static void registerNamedCommands() {
     NamedCommands.registerCommand("Outtake", RobotUtils.timedCommand(1, SCORING_SUBSYSTEM.outtake(), SCORING_SUBSYSTEM.outtakeStop()));
-    NamedCommands.registerCommand("Elevator L3", RobotUtils.timedCommand(2, ELEVATOR_SUBSYSTEM.up(), ELEVATOR_SUBSYSTEM.stop()));
+    NamedCommands.registerCommand("Elevator L3", RobotUtils.timedCommand(2, ELEVATOR_SUBSYSTEM.goLevelThree(), ELEVATOR_SUBSYSTEM.stop()));
+    NamedCommands.registerCommand("Elevator L2", RobotUtils.timedCommand(1, ELEVATOR_SUBSYSTEM.goLevelTwo(), ELEVATOR_SUBSYSTEM.stop()));
+    NamedCommands.registerCommand("Elevator L1", RobotUtils.timedCommand(0.5, ELEVATOR_SUBSYSTEM.goLevelOne(), ELEVATOR_SUBSYSTEM.stop()));
+    NamedCommands.registerCommand("Elevator Bottom", RobotUtils.timedCommand(2, ELEVATOR_SUBSYSTEM.goToBottom(), ELEVATOR_SUBSYSTEM.stop()));
+    NamedCommands.registerCommand("Drawbridge Bottom", RobotUtils.timedCommand(1, SCORING_SUBSYSTEM.goToDrawBridgeBottom(), SCORING_SUBSYSTEM.drawBridgeStop()));
   }
 
   private static void initializeAutos() {
