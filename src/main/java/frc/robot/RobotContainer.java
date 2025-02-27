@@ -112,12 +112,6 @@ public class RobotContainer implements IRobotContainer {
     // Left Bumper - Down
     RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.leftBumper(), ELEVATOR_SUBSYSTEM.down(), ELEVATOR_SUBSYSTEM.stop());
 
-    // POV Down - Move Climber out
-    RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.povDown(), DEEP_CLIMB_SUBSYSTEM.out(), DEEP_CLIMB_SUBSYSTEM.stop());
-  
-    // POV Up - Move Climber in
-    RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.povUp(), DEEP_CLIMB_SUBSYSTEM.in(), DEEP_CLIMB_SUBSYSTEM.stop());
-
     // POV Right - Move Drawbridge up
     RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.povRight(), SCORING_SUBSYSTEM.drawBridgeUp(), SCORING_SUBSYSTEM.drawBridgeStop());
 
@@ -129,6 +123,12 @@ public class RobotContainer implements IRobotContainer {
     
     // Right Trigger - Unshoot
     RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.leftTrigger(), SCORING_SUBSYSTEM.intake(), SCORING_SUBSYSTEM.outtakeStop());
+
+    // Operator Right Bumper - Up
+    RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.rightBumper(), ELEVATOR_SUBSYSTEM.up(), ELEVATOR_SUBSYSTEM.stop());
+
+    // Operator Left Bumper - Down
+    RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.leftBumper(), ELEVATOR_SUBSYSTEM.down(), ELEVATOR_SUBSYSTEM.stop());
 
     // Operator Y - L1
     RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.y(), ELEVATOR_SUBSYSTEM.goLevelOne(), ELEVATOR_SUBSYSTEM.stop());
@@ -142,7 +142,13 @@ public class RobotContainer implements IRobotContainer {
     // Operator B - Bottom 
     RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.b(), ELEVATOR_SUBSYSTEM.goToBottom(), ELEVATOR_SUBSYSTEM.stop());
 
+    // Operator POV Down - Move Climber out
+    RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.povDown(), DEEP_CLIMB_SUBSYSTEM.out(), DEEP_CLIMB_SUBSYSTEM.stop());
 
+    // Operator POV Up - Move Climber in
+    RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.povUp(), DEEP_CLIMB_SUBSYSTEM.in(), DEEP_CLIMB_SUBSYSTEM.stop());
+
+    //TODO FIX OMFG
     RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.povDown(), SCORING_SUBSYSTEM.goToDrawBridgeBottom(), SCORING_SUBSYSTEM.drawBridgeUp());
   }
 
