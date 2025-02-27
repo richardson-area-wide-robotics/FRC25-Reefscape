@@ -59,4 +59,8 @@ public class ScoringSubsystem extends SubsystemBase {
     public Command goToDrawBridgeBottom(){
         return Commands.run(() -> RobotUtils.moveToPosition(drawbridgeMotor, BOTTOM_POSITION));
     }
+
+    public Command goToDrawBridgeFullBack() {
+        return Commands.run(() -> RobotUtils.moveToPosition(drawbridgeMotor, FULLBACK_POSITION));
+    }
 }

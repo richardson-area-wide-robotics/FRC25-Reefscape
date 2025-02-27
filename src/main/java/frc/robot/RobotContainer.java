@@ -87,6 +87,7 @@ public class RobotContainer implements IRobotContainer {
     NamedCommands.registerCommand("Elevator L1", RobotUtils.timedCommand(0.5, ELEVATOR_SUBSYSTEM.goLevelOne(), ELEVATOR_SUBSYSTEM.stop()));
     NamedCommands.registerCommand("Elevator Bottom", RobotUtils.timedCommand(2, ELEVATOR_SUBSYSTEM.goToBottom(), ELEVATOR_SUBSYSTEM.stop()));
     NamedCommands.registerCommand("Drawbridge Bottom", RobotUtils.timedCommand(1, SCORING_SUBSYSTEM.goToDrawBridgeBottom(), SCORING_SUBSYSTEM.drawBridgeStop()));
+    NamedCommands.registerCommand("Drawbridge Fullback", RobotUtils.timedCommand(1, SCORING_SUBSYSTEM.goToDrawBridgeFullBack(), SCORING_SUBSYSTEM.drawBridgeStop()));
   }
 
   private static void initializeAutos() {
