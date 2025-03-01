@@ -45,7 +45,7 @@ public class ScoringSubsystem extends SubsystemBase {
     }
 
     public Command outtakeStop(){
-        return Commands.run(() -> outtakeMotor.set(0), this);
+        return Commands.runOnce(() -> outtakeMotor.set(0), this);
     }
 
     public Command outtake(){

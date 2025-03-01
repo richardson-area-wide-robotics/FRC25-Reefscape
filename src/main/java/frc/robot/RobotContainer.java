@@ -81,7 +81,8 @@ public class RobotContainer implements IRobotContainer {
   }
 
   private static void registerNamedCommands() {
-    NamedCommands.registerCommand("Outtake", RobotUtils.timedCommand(1, SCORING_SUBSYSTEM.outtake(), SCORING_SUBSYSTEM.outtakeStop()));
+    NamedCommands.registerCommand("Outtake", SCORING_SUBSYSTEM.outtake());
+    NamedCommands.registerCommand("Stop Outtake", SCORING_SUBSYSTEM.outtakeStop());
     NamedCommands.registerCommand("Elevator L3", ELEVATOR_SUBSYSTEM.goLevelThree());
     NamedCommands.registerCommand("Elevator L2", ELEVATOR_SUBSYSTEM.goLevelTwo());
     NamedCommands.registerCommand("Elevator L1", ELEVATOR_SUBSYSTEM.goLevelOne());
