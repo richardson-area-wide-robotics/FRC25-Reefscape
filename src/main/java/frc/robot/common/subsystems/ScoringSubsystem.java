@@ -49,7 +49,7 @@ public class ScoringSubsystem extends SubsystemBase {
     }
 
     public Command outtake(){
-        return Commands.runOnce(() -> outtakeMotor.set(-0.3), this);
+        return Commands.run(() -> outtakeMotor.set(-0.3), this);
     }
 
     public Command intake(){
@@ -57,10 +57,10 @@ public class ScoringSubsystem extends SubsystemBase {
     }
 
     public Command goToDrawBridgeBottom(){
-        return Commands.run(() -> RobotUtils.moveToPosition(drawbridgeMotor, BOTTOM_POSITION));
+        return Commands.runOnce(() -> RobotUtils.moveToPosition(drawbridgeMotor, BOTTOM_POSITION));
     }
 
     public Command goToDrawBridgeFullBack() {
-        return Commands.run(() -> RobotUtils.moveToPosition(drawbridgeMotor, FULLBACK_POSITION));
+        return Commands.runOnce(() -> RobotUtils.moveToPosition(drawbridgeMotor, FULLBACK_POSITION));
     }
 }

@@ -46,7 +46,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     }
 
     public Command goToBottom() {
-        return Commands.run(()->RobotUtils.moveToPosition(motor, BOTTOM_POSITION));
+        return Commands.runOnce(()->RobotUtils.moveToPosition(motor, BOTTOM_POSITION));
     }
 
     public Command goLevelOne() {
