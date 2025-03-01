@@ -1,8 +1,6 @@
 package frc.robot.common.components;
 
 import com.pathplanner.lib.config.RobotConfig;
-import com.revrobotics.RelativeEncoder;
-import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkFlex;
 
