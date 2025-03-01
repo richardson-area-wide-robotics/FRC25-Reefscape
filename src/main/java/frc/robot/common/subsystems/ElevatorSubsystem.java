@@ -50,14 +50,14 @@ public class ElevatorSubsystem extends SubsystemBase {
     }
 
     public Command goLevelOne() {
-        return Commands.run(()-> RobotUtils.moveToPosition(motor, L1_POSITION));
+        return Commands.runOnce(()-> RobotUtils.moveToPosition(motor, L1_POSITION));
     }
 
     public Command goLevelTwo() {
-        return Commands.run(()->RobotUtils.moveToPosition(motor, L2_POSITION));
+        return Commands.runOnce(()->RobotUtils.moveToPosition(motor, L2_POSITION));
     }
 
     public Command goLevelThree() {
-        return Commands.run(()->RobotUtils.moveToPosition(motor, L3_POSITION));
+        return Commands.runOnce(()->RobotUtils.moveToPosition(motor, L3_POSITION));
     }
 }

@@ -49,11 +49,11 @@ public class ScoringSubsystem extends SubsystemBase {
     }
 
     public Command outtake(){
-        return Commands.run(() -> outtakeMotor.set(0.3), this);
+        return Commands.runOnce(() -> outtakeMotor.set(-0.3), this);
     }
 
     public Command intake(){
-        return Commands.run(() -> outtakeMotor.set(-0.3), this);
+        return Commands.run(() -> outtakeMotor.set(0.3), this);
     }
 
     public Command goToDrawBridgeBottom(){
