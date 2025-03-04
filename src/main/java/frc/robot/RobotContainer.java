@@ -82,12 +82,12 @@ public class RobotContainer implements IRobotContainer {
 
   private static void registerNamedCommands() {
     NamedCommands.registerCommand("Outtake", RobotUtils.timedCommand(1, SCORING_SUBSYSTEM.outtake(), SCORING_SUBSYSTEM.outtakeStop()));
-    NamedCommands.registerCommand("Elevator L3", RobotUtils.timedCommand(2, ELEVATOR_SUBSYSTEM.goLevelThree(), ELEVATOR_SUBSYSTEM.stop()));
-    NamedCommands.registerCommand("Elevator L2", RobotUtils.timedCommand(1, ELEVATOR_SUBSYSTEM.goLevelTwo(), ELEVATOR_SUBSYSTEM.stop()));
-    NamedCommands.registerCommand("Elevator L1", RobotUtils.timedCommand(0.5, ELEVATOR_SUBSYSTEM.goLevelOne(), ELEVATOR_SUBSYSTEM.stop()));
-    NamedCommands.registerCommand("Elevator Bottom", RobotUtils.timedCommand(2, ELEVATOR_SUBSYSTEM.goToBottom(), ELEVATOR_SUBSYSTEM.stop()));
-    NamedCommands.registerCommand("Drawbridge Bottom", RobotUtils.timedCommand(1, SCORING_SUBSYSTEM.goToDrawBridgeBottom(), SCORING_SUBSYSTEM.drawBridgeStop()));
-    NamedCommands.registerCommand("Drawbridge Fullback", RobotUtils.timedCommand(1, SCORING_SUBSYSTEM.goToDrawBridgeFullBack(), SCORING_SUBSYSTEM.drawBridgeStop()));
+    NamedCommands.registerCommand("Elevator L3", ELEVATOR_SUBSYSTEM.goLevelThree());
+    NamedCommands.registerCommand("Elevator L2", ELEVATOR_SUBSYSTEM.goLevelTwo());
+    NamedCommands.registerCommand("Elevator L1", ELEVATOR_SUBSYSTEM.goLevelOne());
+    NamedCommands.registerCommand("Elevator Bottom", ELEVATOR_SUBSYSTEM.goToBottom());
+    NamedCommands.registerCommand("Drawbridge Bottom", SCORING_SUBSYSTEM.goToDrawBridgeBottom());
+    NamedCommands.registerCommand("Drawbridge Fullback", SCORING_SUBSYSTEM.goToDrawBridgeFullBack());
   }
 
   private static void initializeAutos() {

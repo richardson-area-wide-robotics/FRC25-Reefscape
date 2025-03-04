@@ -7,13 +7,19 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Mid_Start-2"
+            "pathName": "Left_Start_2"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Elevator L1"
           }
         },
         {
           "type": "wait",
           "data": {
-            "waitTime": 2.0
+            "waitTime": 0.5
           }
         },
         {
