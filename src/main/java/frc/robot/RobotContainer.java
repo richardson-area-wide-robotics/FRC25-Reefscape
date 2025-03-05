@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.Constants.HIDConstants;
 import frc.robot.common.components.RobotUtils;
+import frc.robot.common.components.SingleMotorSubsystem;
 import frc.robot.common.annotations.Robot;
 import frc.robot.common.interfaces.IRobotContainer;
 import frc.robot.common.subsystems.DeepClimbSubsystem;
@@ -46,7 +47,7 @@ public class RobotContainer implements IRobotContainer {
   public static final ElevatorSubsystem ELEVATOR_SUBSYSTEM = new ElevatorSubsystem(9);
   public static final DeepClimbSubsystem DEEP_CLIMB_SUBSYSTEM = new DeepClimbSubsystem(13, 14);
   public static final ScoringSubsystem SCORING_SUBSYSTEM = new ScoringSubsystem(15, 16);
-
+  public static final SingleMotorSubsystem SPATULA_SUBSYSTEM = new SingleMotorSubsystem(17);
 
 
 
@@ -149,8 +150,15 @@ public class RobotContainer implements IRobotContainer {
     // Operator POV Up - Move Climber in
     RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.povUp(), DEEP_CLIMB_SUBSYSTEM.in(), DEEP_CLIMB_SUBSYSTEM.stop());
 
+    // Operator Left Trigger - Splatula 
+    RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.leftTrigger(), SPATULA_SUBSYSTEM.setSpeedCommand(10), SPATULA_SUBSYSTEM.stopMotorCommand());
+
+    // Operator Right Trigger - UnSplatula 
+    RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.rightTrigger(), SPATULA_SUBSYSTEM.setSpeedCommand(-10), SPATULA_SUBSYSTEM.stopMotorCommand());
+
+
     //TODO FIX OMFG
-    RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.povDown(), SCORING_SUBSYSTEM.goToDrawBridgeBottom(), SCORING_SUBSYSTEM.drawBridgeUp());
+    //RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.povDown(), SCORING_SUBSYSTEM.goToDrawBridgeBottom(), SCORING_SUBSYSTEM.drawBridgeUp());
   }
 
 
