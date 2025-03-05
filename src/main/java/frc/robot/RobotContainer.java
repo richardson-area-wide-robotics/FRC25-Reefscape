@@ -151,10 +151,10 @@ public class RobotContainer implements IRobotContainer {
     RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.povUp(), DEEP_CLIMB_SUBSYSTEM.in(), DEEP_CLIMB_SUBSYSTEM.stop());
 
     // Operator Left Trigger - Splatula 
-    RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.leftTrigger(), SPATULA_SUBSYSTEM.setSpeedCommand(10), SPATULA_SUBSYSTEM.stopMotorCommand());
+    RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.leftTrigger(), SPATULA_SUBSYSTEM.setSpeedCommand(1), SPATULA_SUBSYSTEM.stopMotorCommand());
 
     // Operator Right Trigger - UnSplatula 
-    RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.rightTrigger(), SPATULA_SUBSYSTEM.setSpeedCommand(-10), SPATULA_SUBSYSTEM.stopMotorCommand());
+    RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.rightTrigger(), SPATULA_SUBSYSTEM.setSpeedCommand(-1), SPATULA_SUBSYSTEM.stopMotorCommand());
 
 
     //TODO FIX OMFG
