@@ -6,8 +6,6 @@ package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
-import com.pathplanner.lib.commands.PathPlannerAuto;
-
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Angle;
@@ -75,9 +73,6 @@ public class RobotContainer implements IRobotContainer {
       automodeChooser = AutoBuilder.buildAutoChooser();
       SmartDashboard.putData(Constants.SmartDashboardConstants.SMARTDASHBOARD_AUTO_MODE, automodeChooser);
 
-      // Initialize autos
-      initializeAutos();
-
       return new RobotContainer();
   }
 
@@ -87,12 +82,9 @@ public class RobotContainer implements IRobotContainer {
     NamedCommands.registerCommand("Elevator L2", ELEVATOR_SUBSYSTEM.goLevelTwo());
     NamedCommands.registerCommand("Elevator L1", ELEVATOR_SUBSYSTEM.goLevelOne());
     NamedCommands.registerCommand("Elevator Bottom", ELEVATOR_SUBSYSTEM.goToBottom());
+    NamedCommands.registerCommand("Elevator Intake", ELEVATOR_SUBSYSTEM.goToIntake());
     NamedCommands.registerCommand("Drawbridge Bottom", SCORING_SUBSYSTEM.goToDrawBridgeBottom());
     NamedCommands.registerCommand("Drawbridge Fullback", SCORING_SUBSYSTEM.goToDrawBridgeFullBack());
-  }
-
-  private static void initializeAutos() {
-    PathPlannerAuto leaveAuto = new PathPlannerAuto("Leave");
   }
 
   private static void configureBindings() {
@@ -156,6 +148,8 @@ public class RobotContainer implements IRobotContainer {
     // Operator Right Trigger - UnSplatula 
     RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.rightTrigger(), SPATULA_SUBSYSTEM.setSpeedCommand(-1), SPATULA_SUBSYSTEM.stopMotorCommand());
 
+    // Operator POV Left - Intake Position
+    RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.povLeft(), ELEVATOR_SUBSYSTEM.goToIntake(), ELEVATOR_SUBSYSTEM.stop());
 
     //TODO FIX OMFG
     //RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.povDown(), SCORING_SUBSYSTEM.goToDrawBridgeBottom(), SCORING_SUBSYSTEM.drawBridgeUp());
