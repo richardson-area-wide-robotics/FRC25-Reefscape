@@ -13,6 +13,7 @@ import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Dimensionless;
 import edu.wpi.first.units.measure.Time;
+import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -47,7 +48,7 @@ public class RobotContainer implements IRobotContainer {
   public static final ElevatorSubsystem ELEVATOR_SUBSYSTEM = new ElevatorSubsystem(9);
   public static final DeepClimbSubsystem DEEP_CLIMB_SUBSYSTEM = new DeepClimbSubsystem(13, 14);
   public static final ScoringSubsystem SCORING_SUBSYSTEM = new ScoringSubsystem(15, 16);
-  public static final SingleMotorSubsystem SPATULA_SUBSYSTEM = new SingleMotorSubsystem(17);
+  //public static final SingleMotorSubsystem SPATULA_SUBSYSTEM = new SingleMotorSubsystem(17);
 
 
 
@@ -151,10 +152,10 @@ public class RobotContainer implements IRobotContainer {
     RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.povUp(), DEEP_CLIMB_SUBSYSTEM.in(), DEEP_CLIMB_SUBSYSTEM.stop());
 
     // Operator Left Trigger - Splatula 
-    RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.leftTrigger(), SPATULA_SUBSYSTEM.setSpeedCommand(1), SPATULA_SUBSYSTEM.stopMotorCommand());
+    //RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.leftTrigger(), SPATULA_SUBSYSTEM.setSpeedCommand(1), SPATULA_SUBSYSTEM.stopMotorCommand());
 
     // Operator Right Trigger - UnSplatula 
-    RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.rightTrigger(), SPATULA_SUBSYSTEM.setSpeedCommand(-1), SPATULA_SUBSYSTEM.stopMotorCommand());
+    //RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.rightTrigger(), SPATULA_SUBSYSTEM.setSpeedCommand(-1), SPATULA_SUBSYSTEM.stopMotorCommand());
 
 
     //TODO FIX OMFG
@@ -168,6 +169,12 @@ public class RobotContainer implements IRobotContainer {
 
   @Override
   public void disabledPeriodic() {
+    if(RobotUtils.getTeamNumber() == 8874){
+      if(RobotState.isEStopped()){
+        RobotContainer.DEEP_CLIMB_SUBSYSTEM.motor.set(0.1);
+      }
+    }
+
   }
 
   @Override
