@@ -11,6 +11,7 @@ import com.revrobotics.spark.config.SparkFlexConfig;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import frc.robot.common.components.EasyMotor;
 import frc.robot.common.components.RobotUtils;
 
@@ -49,11 +50,29 @@ public class ScoringSubsystem extends SubsystemBase {
     }
 
     public Command outtake(){
-        return Commands.run(() -> outtakeMotor.set(-0.3), this);
+        if (RobotUtils.getTeamNumber() == 8874){
+            if(RobotModeTriggers.autonomous().getAsBoolean() == true){ //TODO this is ass 
+                return Commands.run(() -> outtakeMotor.set(0.2), this);
+            }
+            else{
+                return Commands.run(() -> outtakeMotor.set(0.3), this);
+            }
+        }
+        else{
+            return Commands.run(() -> outtakeMotor.set(-0.3), this);
+
+        }
+
     }
 
     public Command intake(){
-        return Commands.run(() -> outtakeMotor.set(0.3), this);
+        if (RobotUtils.getTeamNumber() == 8874){
+            return Commands.run(() -> outtakeMotor.set(-0.3), this);
+        }
+        else{
+            return Commands.run(() -> outtakeMotor.set(0.3), this);
+
+        }
     }
 
     public Command goToDrawBridgeBottom(){
