@@ -6,13 +6,12 @@ package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
-import com.pathplanner.lib.commands.PathPlannerAuto;
-
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Dimensionless;
 import edu.wpi.first.units.measure.Time;
+import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -47,8 +46,6 @@ public class RobotContainer implements IRobotContainer {
   public static final ElevatorSubsystem ELEVATOR_SUBSYSTEM = new ElevatorSubsystem(9);
   public static final DeepClimbSubsystem DEEP_CLIMB_SUBSYSTEM = new DeepClimbSubsystem(13, 14);
   public static final ScoringSubsystem SCORING_SUBSYSTEM = new ScoringSubsystem(15, 16);
-  public static final SingleMotorSubsystem SPATULA_SUBSYSTEM = new SingleMotorSubsystem(17);
-
 
 
   private static SendableChooser<Command> automodeChooser; 
@@ -75,9 +72,6 @@ public class RobotContainer implements IRobotContainer {
       automodeChooser = AutoBuilder.buildAutoChooser();
       SmartDashboard.putData(Constants.SmartDashboardConstants.SMARTDASHBOARD_AUTO_MODE, automodeChooser);
 
-      // Initialize autos
-      initializeAutos();
-
       return new RobotContainer();
   }
 
@@ -87,12 +81,9 @@ public class RobotContainer implements IRobotContainer {
     NamedCommands.registerCommand("Elevator L2", ELEVATOR_SUBSYSTEM.goLevelTwo());
     NamedCommands.registerCommand("Elevator L1", ELEVATOR_SUBSYSTEM.goLevelOne());
     NamedCommands.registerCommand("Elevator Bottom", ELEVATOR_SUBSYSTEM.goToBottom());
+    NamedCommands.registerCommand("Elevator Intake", ELEVATOR_SUBSYSTEM.goToIntake());
     NamedCommands.registerCommand("Drawbridge Bottom", SCORING_SUBSYSTEM.goToDrawBridgeBottom());
     NamedCommands.registerCommand("Drawbridge Fullback", SCORING_SUBSYSTEM.goToDrawBridgeFullBack());
-  }
-
-  private static void initializeAutos() {
-    PathPlannerAuto leaveAuto = new PathPlannerAuto("Leave");
   }
 
   private static void configureBindings() {
@@ -149,13 +140,9 @@ public class RobotContainer implements IRobotContainer {
 
     // Operator POV Up - Move Climber in
     RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.povUp(), DEEP_CLIMB_SUBSYSTEM.in(), DEEP_CLIMB_SUBSYSTEM.stop());
-
-    // Operator Left Trigger - Splatula 
-    RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.leftTrigger(), SPATULA_SUBSYSTEM.setSpeedCommand(1), SPATULA_SUBSYSTEM.stopMotorCommand());
-
-    // Operator Right Trigger - UnSplatula 
-    RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.rightTrigger(), SPATULA_SUBSYSTEM.setSpeedCommand(-1), SPATULA_SUBSYSTEM.stopMotorCommand());
-
+    
+    // Operator POV Left - Intake Position
+    RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.povLeft(), ELEVATOR_SUBSYSTEM.goToIntake(), ELEVATOR_SUBSYSTEM.stop());
 
     //TODO FIX OMFG
     //RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.povDown(), SCORING_SUBSYSTEM.goToDrawBridgeBottom(), SCORING_SUBSYSTEM.drawBridgeUp());

@@ -80,16 +80,16 @@ public final class Constants {
   public static class DriveConstants {
     // Drive specs
     public static final double DRIVETRAIN_EFFICIENCY = 0.90;
-    public static final PIDConstants DRIVE_ROTATE_PID = PIDConstants.of(4, 0.0, 0.05, 0.0, 0.0);
+    public static final PIDConstants DRIVE_ROTATE_PID = PIDConstants.of(4.0, 0.0, 0.05, 0.0, 0.0);
     public static final double DRIVE_SLIP_RATIO = 0.05;
     public static final double DRIVE_TURN_SCALAR = 60.0;
-    public static final double DRIVE_LOOKAHEAD = 0;
+    public static final double DRIVE_LOOKAHEAD = 0.0;
     public static final double DRIVE_WHEELBASE = 0.5588;
     public static final double DRIVE_TRACK_WIDTH = 0.5588;
     public static final double AUTO_LOCK_TIME = 3.0;
-    public static final AngularVelocity DRIVE_ROTATE_VELOCITY = Units.RadiansPerSecond.of(12 * Math.PI);
+    public static final AngularVelocity DRIVE_ROTATE_VELOCITY = Units.RadiansPerSecond.of(12.0 * Math.PI);
     public static final AngularVelocity AIM_VELOCITY_THRESHOLD = Units.DegreesPerSecond.of(5.0);
-    public static final AngularAcceleration DRIVE_ROTATE_ACCELERATION = Units.RadiansPerSecond.of(4 * Math.PI).per(Units.Second);
+    public static final AngularAcceleration DRIVE_ROTATE_ACCELERATION = Units.RadiansPerSecond.of(4.0 * Math.PI).per(Units.Second);
     public static final Translation2d AIM_OFFSET = new Translation2d(0.0, -0.5);
 
     // Other settings
