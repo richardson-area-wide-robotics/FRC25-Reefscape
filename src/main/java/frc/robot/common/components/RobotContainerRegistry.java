@@ -6,11 +6,14 @@ import frc.robot.common.interfaces.IRobotContainer;
 import lombok.experimental.UtilityClass;
 
 import java.io.File;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.jar.JarEntry;
+import java.util.jar.JarInputStream;
 
 @UtilityClass
 public class RobotContainerRegistry {
@@ -50,26 +53,18 @@ public class RobotContainerRegistry {
 
     private static List<Class<?>> getAllClasses() {
         List<Class<?>> classes = new ArrayList<>();
-        String packagePath = PACKAGE_NAME.replace('.', '/');
-
-        try {
-            // Get the package URL
-            URL resource = RobotContainerRegistry.class.getClassLoader().getResource(packagePath);
-            if (resource == null) {
-                throw new ClassNotFoundException("Package not found: " + PACKAGE_NAME);
-            }
-
-            // Convert URL to File and list files in the package
-            File directory = new File(resource.toURI());
-            if (!directory.exists()) {
-                throw new ClassNotFoundException("Directory not found: " + directory.getPath());
-            }
-
-            // Loop through the files and load classes
-            for (File file : directory.listFiles()) {
-                if (file.getName().endsWith(".class")) {
-                    // Get class name and load it using the ClassLoader
-                    String className = PACKAGE_NAME + "." + file.getName().substring(0, file.getName().length() - 6);
+        String path = PACKAGE_NAME.replace('.', '/');
+        
+        try (InputStream is = RobotContainerRegistry.class.getClassLoader()
+                .getResourceAsStream(path);
+            JarInputStream jarStream = new JarInputStream(is)) {
+            
+            JarEntry entry;
+            while ((entry = jarStream.getNextJarEntry()) != null) {
+                if (entry.getName().endsWith(".class") && entry.getName().startsWith(path)) {
+                    String className = entry.getName()
+                            .replace('/', '.')
+                            .replace(".class", "");
                     Class<?> clazz = Class.forName(className);
                     classes.add(clazz);
                 }
@@ -80,6 +75,5 @@ public class RobotContainerRegistry {
 
         return classes;
     }
-
 }
 

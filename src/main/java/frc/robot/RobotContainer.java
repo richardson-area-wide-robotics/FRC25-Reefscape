@@ -11,14 +11,12 @@ import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Dimensionless;
 import edu.wpi.first.units.measure.Time;
-import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.Constants.HIDConstants;
 import frc.robot.common.components.RobotUtils;
-import frc.robot.common.components.SingleMotorSubsystem;
 import frc.robot.common.annotations.Robot;
 import frc.robot.common.interfaces.IRobotContainer;
 import frc.robot.common.subsystems.DeepClimbSubsystem;
@@ -146,6 +144,17 @@ public class RobotContainer implements IRobotContainer {
 
     //TODO FIX OMFG
     //RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.povDown(), SCORING_SUBSYSTEM.goToDrawBridgeBottom(), SCORING_SUBSYSTEM.drawBridgeUp());
+
+//    RobotUtils.bindControl(
+//      HIDConstants.PRIMARY_CONTROLLER.b(),
+//      Commands.runOnce(() -> {
+//          Command coolPathCommand = AutoBuilder.buildAuto("coolpath.auto");
+//          if (coolPathCommand != null) {
+//              coolPathCommand.schedule();
+//         }
+//      }),
+//      Commands.none()
+//    );
   }
 
 

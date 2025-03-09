@@ -38,7 +38,7 @@ super();
   @SuppressWarnings("resource")
   public void robotInit() {
     try{
-      PurpleManager.initialize( //PurpleSwerve runs this here, tho javadoc says to do it in robotInit() 
+      PurpleManager.initialize(
         this,
         AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField),
         Path.of("/media/sda1"),
