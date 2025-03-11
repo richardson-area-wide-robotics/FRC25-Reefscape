@@ -49,17 +49,12 @@ public class ScoringSubsystem extends SubsystemBase {
         return Commands.runOnce(() -> outtakeMotor.set(0), this);
     }
 
-    public Command outtake(){
+    public Command outtake(){ //TODO Same outtake on bothum
         if (RobotUtils.getTeamNumber() == 8874){
-            if(RobotModeTriggers.autonomous().getAsBoolean() == true){ //TODO this is ass 
-                return Commands.run(() -> outtakeMotor.set(0.2), this);
-            }
-            else{
-                return Commands.run(() -> outtakeMotor.set(0.3), this);
-            }
+            return Commands.run(() -> outtakeMotor.set(0.2), this);
         }
         else{
-            return Commands.run(() -> outtakeMotor.set(-0.3), this);
+            return Commands.run(() -> outtakeMotor.set(-0.2), this);
 
         }
 
@@ -67,10 +62,10 @@ public class ScoringSubsystem extends SubsystemBase {
 
     public Command intake(){
         if (RobotUtils.getTeamNumber() == 8874){
-            return Commands.run(() -> outtakeMotor.set(-0.3), this);
+            return Commands.run(() -> outtakeMotor.set(-0.2), this);
         }
         else{
-            return Commands.run(() -> outtakeMotor.set(0.3), this);
+            return Commands.run(() -> outtakeMotor.set(0.2), this);
 
         }
     }
