@@ -11,7 +11,7 @@
         "x": 5.3939805989840455,
         "y": 6.096975111376992
       },
-      "isLocked": false,
+      "isLocked": true,
       "linkedName": null
     },
     {
@@ -24,7 +24,7 @@
         "y": 6.154615506024416
       },
       "nextControl": null,
-      "isLocked": false,
+      "isLocked": true,
       "linkedName": null
     }
   ],
