@@ -84,7 +84,6 @@ public class SwerveDriveSubsystem extends SubsystemBase implements AutoCloseable
 
   private ControlCentricity controlCentricity;
   private ChassisSpeeds desiredChassisSpeeds;
-  private boolean isTractionControlEnabled = true;
   private Pose2d m_previousPose;
   private Rotation2d currentHeading;
   private final Field2d FIELD;

@@ -143,7 +143,6 @@ public class RobotContainer implements IRobotContainer {
     // Operator POV Left - Intake Position
     RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.povLeft(), ELEVATOR_SUBSYSTEM.goToIntake(), ELEVATOR_SUBSYSTEM.stop());
 
-    //TODO FIX OMFG
     //RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.povDown(), SCORING_SUBSYSTEM.goToDrawBridgeBottom(), SCORING_SUBSYSTEM.drawBridgeUp());
 
 //    RobotUtils.bindControl(

@@ -48,7 +48,7 @@ public class ScoringSubsystem extends SubsystemBase {
         return Commands.runOnce(() -> outtakeMotor.set(0), this);
     }
 
-    public Command outtake(){ //TODO Same outtake on bothum
+    public Command outtake(){ 
         if (RobotUtils.getTeamNumber() == 8874){
             return Commands.run(() -> outtakeMotor.set(0.2), this);
         }
