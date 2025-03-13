@@ -15,11 +15,11 @@ public class ElevatorSubsystem extends SubsystemBase {
     private final SparkFlex motor;
     private final RelativeEncoder encoder;
 
-    private static final double BOTTOM_POSITION = 0.2;
+    private static final double BOTTOM_POSITION = 2.0;
     private static final double L1_POSITION =  18.0;
     private static final double L2_POSITION = 26.0;
     private static final double L3_POSITION = 45.5;
-    private static final double INTAKE_POSITION = 20.0;
+    private static final double INTAKE_POSITION = 14.8;
 
     public ElevatorSubsystem(int motorID) {
        SparkFlexConfig config = new SparkFlexConfig();
@@ -47,22 +47,42 @@ public class ElevatorSubsystem extends SubsystemBase {
     }
 
     public Command goToBottom() {
-        return Commands.runOnce(()->RobotUtils.moveToPosition(motor, BOTTOM_POSITION));
+        return Commands.run(()->RobotUtils.moveToPosition(motor, BOTTOM_POSITION));
     }
 
     public Command goLevelOne() {
-        return Commands.runOnce(()-> RobotUtils.moveToPosition(motor, L1_POSITION));
+        return Commands.run(()-> RobotUtils.moveToPosition(motor, L1_POSITION));
     }
 
     public Command goLevelTwo() {
-        return Commands.runOnce(()->RobotUtils.moveToPosition(motor, L2_POSITION));
+        return Commands.run(()->RobotUtils.moveToPosition(motor, L2_POSITION));
     }
 
     public Command goLevelThree() {
-        return Commands.runOnce(()->RobotUtils.moveToPosition(motor, L3_POSITION));
+        return Commands.run(()->RobotUtils.moveToPosition(motor, L3_POSITION));
     }
 
     public Command goToIntake() {
+        return Commands.run(() -> RobotUtils.moveToPosition(motor, INTAKE_POSITION));
+    }
+
+    public Command autoGoToBottom() {
+        return Commands.runOnce(()->RobotUtils.moveToPosition(motor, BOTTOM_POSITION));
+    }
+
+    public Command autoGoLevelOne() {
+        return Commands.runOnce(()-> RobotUtils.moveToPosition(motor, L1_POSITION));
+    }
+
+    public Command autoGoLevelTwo() {
+        return Commands.runOnce(()->RobotUtils.moveToPosition(motor, L2_POSITION));
+    }
+
+    public Command autoGoLevelThree() {
+        return Commands.runOnce(()->RobotUtils.moveToPosition(motor, L3_POSITION));
+    }
+
+    public Command autoGoToIntake() {
         return Commands.runOnce(() -> RobotUtils.moveToPosition(motor, INTAKE_POSITION));
     }
 }
