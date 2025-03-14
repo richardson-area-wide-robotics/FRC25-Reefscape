@@ -16,10 +16,10 @@ public class ElevatorSubsystem extends SubsystemBase {
     private final RelativeEncoder encoder;
 
     private static final double BOTTOM_POSITION = 2.0;
-    private static final double L1_POSITION =  18.0;
-    private static final double L2_POSITION = 26.0;
-    private static final double L3_POSITION = 45.5;
-    private static final double INTAKE_POSITION = 14.8;
+    private static final double L1_POSITION =  16.0;
+    private static final double L2_POSITION = 25.3;
+    private static final double L3_POSITION = 40.5;
+    private static final double INTAKE_POSITION = 14.7;
 
     public ElevatorSubsystem(int motorID) {
        SparkFlexConfig config = new SparkFlexConfig();
@@ -84,5 +84,9 @@ public class ElevatorSubsystem extends SubsystemBase {
 
     public Command autoGoToIntake() {
         return Commands.runOnce(() -> RobotUtils.moveToPosition(motor, INTAKE_POSITION));
+    }
+
+    public Command resetEncoder() {
+        return Commands.runOnce(() -> encoder.setPosition(1.8));
     }
 }
