@@ -6,6 +6,7 @@ package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Angle;
@@ -16,8 +17,9 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.Constants.HIDConstants;
-import frc.robot.common.components.RobotUtils;
 import frc.robot.common.annotations.Robot;
+import frc.robot.common.components.RobotUtils;
+import frc.robot.common.components.SingleMotorSubsystem;
 import frc.robot.common.interfaces.IRobotContainer;
 import frc.robot.common.subsystems.DeepClimbSubsystem;
 import frc.robot.common.subsystems.ElevatorSubsystem;
@@ -44,6 +46,7 @@ public class RobotContainer implements IRobotContainer {
   public static final ElevatorSubsystem ELEVATOR_SUBSYSTEM = new ElevatorSubsystem(9);
   public static final DeepClimbSubsystem DEEP_CLIMB_SUBSYSTEM = new DeepClimbSubsystem(13, 14);
   public static final ScoringSubsystem SCORING_SUBSYSTEM = new ScoringSubsystem(15, 16);
+  public static final SingleMotorSubsystem COAXIAL_BOOM_STICK = new SingleMotorSubsystem(17);
 
 
   private static SendableChooser<Command> automodeChooser; 
@@ -134,14 +137,16 @@ public class RobotContainer implements IRobotContainer {
     // Operator B - Bottom 
     RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.b(), ELEVATOR_SUBSYSTEM.goToBottom(), ELEVATOR_SUBSYSTEM.stop());
 
-    // Operator POV Down - Move Climber out
-    RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.povDown(), DEEP_CLIMB_SUBSYSTEM.out(), DEEP_CLIMB_SUBSYSTEM.stop());
+    // Operator POV Left - Move Climber out
+    RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.povLeft(), DEEP_CLIMB_SUBSYSTEM.out(), DEEP_CLIMB_SUBSYSTEM.stop());
 
-    // Operator POV Up - Move Climber in
-    RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.povUp(), DEEP_CLIMB_SUBSYSTEM.in(), DEEP_CLIMB_SUBSYSTEM.stop());
+    // Operator POV Right - Move Climber in
+    RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.povRight(), DEEP_CLIMB_SUBSYSTEM.in(), DEEP_CLIMB_SUBSYSTEM.stop());
     
-    // Operator POV Left - Intake Position
-    RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.povLeft(), ELEVATOR_SUBSYSTEM.goToIntake(), ELEVATOR_SUBSYSTEM.stop());
+    // Operator Left/Right Stick - Coaxial Boom Stick up/down
+    RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.leftStick(), COAXIAL_BOOM_STICK.setSpeedCommand(3), ELEVATOR_SUBSYSTEM.stop());
+    RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.rightStick(), COAXIAL_BOOM_STICK.setSpeedCommand(-3), ELEVATOR_SUBSYSTEM.stop());
+
 
     //RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.povDown(), SCORING_SUBSYSTEM.goToDrawBridgeBottom(), SCORING_SUBSYSTEM.drawBridgeUp());
 

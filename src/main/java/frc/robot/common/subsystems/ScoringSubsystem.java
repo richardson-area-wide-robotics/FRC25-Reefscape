@@ -11,6 +11,7 @@ import com.revrobotics.spark.config.SparkFlexConfig;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj.DigitalInput;
 import frc.robot.common.components.EasyMotor;
 import frc.robot.common.components.RobotUtils;
 
@@ -21,6 +22,8 @@ public class ScoringSubsystem extends SubsystemBase {
 
     private static final double BOTTOM_POSITION = 0.1;
     private static final double FULLBACK_POSITION =  5.3;
+
+    DigitalInput breakBeam = new DigitalInput(0);
 
     public ScoringSubsystem(int drawbridgeMotorId, int outtakeMotorId) {
        SparkFlexConfig config = new SparkFlexConfig();
@@ -61,11 +64,15 @@ public class ScoringSubsystem extends SubsystemBase {
 
     public Command intake(){
         if (RobotUtils.getTeamNumber() == 8874){
-            return Commands.run(() -> outtakeMotor.set(-0.2), this);
+            if (!breakBeam.get()){
+                return Commands.run(() -> outtakeMotor.set(-0.2), this);
+            }
+            else{
+                return Commands.run(() -> outtakeMotor.set(0.0), this);
+            }
         }
         else{
             return Commands.run(() -> outtakeMotor.set(0.2), this);
-
         }
     }
 
