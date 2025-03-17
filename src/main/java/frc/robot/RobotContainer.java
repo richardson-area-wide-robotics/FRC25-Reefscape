@@ -78,46 +78,46 @@ public class RobotContainer implements IRobotContainer {
 
   private static void registerNamedCommands() {
     NamedCommands.registerCommand("Outtake", RobotUtils.timedCommand(1, SCORING_SUBSYSTEM.outtake(), SCORING_SUBSYSTEM.outtakeStop()));
-    NamedCommands.registerCommand("Elevator L3", ELEVATOR_SUBSYSTEM.goLevelThree());
-    NamedCommands.registerCommand("Elevator L2", ELEVATOR_SUBSYSTEM.goLevelTwo());
-    NamedCommands.registerCommand("Elevator L1", ELEVATOR_SUBSYSTEM.goLevelOne());
-    NamedCommands.registerCommand("Elevator Bottom", ELEVATOR_SUBSYSTEM.goToBottom());
-    NamedCommands.registerCommand("Elevator Intake", ELEVATOR_SUBSYSTEM.goToIntake());
+    NamedCommands.registerCommand("Elevator L3", ELEVATOR_SUBSYSTEM.autoGoLevelThree());
+    NamedCommands.registerCommand("Elevator L2", ELEVATOR_SUBSYSTEM.autoGoLevelTwo());
+    NamedCommands.registerCommand("Elevator L1", ELEVATOR_SUBSYSTEM.autoGoLevelOne());
+    NamedCommands.registerCommand("Elevator Bottom", ELEVATOR_SUBSYSTEM.autoGoToBottom());
+    NamedCommands.registerCommand("Elevator Intake", ELEVATOR_SUBSYSTEM.autoGoToIntake());
     NamedCommands.registerCommand("Drawbridge Bottom", SCORING_SUBSYSTEM.goToDrawBridgeBottom());
     NamedCommands.registerCommand("Drawbridge Fullback", SCORING_SUBSYSTEM.goToDrawBridgeFullBack());
     NamedCommands.registerCommand("Intake", RobotUtils.timedCommand(0.25, SCORING_SUBSYSTEM.outtake(), SCORING_SUBSYSTEM.outtakeStop()));
   }
 
   private static void configureBindings() {
-    // Start - toggle traction control
+    // Driver Start - toggle traction control
     RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.start(), DRIVE_SUBSYSTEM.toggleTractionControlCommand(), Commands.none());
 
-    // Left Stick Button - Reset pose
+    // Driver Left Stick Button - Reset pose
     RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.leftStick(), DRIVE_SUBSYSTEM.resetPoseCommand(Pose2d::new), Commands.none());
 
-    // Right Stick Button - Reset heading
+    // Driver Right Stick Button - Reset heading
     RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.rightStick(), Commands.runOnce(DRIVE_SUBSYSTEM.DRIVETRAIN_HARDWARE.navx::reset, DRIVE_SUBSYSTEM), Commands.none());
 
-    // X - Toggle centricity
+    // Driver X - Toggle centricity
     RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.x(), DRIVE_SUBSYSTEM.toggleCentricityCommand(), Commands.none());
 
-    // Right Bumper - Up
+    // Driver Right Bumper - Up
     RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.rightBumper(), ELEVATOR_SUBSYSTEM.up(), ELEVATOR_SUBSYSTEM.stop());
 
-    // Left Bumper - Down
+    // Driver Left Bumper - Down
     RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.leftBumper(), ELEVATOR_SUBSYSTEM.down(), ELEVATOR_SUBSYSTEM.stop());
 
-    // POV Right - Move Drawbridge up
+    // Driver POV Right - Move Drawbridge up
     RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.povRight(), SCORING_SUBSYSTEM.drawBridgeUp(), SCORING_SUBSYSTEM.drawBridgeStop());
 
-    // POV Left - Move Drawbridge down
+    // Driver POV Left - Move Drawbridge down
     RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.povLeft(), SCORING_SUBSYSTEM.drawBridgeDown(), SCORING_SUBSYSTEM.drawBridgeStop());
 
-    // Right Trigger - Shoot
-    RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.rightTrigger(), SCORING_SUBSYSTEM.outtake(), SCORING_SUBSYSTEM.outtakeStop());
+    // Operator Right Trigger - Shoot
+    RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.rightTrigger(), SCORING_SUBSYSTEM.outtake(), SCORING_SUBSYSTEM.outtakeStop());
     
-    // Right Trigger - Unshoot
-    RobotUtils.bindControl(HIDConstants.PRIMARY_CONTROLLER.leftTrigger(), SCORING_SUBSYSTEM.intake(), SCORING_SUBSYSTEM.outtakeStop());
+    // Operator Left Trigger - Unshoot
+    RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.leftTrigger(), SCORING_SUBSYSTEM.intake(), SCORING_SUBSYSTEM.outtakeStop());
 
     // Operator Right Bumper - Up
     RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.rightBumper(), ELEVATOR_SUBSYSTEM.up(), ELEVATOR_SUBSYSTEM.stop());
@@ -147,6 +147,9 @@ public class RobotContainer implements IRobotContainer {
     RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.leftStick(), COAXIAL_BOOM_STICK.setSpeedCommand(3), ELEVATOR_SUBSYSTEM.stop());
     RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.rightStick(), COAXIAL_BOOM_STICK.setSpeedCommand(-3), ELEVATOR_SUBSYSTEM.stop());
 
+
+    // Operator POV Right - Reset Encoder
+    RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.povRight(), ELEVATOR_SUBSYSTEM.resetEncoder(), Commands.none());
 
     //RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.povDown(), SCORING_SUBSYSTEM.goToDrawBridgeBottom(), SCORING_SUBSYSTEM.drawBridgeUp());
 
