@@ -15,8 +15,8 @@ public class DeepClimbSubsystem extends SubsystemBase {
     public SparkFlex motor2;
 
     public DeepClimbSubsystem(int motorID, int motor2ID) {
-        motor = EasyMotor.createEasySparkFlex(motorID, SparkLowLevel.MotorType.kBrushless, SparkBaseConfig.IdleMode.kCoast);
-        motor2 = EasyMotor.createEasySparkFlex(motor2ID, motorID, true, SparkLowLevel.MotorType.kBrushless, SparkBaseConfig.IdleMode.kCoast);
+        motor = EasyMotor.createEasySparkFlex(motorID, SparkLowLevel.MotorType.kBrushless, SparkBaseConfig.IdleMode.kBrake);
+        motor2 = EasyMotor.createEasySparkFlex(motor2ID, motorID, true, SparkLowLevel.MotorType.kBrushless, SparkBaseConfig.IdleMode.kBrake);
 
     }
 
