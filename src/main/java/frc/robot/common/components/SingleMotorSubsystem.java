@@ -20,7 +20,7 @@ public class SingleMotorSubsystem extends SubsystemBase {
     public SparkFlex motor;
 
     public SingleMotorSubsystem(int motorID) {
-        motor = EasyMotor.createEasySparkFlex(motorID, MotorType.kBrushless, IdleMode.kCoast);
+        motor = EasyMotor.createEasySparkFlex(motorID, MotorType.kBrushless, IdleMode.kBrake);
     }
 
     /**

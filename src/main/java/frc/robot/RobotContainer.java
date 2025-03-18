@@ -144,8 +144,8 @@ public class RobotContainer implements IRobotContainer {
     RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.povRight(), DEEP_CLIMB_SUBSYSTEM.in(), DEEP_CLIMB_SUBSYSTEM.stop());
     
     // Operator Left/Right Stick - Coaxial Boom Stick up/down
-    RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.leftStick(), COAXIAL_BOOM_STICK.setSpeedCommand(3), ELEVATOR_SUBSYSTEM.stop());
-    RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.rightStick(), COAXIAL_BOOM_STICK.setSpeedCommand(-3), ELEVATOR_SUBSYSTEM.stop());
+    //RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.leftStick(), COAXIAL_BOOM_STICK.setSpeedCommand(1), ELEVATOR_SUBSYSTEM.stop());
+    //RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.rightStick(), COAXIAL_BOOM_STICK.setSpeedCommand(-1), ELEVATOR_SUBSYSTEM.stop());
 
 
     // Operator POV Right - Reset Encoder
