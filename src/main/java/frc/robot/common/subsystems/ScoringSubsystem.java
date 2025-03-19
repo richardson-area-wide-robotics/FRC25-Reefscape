@@ -64,12 +64,12 @@ public class ScoringSubsystem extends SubsystemBase {
 
     public Command intake(){
         if (RobotUtils.getTeamNumber() == 8874){
-            if (!breakBeam.get()){
+            //if (!breakBeam.get()){
                 return Commands.run(() -> outtakeMotor.set(-0.2), this);
-            }
-            else{
-                return Commands.run(() -> outtakeMotor.set(0.0), this);
-            }
+            //}
+            //else{
+            //    return Commands.run(() -> outtakeMotor.set(0.0), this);
+            //}
         }
         else{
             return Commands.run(() -> outtakeMotor.set(0.2), this);
