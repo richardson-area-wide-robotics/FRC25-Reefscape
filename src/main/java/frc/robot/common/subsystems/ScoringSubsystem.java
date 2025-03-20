@@ -52,28 +52,16 @@ public class ScoringSubsystem extends SubsystemBase {
     }
 
     public Command outtake(){ 
-        if (RobotUtils.getTeamNumber() == 8874){
             return Commands.run(() -> outtakeMotor.set(0.2), this);
-        }
-        else{
-            return Commands.run(() -> outtakeMotor.set(-0.2), this);
-
-        }
-
     }
 
     public Command intake(){
-        if (RobotUtils.getTeamNumber() == 8874){
             //if (!breakBeam.get()){
                 return Commands.run(() -> outtakeMotor.set(-0.2), this);
             //}
             //else{
             //    return Commands.run(() -> outtakeMotor.set(0.0), this);
             //}
-        }
-        else{
-            return Commands.run(() -> outtakeMotor.set(0.2), this);
-        }
     }
 
     public Command goToDrawBridgeBottom(){
@@ -82,5 +70,9 @@ public class ScoringSubsystem extends SubsystemBase {
 
     public Command goToDrawBridgeFullBack() {
         return Commands.runOnce(() -> RobotUtils.moveToPosition(drawbridgeMotor, FULLBACK_POSITION));
+    }
+
+    public Command boomstick() {
+        return Commands.run(() -> outtakeMotor.set(0.5));
     }
 }
