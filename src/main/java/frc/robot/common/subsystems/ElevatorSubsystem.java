@@ -19,7 +19,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     private static final double L1_POSITION =  16.0;
     private static final double L2_POSITION = 25.3;
     private static final double L3_POSITION = 40.5;
-    private static final double INTAKE_POSITION = 12.0;
+    private static final double INTAKE_POSITION = 13.6;
 
     public ElevatorSubsystem(int motorID) {
        SparkFlexConfig config = new SparkFlexConfig();
