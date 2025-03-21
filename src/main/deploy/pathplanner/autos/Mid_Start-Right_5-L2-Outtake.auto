@@ -7,19 +7,19 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Mid_Start-Left_2"
+            "pathName": "Mid_Start-Right_5"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Elevator L1"
+            "name": "Elevator L2"
           }
         },
         {
           "type": "wait",
           "data": {
-            "waitTime": 1.0
+            "waitTime": 0.5
           }
         },
         {

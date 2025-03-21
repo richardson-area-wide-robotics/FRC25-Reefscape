@@ -1,12 +1,16 @@
-package frc.robot.common.components;
+package frc.robot.common.subsystems;
 
+import com.revrobotics.RelativeEncoder;
+import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.revrobotics.spark.config.SparkFlexConfig;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.common.components.RobotUtils;
 
 
 /**
@@ -16,11 +20,23 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
  * @author Hudson Strub
  * @since 2025
  */
-public class SingleMotorSubsystem extends SubsystemBase {
+public class CBSSubsystem extends SubsystemBase {
     public SparkFlex motor;
+    private final RelativeEncoder encoder;
 
-    public SingleMotorSubsystem(int motorID) {
-        motor = EasyMotor.createEasySparkFlex(motorID, MotorType.kBrushless, IdleMode.kBrake);
+    public CBSSubsystem(int motorID) {
+        SparkFlexConfig config = new SparkFlexConfig();
+
+       config.closedLoop.pid(1, 0, 0);
+       config.closedLoop.outputRange(-1, 1);
+
+        motor = new SparkFlex(motorID, MotorType.kBrushless);
+        config.idleMode(IdleMode.kBrake);
+        config.smartCurrentLimit(100);
+        motor.configure(config, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kPersistParameters);        
+        
+        encoder = motor.getEncoder();
+        encoder.setPosition(0); // Reset encoder position at startup
     }
 
     /**
@@ -59,5 +75,13 @@ public class SingleMotorSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         // This method will be called once per scheduler run
+    }
+
+    public Command goToRest() {
+        return Commands.run(() -> RobotUtils.moveToPosition(motor, 0.1));
+    }
+
+    public Command go45Degrees() {
+        return Commands.run(() -> RobotUtils.moveToPosition(motor, 0.45));
     }
 }

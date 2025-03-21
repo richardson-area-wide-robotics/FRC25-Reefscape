@@ -7,37 +7,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Mid_Start-Left_2"
+            "pathName": "Left_Start-Right_3"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Elevator L1"
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 1.0
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Outtake"
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 1.0
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Stop Outtake"
+            "name": "Elevator L2"
           }
         },
         {
@@ -47,9 +23,21 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "Outtake"
+          }
+        },
+        {
           "type": "path",
           "data": {
-            "pathName": "2-Right_Station"
+            "pathName": "Right_3-Left_Station"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Elevator Intake"
           }
         },
         {
@@ -59,39 +47,33 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "Intake"
+          }
+        },
+        {
           "type": "path",
           "data": {
-            "pathName": "Right_Station-6"
+            "pathName": "Left_Station-Left_3"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Elevator L1"
+            "name": "Elevator L2"
           }
         },
         {
           "type": "wait",
           "data": {
-            "waitTime": 1.0
+            "waitTime": 0.5
           }
         },
         {
           "type": "named",
           "data": {
             "name": "Outtake"
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 1.0
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Stop Outtake"
           }
         }
       ]

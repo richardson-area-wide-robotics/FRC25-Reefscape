@@ -128,8 +128,8 @@ public class RAWRSwerveModule extends SwerveModule implements Sendable {
             Constants.SwerveConstants.GEAR_RATIO,
             DriveWheel.create(
               Distance.ofRelativeUnits(75, Units.Millimeter), 
-              Dimensionless.ofBaseUnits(0.15, Units.Value),
-              Dimensionless.ofBaseUnits(0.1, Units.Value)), // TODO: Replace with actual drive wheel configuration
+              Dimensionless.ofBaseUnits(1.6, Units.Value),
+              Dimensionless.ofBaseUnits(1.3, Units.Value)), 
             ZERO_OFFSET.get(location),
             PIDConstants.of(0.18, 0, 0.001, 0.174, 0), // Replace with actual PID constants
           FFConstants.of(0, 0, 0, 0),  // Replace with actual feed-forward constants
@@ -520,19 +520,16 @@ public class RAWRSwerveModule extends SwerveModule implements Sendable {
 
   @Override
   public void setDriveSysID(Voltage volts) {
-    // TODO Auto-generated method stub
     throw new UnsupportedOperationException("Unimplemented method 'setDriveSysID'");
   }
 
   @Override
   public void setRotateSysID(Voltage volts) {
-    // TODO Auto-generated method stub
     throw new UnsupportedOperationException("Unimplemented method 'setRotateSysID'");
   }
 
   @Override
   public Frequency getUpdateRate() {
-    // TODO Auto-generated method stub
     throw new UnsupportedOperationException("Unimplemented method 'getUpdateRate'");
   }
 }
