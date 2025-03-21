@@ -51,7 +51,7 @@ public final class Constants {
   public static final int SECONDARY_CONTROLLER_PORT = 1;
   public static final double CONTROLLER_DEADBAND = 0.6;
 
-  public static final CommandXboxController PRIMARY_CONTROLLER = new CommandXboxController(
+  public static final CommandXboxController DRIVER_CONTROLLER = new CommandXboxController(
     PRIMARY_CONTROLLER_PORT);
   public static final CommandXboxController OPERATOR_CONTROLLER = new CommandXboxController(
     SECONDARY_CONTROLLER_PORT);

@@ -1,5 +1,7 @@
 package frc.robot.common.subsystems;
 
+import java.util.function.BooleanSupplier;
+
 import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel;
@@ -24,7 +26,9 @@ public class ScoringSubsystem extends SubsystemBase {
     private static final double BOTTOM_POSITION = 0.1;
     private static final double FULLBACK_POSITION =  5.3;
 
-    DigitalInput breakBeam = new DigitalInput(0);
+    DigitalInput breakBeamFront = new DigitalInput(0);
+    DigitalInput breakBeamBack = new DigitalInput(1);
+    BooleanSupplier breakBeamBoolean = () -> breakBeamFront.get();
 
     public ScoringSubsystem(int drawbridgeMotorId, int outtakeMotorId) {
        SparkFlexConfig config = new SparkFlexConfig();
@@ -52,19 +56,19 @@ public class ScoringSubsystem extends SubsystemBase {
         return Commands.runOnce(() -> outtakeMotor.set(0), this);
     }
 
-    public Command outtake(){ 
-            return Commands.run(() -> outtakeMotor.set(0.2), this);
+    public Command outtake() { 
+        return Commands.run(() -> outtakeMotor.set(0.2), this);
+        //return Commands.either(Commands.run(() -> outtakeMotor.set(0.2), this),
+        //Commands.run(() -> outtakeMotor.set(0.0), this),
+        //breakBeamBoolean);
     }
 
-    public Command intake(){
-            //if(breakBeamBlocked)
-            //{
-                return Commands.run(() -> outtakeMotor.set(-0.2), this);
-            //}
-            //else
-            //{
-            //    return Commands.run(() -> outtakeMotor.set(0.0), this);
-            //}
+    //public Command score() {
+    //    return Commands.run(() -> outtakeMotor.set(0.2), this);
+    //}
+
+    public Command intake() {
+        return Commands.run(() -> outtakeMotor.set(-0.2), this);
     }
 
     public Command goToDrawBridgeBottom(){
@@ -83,12 +87,9 @@ public class ScoringSubsystem extends SubsystemBase {
         return Commands.run(() -> outtakeMotor.set(-0.7));
     }
 
-    boolean breakBeamBlocked;
-
     @Override 
     public void periodic(){
-        breakBeamBlocked = !breakBeam.get();
-
-        SmartDashboard.putBoolean("BreakBeamFront", breakBeamBlocked);
+        SmartDashboard.putBoolean("BreakBeamFront", breakBeamFront.get());
+        SmartDashboard.putBoolean("BreakBeamBack", breakBeamBack.get());
     }
 }
