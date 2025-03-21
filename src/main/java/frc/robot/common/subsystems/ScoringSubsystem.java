@@ -79,6 +79,10 @@ public class ScoringSubsystem extends SubsystemBase {
         return Commands.run(() -> outtakeMotor.set(0.7));
     }
 
+    public Command reverseBoomstick() {
+        return Commands.run(() -> outtakeMotor.set(-0.7));
+    }
+
     boolean breakBeamBlocked;
 
     @Override 
