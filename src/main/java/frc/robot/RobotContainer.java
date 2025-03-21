@@ -153,12 +153,11 @@ public class RobotContainer implements IRobotContainer {
     // RobotUtils.bindControl(HIDConstants.DRIVER_CONTROLLER.a(), COAXIAL_BOOM_STICK.goToRest(), COAXIAL_BOOM_STICK.stopMotorCommand());
     // RobotUtils.bindControl(HIDConstants.DRIVER_CONTROLLER.b(), COAXIAL_BOOM_STICK.go45Degrees(), COAXIAL_BOOM_STICK.stopMotorCommand());
 
-    // Operator Left Stick - Turn boomstick wheel
+    // Operator Left/Right Stick - Turn boomstick wheel
     RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.leftStick(), SCORING_SUBSYSTEM.boomstick(), SCORING_SUBSYSTEM.outtakeStop());
     RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.rightStick(), SCORING_SUBSYSTEM.reverseBoomstick(), SCORING_SUBSYSTEM.outtakeStop());
 
-    // Operator Right Stick - Outtake without break beams
-    RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.rightStick(), SCORING_SUBSYSTEM.score(), SCORING_SUBSYSTEM.outtakeStop());
+    //RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.start(), SCORING_SUBSYSTEM.score(), SCORING_SUBSYSTEM.outtakeStop());
 
     //RobotUtils.bindControl(HIDConstants.OPERATOR_CONTROLLER.povDown(), SCORING_SUBSYSTEM.goToDrawBridgeBottom(), SCORING_SUBSYSTEM.drawBridgeUp());
 
