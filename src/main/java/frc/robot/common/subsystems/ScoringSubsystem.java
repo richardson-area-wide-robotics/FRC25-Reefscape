@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.common.components.EasyMotor;
 import frc.robot.common.components.RobotUtils;
 
@@ -56,10 +57,12 @@ public class ScoringSubsystem extends SubsystemBase {
     }
 
     public Command intake(){
-            //if (!breakBeam.get()){
+            //if(breakBeamBlocked)
+            //{
                 return Commands.run(() -> outtakeMotor.set(-0.2), this);
             //}
-            //else{
+            //else
+            //{
             //    return Commands.run(() -> outtakeMotor.set(0.0), this);
             //}
     }
@@ -73,6 +76,15 @@ public class ScoringSubsystem extends SubsystemBase {
     }
 
     public Command boomstick() {
-        return Commands.run(() -> outtakeMotor.set(0.5));
+        return Commands.run(() -> outtakeMotor.set(0.7));
+    }
+
+    boolean breakBeamBlocked;
+
+    @Override 
+    public void periodic(){
+        breakBeamBlocked = !breakBeam.get();
+
+        SmartDashboard.putBoolean("BreakBeamFront", breakBeamBlocked);
     }
 }

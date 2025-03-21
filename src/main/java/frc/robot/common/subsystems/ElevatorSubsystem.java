@@ -35,11 +35,11 @@ public class ElevatorSubsystem extends SubsystemBase {
     }
 
     public Command up() {
-        return Commands.run(() -> motor.set(0.3), this);
+        return Commands.run(() -> motor.set(0.4), this);
     }
 
     public Command down() {
-        return Commands.run(() -> motor.set(-0.3), this);
+        return Commands.run(() -> motor.set(-0.4), this);
     }
 
     public Command stop() {
