@@ -64,6 +64,8 @@ import frc.robot.common.components.SwerveHardware;
  */
 public class SwerveDriveSubsystem extends SubsystemBase implements AutoCloseable {
 
+  /**FOR TESTING ONLY - Skip loading the drive train*/
+  public final boolean enableDrive = true;
 
   public final SwerveHardware DRIVETRAIN_HARDWARE;
 
@@ -106,81 +108,83 @@ public class SwerveDriveSubsystem extends SubsystemBase implements AutoCloseable
                               PolynomialSplineFunction throttleInputCurve, PolynomialSplineFunction turnInputCurve,
                               Angle turnScalar, Dimensionless deadband, Time lookAhead) {
   
-      // Initialize subsystem name
-      setSubsystem(this.getClass().getSimpleName());
+      if(enableDrive){
+        // Initialize subsystem name
+        setSubsystem(this.getClass().getSimpleName());
+      
+        this.DRIVETRAIN_HARDWARE = drivetrainHardware;
+
+        // Drivetrain constants
+        DRIVE_MAX_LINEAR_SPEED = DRIVETRAIN_HARDWARE.lFrontModule.getMaxLinearVelocity();
+        DRIVE_AUTO_ACCELERATION = DRIVE_MAX_LINEAR_SPEED
+            .per(Units.Second)
+            .minus(Units.MetersPerSecondPerSecond.of(1.0));
     
-      this.DRIVETRAIN_HARDWARE = drivetrainHardware;
-
-      // Drivetrain constants
-      DRIVE_MAX_LINEAR_SPEED = DRIVETRAIN_HARDWARE.lFrontModule.getMaxLinearVelocity();
-      DRIVE_AUTO_ACCELERATION = DRIVE_MAX_LINEAR_SPEED
-          .per(Units.Second)
-          .minus(Units.MetersPerSecondPerSecond.of(1.0));
-  
-      // Input curves and controllers
-      this.controlCentricity = controlCentricity;
-      this.THROTTLE_MAP = new ThrottleMap(throttleInputCurve, DRIVE_MAX_LINEAR_SPEED, deadband);
-      this.ROTATE_PID_CONTROLLER = new RotatePIDController(turnInputCurve, pidf, turnScalar, deadband, lookAhead);
-  
-      // Path follower configuration
-      this.PATH_FOLLOWER_CONFIG = new PPHolonomicDriveController(
-          new com.pathplanner.lib.config.PIDConstants(3.1, 0.0, 0.0),
-          new com.pathplanner.lib.config.PIDConstants(5.0, 0.0, 0.1),
-          DRIVE_MAX_LINEAR_SPEED.in(Units.MetersPerSecond)
-      );
-  
-      // NavX calibration
-      while (DRIVETRAIN_HARDWARE.navx.isCalibrating()) DRIVETRAIN_HARDWARE.stop();
-
-      DRIVETRAIN_HARDWARE.navx.reset();
-  
-      // Swerve drive kinematics and pose estimator
-      KINEMATICS = new SwerveDriveKinematics(
-          DRIVETRAIN_HARDWARE.lFrontModule.getModuleCoordinate(),
-          DRIVETRAIN_HARDWARE.rFrontModule.getModuleCoordinate(),
-          DRIVETRAIN_HARDWARE.lRearModule.getModuleCoordinate(),
-          DRIVETRAIN_HARDWARE.rRearModule.getModuleCoordinate()
-      );
-  
-      advancedKinematics = new AdvancedSwerveKinematics(DRIVETRAIN_HARDWARE.lFrontModule.getModuleCoordinate(),
-                                                        DRIVETRAIN_HARDWARE.rFrontModule.getModuleCoordinate(),
-                                                        DRIVETRAIN_HARDWARE.lRearModule.getModuleCoordinate(),
-                                                        DRIVETRAIN_HARDWARE.rRearModule.getModuleCoordinate());
-
-    POSE_ESTIMATOR = new SwerveDrivePoseEstimator(
-        KINEMATICS,
-        getRotation2d(),
-        getModulePositions(),
-        new Pose2d(),
-        Constants.DriveConstants.ODOMETRY_STDDEV,
-        Constants.DriveConstants.VISION_STDDEV
-    );
-
-    // Chassis speeds
-    desiredChassisSpeeds = new ChassisSpeeds();
-
-    // Field2d visualization
-    FIELD = new Field2d();
-    SmartDashboard.putData(FIELD);
-
-    // Path logging for PathPlanner
-    PathPlannerLogging.setLogActivePathCallback((poses) -> {
-        if (poses.isEmpty()) return;
-        var trajectory = TrajectoryGenerator.generateTrajectory(
-            poses,
-            new TrajectoryConfig(DRIVE_MAX_LINEAR_SPEED, DRIVE_AUTO_ACCELERATION)
+        // Input curves and controllers
+        this.controlCentricity = controlCentricity;
+        this.THROTTLE_MAP = new ThrottleMap(throttleInputCurve, DRIVE_MAX_LINEAR_SPEED, deadband);
+        this.ROTATE_PID_CONTROLLER = new RotatePIDController(turnInputCurve, pidf, turnScalar, deadband, lookAhead);
+    
+        // Path follower configuration
+        this.PATH_FOLLOWER_CONFIG = new PPHolonomicDriveController(
+            new com.pathplanner.lib.config.PIDConstants(3.1, 0.0, 0.0),
+            new com.pathplanner.lib.config.PIDConstants(5.0, 0.0, 0.1),
+            DRIVE_MAX_LINEAR_SPEED.in(Units.MetersPerSecond)
         );
-        FIELD.getObject("currentPath").setTrajectory(trajectory);
-    });
+    
+        // NavX calibration
+        while (DRIVETRAIN_HARDWARE.navx.isCalibrating()) DRIVETRAIN_HARDWARE.stop();
 
-    this.AUTO_AIM_PID_CONTROLLER_FRONT = new ProfiledPIDController(10.0, 0.0, 0.5, new TrapezoidProfile.Constraints(2160.0, 4320.0), 0.02);
-    this.AUTO_AIM_PID_CONTROLLER_FRONT.enableContinuousInput(-180.0, +180.0);
-    this.AUTO_AIM_PID_CONTROLLER_FRONT.setTolerance(1.5);
-    this.AUTO_AIM_PID_CONTROLLER_BACK = new ProfiledPIDController(10.0, 0.0, 0.5, new TrapezoidProfile.Constraints(2160.0, 4320.0), 0.02);
-    this.AUTO_AIM_PID_CONTROLLER_BACK.enableContinuousInput(-180.0, +180.0);
-    this.AUTO_AIM_PID_CONTROLLER_BACK.setTolerance(1.5);
-    this.X_VELOCITY_FILTER = new MedianFilter(100);
-    this.Y_VELOCITY_FILTER = new MedianFilter(100);
+        DRIVETRAIN_HARDWARE.navx.reset();
+    
+        // Swerve drive kinematics and pose estimator
+        KINEMATICS = new SwerveDriveKinematics(
+            DRIVETRAIN_HARDWARE.lFrontModule.getModuleCoordinate(),
+            DRIVETRAIN_HARDWARE.rFrontModule.getModuleCoordinate(),
+            DRIVETRAIN_HARDWARE.lRearModule.getModuleCoordinate(),
+            DRIVETRAIN_HARDWARE.rRearModule.getModuleCoordinate()
+        );
+    
+        advancedKinematics = new AdvancedSwerveKinematics(DRIVETRAIN_HARDWARE.lFrontModule.getModuleCoordinate(),
+                                                          DRIVETRAIN_HARDWARE.rFrontModule.getModuleCoordinate(),
+                                                          DRIVETRAIN_HARDWARE.lRearModule.getModuleCoordinate(),
+                                                          DRIVETRAIN_HARDWARE.rRearModule.getModuleCoordinate());
+
+      POSE_ESTIMATOR = new SwerveDrivePoseEstimator(
+          KINEMATICS,
+          getRotation2d(),
+          getModulePositions(),
+          new Pose2d(),
+          Constants.DriveConstants.ODOMETRY_STDDEV,
+          Constants.DriveConstants.VISION_STDDEV
+      );
+
+      // Chassis speeds
+      desiredChassisSpeeds = new ChassisSpeeds();
+
+      // Field2d visualization
+      FIELD = new Field2d();
+      SmartDashboard.putData(FIELD);
+
+      // Path logging for PathPlanner
+      PathPlannerLogging.setLogActivePathCallback((poses) -> {
+          if (poses.isEmpty()) return;
+          var trajectory = TrajectoryGenerator.generateTrajectory(
+              poses,
+              new TrajectoryConfig(DRIVE_MAX_LINEAR_SPEED, DRIVE_AUTO_ACCELERATION)
+          );
+          FIELD.getObject("currentPath").setTrajectory(trajectory);
+      });
+
+      this.AUTO_AIM_PID_CONTROLLER_FRONT = new ProfiledPIDController(10.0, 0.0, 0.5, new TrapezoidProfile.Constraints(2160.0, 4320.0), 0.02);
+      this.AUTO_AIM_PID_CONTROLLER_FRONT.enableContinuousInput(-180.0, +180.0);
+      this.AUTO_AIM_PID_CONTROLLER_FRONT.setTolerance(1.5);
+      this.AUTO_AIM_PID_CONTROLLER_BACK = new ProfiledPIDController(10.0, 0.0, 0.5, new TrapezoidProfile.Constraints(2160.0, 4320.0), 0.02);
+      this.AUTO_AIM_PID_CONTROLLER_BACK.enableContinuousInput(-180.0, +180.0);
+      this.AUTO_AIM_PID_CONTROLLER_BACK.setTolerance(1.5);
+      this.X_VELOCITY_FILTER = new MedianFilter(100);
+      this.Y_VELOCITY_FILTER = new MedianFilter(100);
+    }                          
 }
 
 /**
