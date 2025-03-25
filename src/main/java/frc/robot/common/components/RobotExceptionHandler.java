@@ -1,4 +1,4 @@
-package org.rawrobotics.common.components;
+package frc.robot.common.components;
 
 import edu.wpi.first.wpilibj.DriverStation;
 

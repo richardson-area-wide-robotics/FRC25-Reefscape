@@ -1,9 +1,8 @@
-package org.rawrobotics.common.components;
+package frc.robot.common.components;
 
 
-import org.rawrobotics.common.swerve.RAWRNavX2;
-import org.rawrobotics.common.swerve.RAWRSwerveModule;
-
+import frc.robot.common.swerve.RAWRNavX2;
+import frc.robot.common.swerve.RAWRSwerveModule;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor

@@ -1,6 +1,4 @@
-package org.rawrobotics.common.subsystems;
-
-import org.rawrobotics.common.components.EasyMotor;
+package frc.robot.common.subsystems;
 
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel;
@@ -9,6 +7,7 @@ import com.revrobotics.spark.config.SparkBaseConfig;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.common.components.EasyMotor;
 
 public class DeepClimbSubsystem extends SubsystemBase {
 

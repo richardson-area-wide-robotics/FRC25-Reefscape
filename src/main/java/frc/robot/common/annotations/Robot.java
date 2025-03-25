@@ -1,4 +1,4 @@
-package org.rawrobotics.common.annotations;
+package frc.robot.common.annotations;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

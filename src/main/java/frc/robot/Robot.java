@@ -2,24 +2,23 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package org.rawrobotics;
+package frc.robot;
 
+import frc.robot.common.LocalADStarAK;
+import frc.robot.common.components.RobotContainerRegistry;
+import frc.robot.common.components.RobotExceptionHandler;
+import frc.robot.common.components.RobotUtils;
 import java.nio.file.Path;
 
 import org.lasarobotics.hardware.PurpleManager;
 import org.littletonrobotics.junction.LoggedRobot;
-import org.rawrobotics.common.LocalADStarAK;
-import org.rawrobotics.common.components.RobotContainerRegistry;
-import org.rawrobotics.common.components.RobotExceptionHandler;
-import org.rawrobotics.common.components.RobotUtils;
-import org.rawrobotics.common.interfaces.IRobotContainer;
-
 import com.pathplanner.lib.pathfinding.Pathfinding;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.common.interfaces.IRobotContainer;
 
 
 /**
