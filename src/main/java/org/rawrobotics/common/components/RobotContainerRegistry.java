@@ -1,8 +1,5 @@
-package frc.robot.common.components;
+package org.rawrobotics.common.components;
 
-import frc.robot.RobotContainer;
-import frc.robot.common.annotations.Robot;
-import frc.robot.common.interfaces.IRobotContainer;
 import lombok.experimental.UtilityClass;
 
 import java.io.InputStream;
@@ -12,6 +9,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
+
+import org.rawrobotics.RobotContainer;
+import org.rawrobotics.common.annotations.Robot;
+import org.rawrobotics.common.interfaces.IRobotContainer;
 
 @UtilityClass
 public class RobotContainerRegistry {

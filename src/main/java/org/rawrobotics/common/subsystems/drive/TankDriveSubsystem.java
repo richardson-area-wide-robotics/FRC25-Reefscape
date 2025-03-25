@@ -1,9 +1,11 @@
-package frc.robot.common.subsystems.drive;
+package org.rawrobotics.common.subsystems.drive;
+
+import org.rawrobotics.common.components.EasyMotor;
 
 import com.revrobotics.spark.SparkLowLevel;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig;
-import frc.robot.common.components.EasyMotor;
+
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
