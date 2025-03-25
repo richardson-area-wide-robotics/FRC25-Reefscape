@@ -80,9 +80,7 @@ public class RobotUtils  {
    * @since 2025
    */
   public void moveToPosition(SparkFlex motor, double targetPosition) {
-
-    // Set the target position using the built-in PID controller
-    motor.getClosedLoopController().setReference(targetPosition, ControlType.kPosition);
-}
-
+      // Set the target position using the built-in PID controller
+      motor.getClosedLoopController().setReference(targetPosition, ControlType.kPosition);
+  }
 }

@@ -7,6 +7,10 @@ package frc.robot.common.swerve;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
+import java.lang.Runtime;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import frc.robot.Constants;
 import org.lasarobotics.drive.TractionControlController;
@@ -77,23 +81,20 @@ public class RAWRSwerveModule extends SwerveModule implements Sendable {
   private final Spark m_rotateMotor;
   private final SwerveModuleSim m_moduleSim;
   private SimpleMotorFeedforward m_driveFF;
-  private final SparkBaseConfig m_driveMotorConfig;
-  private final SparkBaseConfig m_rotateMotorConfig;
   private final Rotation2d m_zeroOffset;
   
-    private final SwerveModule.Location m_location;
-    private Rotation2d m_previousRotatePosition;
-  
-    private volatile double m_simDrivePosition;
-    private volatile SwerveModulePosition m_simModulePosition;
-    private volatile SwerveModuleState m_desiredState;
-  
-    private final double m_driveConversionFactor;
-    private final double m_rotateConversionFactor;
-    private final double m_autoLockTime;
-  
-    private Instant m_autoLockTimer;
-  
+  private final SwerveModule.Location m_location;
+  private Rotation2d m_previousRotatePosition;
+
+  private volatile double m_simDrivePosition;
+  private volatile SwerveModulePosition m_simModulePosition;
+  private volatile SwerveModuleState m_desiredState;
+
+  private final double m_autoLockTime;
+
+  private Instant m_autoLockTimer;
+
+  private final ExecutorService EXECUTOR_SERVICE = Executors.newFixedThreadPool(2);  
     
   public static final Map<SwerveModule.Location, Angle> ZERO_OFFSET = Map.ofEntries(
     Map.entry(SwerveModule.Location.LeftFront, Units.Radians.of(Math.PI / 2)),
@@ -209,26 +210,38 @@ public class RAWRSwerveModule extends SwerveModule implements Sendable {
 
     Logger.recordOutput(m_driveMotor.getID().name + SwerveConstants.MAX_LINEAR_VELOCITY_LOG_ENTRY, DRIVE_MAX_LINEAR_SPEED);
 
+    //Config Drive Motor 
+    EXECUTOR_SERVICE.submit(() -> configDrive(driveWheel, motorOrientation, drivePID));
+
+    // Reset the Drive Encoder
+    EXECUTOR_SERVICE.submit(() -> resetDriveEncoder());
+
+    //Config Rotate Motor
+    EXECUTOR_SERVICE.submit(() -> configRotate(motorOrientation, encoderOrientation, rotatePID));
+
+    // Add callbacks to PurpleManager
+    PurpleManager.addCallback(() -> periodic());
+    PurpleManager.addCallbackSim(() -> simulationPeriodic());
+
+    Runtime.getRuntime().addShutdownHook(new Thread(() -> shutdownExecutorService()));
+  }
+
+  public void configDrive(DriveWheel driveWheel, SwerveModule.MountOrientation motorOrientation,  PIDConstants drivePID) {
+    SparkBaseConfig m_driveMotorConfig;
+    
+    // Configure the drive motor
     m_driveMotorConfig = (m_driveMotor.getKind().equals(MotorKind.NEO_VORTEX)) ? new SparkFlexConfig() : new SparkMaxConfig();
-    m_rotateMotorConfig = (m_rotateMotor.getKind().equals(MotorKind.NEO_VORTEX)) ? new SparkFlexConfig() : new SparkMaxConfig();
 
     // Set drive encoder config
-    m_driveConversionFactor = driveWheel.diameter.in(Units.Meters) * Math.PI / super.getGearRatio().getDriveRatio();
+    double m_driveConversionFactor = driveWheel.diameter.in(Units.Meters) * Math.PI / super.getGearRatio().getDriveRatio();
     m_driveMotorConfig.encoder.positionConversionFactor(m_driveConversionFactor);
     m_driveMotorConfig.encoder.velocityConversionFactor(m_driveConversionFactor / 60);
-
-    // Set rotate encoder config
-    m_rotateConversionFactor = 2 * Math.PI;
-    m_rotateMotorConfig.absoluteEncoder.positionConversionFactor(m_rotateConversionFactor);
-    m_rotateMotorConfig.absoluteEncoder.velocityConversionFactor(m_rotateConversionFactor / 60);
-    m_rotateMotorConfig.absoluteEncoder.inverted(!encoderOrientation.equals(motorOrientation));
 
     // Invert drive motor if necessary
     m_driveMotorConfig.inverted(motorOrientation.equals(MountOrientation.INVERTED));
 
     // Set sensor to use for closed loop control
     m_driveMotorConfig.closedLoop.feedbackSensor(FeedbackSensor.kPrimaryEncoder);
-    m_rotateMotorConfig.closedLoop.feedbackSensor(FeedbackSensor.kAbsoluteEncoder);
 
     // Set gains for drive PID
     m_driveMotorConfig.closedLoop.pidf(
@@ -238,23 +251,11 @@ public class RAWRSwerveModule extends SwerveModule implements Sendable {
       drivePID.kF
     );
 
-    // Reset the Drive Encoder
-    resetDriveEncoder();
-
-    // Set gains for rotate PID and enable wrapping
-    m_rotateMotorConfig.closedLoop.pid(rotatePID.kP, rotatePID.kI, rotatePID.kD);
-    m_rotateMotorConfig.closedLoop.positionWrappingEnabled(true);
-    m_rotateMotorConfig.closedLoop.positionWrappingInputRange(0.0, m_rotateConversionFactor);
-
     // Set drive motor to coast
     m_driveMotorConfig.idleMode(IdleMode.kCoast);
 
-    // Set rotate motor to brake
-    m_rotateMotorConfig.idleMode(IdleMode.kBrake);
-
     // Set current limits
     m_driveMotorConfig.smartCurrentLimit(SwerveConstants.DRIVE_MOTOR_CURRENT_LIMIT);
-    m_rotateMotorConfig.smartCurrentLimit(SwerveConstants.ROTATE_MOTOR_CURRENT_LIMIT);
 
     // Set status frame rates
     m_driveMotorConfig.signals.primaryEncoderPositionPeriodMs(23);
@@ -264,21 +265,60 @@ public class RAWRSwerveModule extends SwerveModule implements Sendable {
     m_driveMotorConfig.signals.analogPositionPeriodMs(20);
     m_driveMotorConfig.signals.analogVelocityPeriodMs(20);
     m_driveMotorConfig.signals.limitsPeriodMs(10);
-    m_rotateMotorConfig.signals.primaryEncoderPositionPeriodMs(23);
-    m_rotateMotorConfig.signals.primaryEncoderVelocityPeriodMs(20);
-    m_rotateMotorConfig.signals.absoluteEncoderPositionPeriodMs(20);
-    m_rotateMotorConfig.signals.absoluteEncoderVelocityPeriodMs(20);
-    m_rotateMotorConfig.signals.analogPositionPeriodMs(20);
-    m_rotateMotorConfig.signals.analogVelocityPeriodMs(20);
-    m_rotateMotorConfig.signals.limitsPeriodMs(10);
 
-    // Configure motors with desired config
+    // Configure the drive motor with the desired config
     m_driveMotor.configure(m_driveMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    m_rotateMotor.configure(m_rotateMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+}
 
-    // Add callbacks to PurpleManager
-    PurpleManager.addCallback(() -> periodic());
-    PurpleManager.addCallbackSim(() -> simulationPeriodic());
+public void configRotate(SwerveModule.MountOrientation motorOrientation, SwerveModule.MountOrientation encoderOrientation, PIDConstants rotatePID) {
+  SparkBaseConfig m_rotateMotorConfig;
+
+  // Configure the rotate motor
+  m_rotateMotorConfig = (m_rotateMotor.getKind().equals(MotorKind.NEO_VORTEX)) ? new SparkFlexConfig() : new SparkMaxConfig();
+
+  // Set rotate encoder config
+  double m_rotateConversionFactor = 6.28318530718;
+  m_rotateMotorConfig.absoluteEncoder.positionConversionFactor(m_rotateConversionFactor);
+  m_rotateMotorConfig.absoluteEncoder.velocityConversionFactor(m_rotateConversionFactor / 60);
+  m_rotateMotorConfig.absoluteEncoder.inverted(!encoderOrientation.equals(motorOrientation));
+
+  // Set sensor to use for closed loop control
+  m_rotateMotorConfig.closedLoop.feedbackSensor(FeedbackSensor.kAbsoluteEncoder);
+
+  // Set gains for rotate PID and enable wrapping
+  m_rotateMotorConfig.closedLoop.pid(rotatePID.kP, rotatePID.kI, rotatePID.kD);
+  m_rotateMotorConfig.closedLoop.positionWrappingEnabled(true);
+  m_rotateMotorConfig.closedLoop.positionWrappingInputRange(0.0, m_rotateConversionFactor);
+
+  // Set rotate motor to brake
+  m_rotateMotorConfig.idleMode(IdleMode.kBrake);
+
+  // Set current limits
+  m_rotateMotorConfig.smartCurrentLimit(SwerveConstants.ROTATE_MOTOR_CURRENT_LIMIT);
+
+  // Set status frame rates
+  m_rotateMotorConfig.signals.primaryEncoderPositionPeriodMs(23);
+  m_rotateMotorConfig.signals.primaryEncoderVelocityPeriodMs(20);
+  m_rotateMotorConfig.signals.absoluteEncoderPositionPeriodMs(20);
+  m_rotateMotorConfig.signals.absoluteEncoderVelocityPeriodMs(20);
+  m_rotateMotorConfig.signals.analogPositionPeriodMs(20);
+  m_rotateMotorConfig.signals.analogVelocityPeriodMs(20);
+  m_rotateMotorConfig.signals.limitsPeriodMs(10);
+
+  // Configure the rotate motor with the desired config
+  m_rotateMotor.configure(m_rotateMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+}
+
+
+  private void shutdownExecutorService() {
+    try {
+        EXECUTOR_SERVICE.shutdown();
+        if (!EXECUTOR_SERVICE.awaitTermination(60, TimeUnit.SECONDS)) {
+          EXECUTOR_SERVICE.shutdownNow();
+        }
+    } catch (InterruptedException e) {
+      EXECUTOR_SERVICE.shutdownNow();
+    }
   }
 
   /**
@@ -349,33 +389,6 @@ public class RAWRSwerveModule extends SwerveModule implements Sendable {
       () -> m_desiredState.angle.getRadians(),
       (value) -> set(new SwerveModuleState(m_desiredState.speedMetersPerSecond, Rotation2d.fromRadians(value)))
     );
-    // Configure drive kP
-    builder.addDoubleProperty(
-      "Drive kP",
-      () -> m_driveMotor.getConfigAccessor().closedLoop.getP(),
-      (value) -> {
-        m_driveMotorConfig.closedLoop.p(value);
-        m_driveMotor.configure(m_driveMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
-      }
-    );
-    // Configure drive kI
-    builder.addDoubleProperty(
-      "Drive kI",
-      () -> m_driveMotor.getConfigAccessor().closedLoop.getI(),
-      (value) -> {
-        m_driveMotorConfig.closedLoop.i(value);
-        m_driveMotor.configure(m_driveMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
-      }
-    );
-    // Configure drive kD
-    builder.addDoubleProperty(
-      "Drive kD",
-      () -> m_driveMotor.getConfigAccessor().closedLoop.getD(),
-      (value) -> {
-        m_driveMotorConfig.closedLoop.d(value);
-        m_driveMotor.configure(m_driveMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
-      }
-    );
     // Configure drive kS
     builder.addDoubleProperty(
       "Drive kS",
@@ -398,33 +411,6 @@ public class RAWRSwerveModule extends SwerveModule implements Sendable {
       () -> m_driveFF.getKa(),
       (value) -> {
         m_driveFF = new SimpleMotorFeedforward(m_driveFF.getKs(), m_driveFF.getKv(), value);
-      }
-    );
-    // Configure rotate kP
-    builder.addDoubleProperty(
-      "Rotate kP",
-      () -> m_rotateMotor.getConfigAccessor().closedLoop.getP(),
-      (value) -> {
-        m_rotateMotorConfig.closedLoop.p(value);
-        m_rotateMotor.configure(m_rotateMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
-      }
-    );
-    // Configure rotate kI
-    builder.addDoubleProperty(
-      "Rotate kI",
-      () -> m_rotateMotor.getConfigAccessor().closedLoop.getI(),
-      (value) -> {
-        m_rotateMotorConfig.closedLoop.i(value);
-        m_rotateMotor.configure(m_rotateMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
-      }
-    );
-    // Configure rotate kD
-    builder.addDoubleProperty(
-      "Rotate kD",
-      () -> m_rotateMotor.getConfigAccessor().closedLoop.getD(),
-      (value) -> {
-        m_rotateMotorConfig.closedLoop.d(value);
-        m_rotateMotor.configure(m_rotateMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
       }
     );
   }

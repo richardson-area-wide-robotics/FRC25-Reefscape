@@ -109,8 +109,6 @@ public class RAWRNavX2 extends LoggableHardware implements IMU {
     this.m_previousSpeeds = new ChassisSpeeds();
     this.m_lastUpdateTime = Instant.now();
 
-    System.out.println();
-
     // Update inputs on init
     updateInputs();
 
