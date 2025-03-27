@@ -21,7 +21,6 @@ import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.common.swerve.RAWRNavX2;
 
 
 /**
@@ -36,7 +35,7 @@ import frc.robot.common.swerve.RAWRNavX2;
  * wherever the
  * constants are needed, to reduce verbosity.
  */
-public final class Constants {
+public final class Constants { //TODO LiBerry has a copy of this. What needs to be in what?
 
   /**
    * Constants for controllers
@@ -129,8 +128,6 @@ public final class Constants {
    * @since 2024
    */
   public static class DriveHardwareConstants {
-    public static final RAWRNavX2.ID NAVX_ID = new RAWRNavX2.ID("DriveHardware/NavX2");
-
     public static final Spark.ID LEFT_FRONT_DRIVE_MOTOR_ID = new Spark.ID("DriveHardware/Swerve/LeftFront/Drive", 5);
     public static final Spark.ID LEFT_FRONT_ROTATE_MOTOR_ID = new Spark.ID("DriveHardware/Swerve/LeftFront/Rotate", 6);
 

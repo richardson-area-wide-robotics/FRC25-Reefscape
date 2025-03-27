@@ -142,8 +142,9 @@ $RECYCLE.BIN/
 # Ignore Gradle GUI config
 gradle-app.setting
 
-# Avoid ignoring Gradle wrapper jar file (.jar files are usually ignored)
+# Avoid ignoring the Gradle wrapper and LiBerry (.jar files are usually ignored)
 !gradle-wrapper.jar
+!LiBerry.jar
 
 # Cache of project
 .gradletasknamecache

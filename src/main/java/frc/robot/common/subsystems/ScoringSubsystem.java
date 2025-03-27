@@ -15,8 +15,8 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.common.components.EasyMotor;
-import frc.robot.common.components.RobotUtils;
+import org.rawrobotics.common.components.EasyMotor;
+import org.rawrobotics.common.components.RobotUtils;
 
 public class ScoringSubsystem extends SubsystemBase {
 
