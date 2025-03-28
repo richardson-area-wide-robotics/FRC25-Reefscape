@@ -17,24 +17,30 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.Constants.HIDConstants;
+
+import org.lasarobotics.drive.swerve.SwerveModule;
 import org.rawrobotics.common.annotations.Robot;
 import org.rawrobotics.common.components.RobotUtils;
+import org.rawrobotics.common.components.SwerveHardware;
 import org.rawrobotics.common.interfaces.IRobotContainer;
 import frc.robot.common.subsystems.CBSSubsystem;
 import frc.robot.common.subsystems.DeepClimbSubsystem;
 import frc.robot.common.subsystems.ElevatorSubsystem;
 import frc.robot.common.subsystems.ScoringSubsystem;
 import org.rawrobotics.common.subsystems.drive.SwerveDriveSubsystem;
+import org.rawrobotics.common.swerve.RAWRNavX2;
+import org.rawrobotics.common.swerve.RAWRSwerveModule;
+
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-@Robot(team = 1745) //Note: This class is also the defualt so it will be loaded on 8874
+@Robot(team = 1745)
 public class RobotContainer implements IRobotContainer {
 
   public static final SwerveDriveSubsystem DRIVE_SUBSYSTEM = new SwerveDriveSubsystem(
-      SwerveDriveSubsystem.initializeHardware(),
+      initializeDriveHardware(),
       Constants.DriveConstants.DRIVE_ROTATE_PID,
       Constants.DriveConstants.DRIVE_CONTROL_CENTRICITY,
       Constants.DriveConstants.DRIVE_THROTTLE_INPUT_CURVE,
@@ -198,5 +204,36 @@ public class RobotContainer implements IRobotContainer {
   @Override
   public Command getAutonomousCommand() {
     return automodeChooser.getSelected();
+  }
+
+  /**
+   * Initialize hardware devices for the drive subsystem
+   * 
+   * @return A Hardware object containing all necessary devices 
+   */
+  public static SwerveHardware initializeDriveHardware() {
+    RAWRNavX2 navx = new RAWRNavX2(Constants.DriveHardwareConstants.NAVX_ID);
+
+    RAWRSwerveModule lFrontModule = RAWRSwerveModule.createSwerve(
+            Constants.DriveHardwareConstants.LEFT_FRONT_DRIVE_MOTOR_ID,
+            Constants.DriveHardwareConstants.LEFT_FRONT_ROTATE_MOTOR_ID,
+            SwerveModule.Location.LeftFront);
+
+    RAWRSwerveModule rFrontModule = RAWRSwerveModule.createSwerve(
+            Constants.DriveHardwareConstants.RIGHT_FRONT_DRIVE_MOTOR_ID,
+            Constants.DriveHardwareConstants.RIGHT_FRONT_ROTATE_MOTOR_ID,
+            SwerveModule.Location.RightFront);
+
+    RAWRSwerveModule lRearModule = RAWRSwerveModule.createSwerve(
+            Constants.DriveHardwareConstants.LEFT_REAR_DRIVE_MOTOR_ID,
+            Constants.DriveHardwareConstants.LEFT_REAR_ROTATE_MOTOR_ID,
+            SwerveModule.Location.LeftRear);
+
+    RAWRSwerveModule rRearModule = RAWRSwerveModule.createSwerve(
+            Constants.DriveHardwareConstants.RIGHT_REAR_DRIVE_MOTOR_ID,
+            Constants.DriveHardwareConstants.RIGHT_REAR_ROTATE_MOTOR_ID,
+            SwerveModule.Location.RightRear);
+
+      return new SwerveHardware(navx, lFrontModule, rFrontModule, lRearModule, rRearModule);
   }
 }
