@@ -11,10 +11,10 @@ import com.revrobotics.spark.config.SparkFlexConfig;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.common.components.EasyMotor;
 import frc.robot.common.components.RobotUtils;
-import frc.robot.common.components.EasyBreakBeam;
 
 public class ScoringSubsystem extends SubsystemBase {
 
@@ -24,11 +24,11 @@ public class ScoringSubsystem extends SubsystemBase {
     private static final double BOTTOM_POSITION = 0.1;
     private static final double FULLBACK_POSITION =  5.3;
 
-    EasyBreakBeam breakBeam;
+    DigitalInput breakBeam;
 
     public ScoringSubsystem(int drawbridgeMotorId, int outtakeMotorId) {
        SparkFlexConfig config = new SparkFlexConfig();
-       breakBeam = new EasyBreakBeam(0);
+       breakBeam = new DigitalInput(1);
 
        config.closedLoop.p(0.1).i(0).d(0).outputRange(-1, 1);
 
@@ -54,18 +54,19 @@ public class ScoringSubsystem extends SubsystemBase {
     }
 
     public Command outtake() { 
-
-        return breakBeam.runUntilBroken(Commands.runOnce(() -> outtakeMotor.set(0.2)),
-        Commands.run(() -> outtakeMotor.set(0.0)));
-        //return Commands.run(() -> outtakeMotor.set(0.2), this);
-        //return Commands.either(Commands.run(() -> outtakeMotor.set(0.2), this),
-        //Commands.run(() -> outtakeMotor.set(0.0), this),
-        //breakBeamBoolean);
+        return Commands.runOnce(() -> outtakeUntilBroken(), this);
     }
 
-    //public Command score() {
-    //    return Commands.run(() -> outtakeMotor.set(0.2), this);
-    //}
+    private void outtakeUntilBroken() {
+        while (breakBeam.get()) {
+            outtakeMotor.set(0.2);
+        }
+        outtakeMotor.set(0.0);
+    }
+
+    public Command score() {
+        return Commands.run(() -> outtakeMotor.set(0.2), this);
+    }
 
     public Command intake() {
         return Commands.run(() -> outtakeMotor.set(-0.2), this);
@@ -89,6 +90,6 @@ public class ScoringSubsystem extends SubsystemBase {
 
     @Override 
     public void periodic(){
-        SmartDashboard.putBoolean("BreakBeamFront", breakBeam.getBreakBeamStatus());
+        SmartDashboard.putBoolean("BreakBeam", breakBeam.get());
     }
 }

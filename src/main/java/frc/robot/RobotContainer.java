@@ -104,6 +104,10 @@ public class RobotContainer implements IRobotContainer {
       RobotUtils.bindControl(HIDConstants.DRIVER_CONTROLLER.rightBumper(), ELEVATOR_SUBSYSTEM.up(), ELEVATOR_SUBSYSTEM.stop());
       RobotUtils.bindControl(HIDConstants.DRIVER_CONTROLLER.leftBumper(), ELEVATOR_SUBSYSTEM.down(), ELEVATOR_SUBSYSTEM.stop());
     }
+
+    // Driver A - Score (outtake without break beams)
+    RobotUtils.bindControl(HIDConstants.DRIVER_CONTROLLER.a(), SCORING_SUBSYSTEM.score(), SCORING_SUBSYSTEM.outtakeStop());
+
     // Driver POV Right - Move Drawbridge up
     RobotUtils.bindControl(HIDConstants.DRIVER_CONTROLLER.povRight(), SCORING_SUBSYSTEM.drawBridgeUp(), SCORING_SUBSYSTEM.drawBridgeStop());
 
