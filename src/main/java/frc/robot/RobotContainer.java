@@ -106,7 +106,7 @@ public class RobotContainer implements IRobotContainer {
     }
 
     // Driver A - Score (outtake without break beams)
-    RobotUtils.bindControl(HIDConstants.DRIVER_CONTROLLER.a(), SCORING_SUBSYSTEM.score(), SCORING_SUBSYSTEM.outtakeStop());
+    // RobotUtils.bindControl(HIDConstants.DRIVER_CONTROLLER.a(), SCORING_SUBSYSTEM.score(), SCORING_SUBSYSTEM.outtakeStop());
 
     // Driver POV Right - Move Drawbridge up
     RobotUtils.bindControl(HIDConstants.DRIVER_CONTROLLER.povRight(), SCORING_SUBSYSTEM.drawBridgeUp(), SCORING_SUBSYSTEM.drawBridgeStop());

@@ -54,11 +54,12 @@ public class ScoringSubsystem extends SubsystemBase {
     }
 
     public Command outtake() { 
-        return Commands.runOnce(() -> outtakeUntilBroken(), this);
+        return Commands.run(() -> outtakeMotor.set(0.2), this);
+        //return Commands.run(() -> outtakeUntilBroken(), this);
     }
 
     private void outtakeUntilBroken() {
-        while (breakBeam.get()) {
+        if (breakBeam.get()) {
             outtakeMotor.set(0.2);
         }
         outtakeMotor.set(0.0);
